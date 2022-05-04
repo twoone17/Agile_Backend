@@ -1,4 +1,4 @@
 package com.f3f.community.admin.dto;
 
-public class TempDto {
+public class AdminDto {
 }
