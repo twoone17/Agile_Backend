@@ -12,21 +12,10 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Address {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
-
-    private String email;
-
-    private String password;
-
-    private String nickname;
-
-    private String phone;
-
-    private UserGrade userGrade;
-
-   // private Address address;
 
 }
