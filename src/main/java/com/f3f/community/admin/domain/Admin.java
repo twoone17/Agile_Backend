@@ -1,5 +1,6 @@
 package com.f3f.community.admin.domain;
 
+import com.f3f.community.user.domain.UserBase;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +13,6 @@ import javax.persistence.Id;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Admin{
+public class Admin extends UserBase {
 
-    @Id@GeneratedValue
-    private Long id;
 }

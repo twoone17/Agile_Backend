@@ -17,5 +17,9 @@ public class Address {
     @Id
     @GeneratedValue
     private Long id;
+    private String addressName;
+    private String roadAddress;
+    private String detailAddress;
+    private String postalCode;
 
 }
