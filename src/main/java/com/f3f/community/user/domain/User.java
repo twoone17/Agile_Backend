@@ -1,6 +1,7 @@
 package com.f3f.community.user.domain;
 
 import com.f3f.community.comment.domain.Comment;
+import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class User extends UserBase {
 
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    private List<Likes> likes = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     private Address address;
