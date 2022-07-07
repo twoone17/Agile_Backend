@@ -19,7 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Post {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "post_id")
     private Long id;
 
@@ -32,11 +33,17 @@ public class Post {
 
     private String postImgUrl;
 
-    @OneToMany(mappedBy = "post" , fetch = FetchType.LAZY)
+    private int viewCount;
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"post"})
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"post"})
     private List<Likes> likesList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<PostTag> memberProducts = new ArrayList<>();
+
 }
