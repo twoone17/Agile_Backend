@@ -14,7 +14,8 @@ import javax.persistence.*;
 @Getter
 public class Media {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Enumerated(EnumType.STRING)

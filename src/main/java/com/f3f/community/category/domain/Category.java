@@ -14,7 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Category {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private  String categoryName;

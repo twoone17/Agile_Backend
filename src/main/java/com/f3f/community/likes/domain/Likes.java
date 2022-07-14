@@ -16,7 +16,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class Likes {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @ManyToOne
