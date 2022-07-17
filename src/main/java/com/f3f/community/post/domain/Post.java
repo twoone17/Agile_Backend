@@ -30,16 +30,15 @@ public class Post {
 
     private String content;
 
+    //미디어로 변경이 필요함
     private String postImgUrl;
 
     private int viewCount;
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"post"})
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"post"})
     private List<Likes> likesList = new ArrayList<>();
 
     @OneToMany(mappedBy = "post")
