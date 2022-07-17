@@ -46,5 +46,5 @@ public class Scrap {
         this.postList = postList;
     }
 
-    
+
 }

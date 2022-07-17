@@ -45,22 +45,23 @@ public class ScrapService {
     }
 
 
-    // 스크랩 컬렉션 이름 변경
     public void updateCollectionName(Long scrapId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findByIdScrap(scrapId);
-
-        try{
-            scrapRepository.findByName(newName).orElseThrow(Exception::new);
-        }catch (Exception e){
-            if (scrap.getName().equals(newName)){
+        boolean existsById = scrapRepository.existsById(scrapId);
+        if (!existsById) {
+            if (scrap.getName().equals(newName)) {
                 throw new IllegalStateException();
-            }else {
+            } else {
                 scrap.updateScrap(newName);
             }
+        }else {
+            throw new IllegalArgumentException();
         }
         scrapRepository.save(scrap);
     }
+    // 스크랩 컬렉션 이름 변경
 
-    // 스크랩 컬렉션 삭제
+
+// 스크랩 컬렉션 삭제
 
 }

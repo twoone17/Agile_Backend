@@ -9,5 +9,7 @@ public interface ScrapRepository extends JpaRepository<Scrap,Long> {
 
     Scrap findByIdScrap(long id);
 
+    boolean existsById(Long id);
+
     Optional<Scrap> findByName(String name);
 }
