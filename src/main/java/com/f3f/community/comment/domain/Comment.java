@@ -1,5 +1,6 @@
 package com.f3f.community.comment.domain;
 
+import com.f3f.community.media.domain.Media;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,9 @@ public class Comment {
 
     private String content;
 
-    @OneToMany(mappedBy = "comment_id")
+    @OneToMany(mappedBy = "comment_id", fetch = FetchType.LAZY)
     private List<Comment> childComment;
 
-    //미디어가 필요함
-    //자식 commentList를 정렬 필요함 람다로 풀고
+    @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
+    private List<Media> mediaList;
 }
