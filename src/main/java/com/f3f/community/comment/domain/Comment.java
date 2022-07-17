@@ -1,35 +1,33 @@
 package com.f3f.community.comment.domain;
 
-import com.f3f.community.post.domain.Post;
-import com.f3f.community.user.domain.User;
+import com.f3f.community.media.domain.Media;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Comment {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "comment_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User author;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
-
     private String content;
 
-    private LocalDateTime createTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment parentComment;
 
+    @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
+    private List<Comment> childComment;
+
+    @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
+    private List<Media> mediaList;
 }

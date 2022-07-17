@@ -14,15 +14,18 @@ import java.util.List;
 @AllArgsConstructor
 public class Category {
 
-    @Id@GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "category_id")
     private Long id;
 
     private  String categoryName;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categroy_id")
     private Category parentCategory;
 
-    @OneToMany(mappedBy = "parentCategory")
+    @OneToMany(mappedBy = "parentCategory" , fetch = FetchType.LAZY)
     private List<Category> childCategory;
 
     @Builder

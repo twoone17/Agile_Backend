@@ -19,6 +19,8 @@ public class User extends UserBase {
 
     private String nickname;
 
+    private String address;
+
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
@@ -28,6 +30,4 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private List<Likes> likes = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    private Address address;
 }
