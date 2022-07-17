@@ -30,6 +30,4 @@ public class UserBase extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserGrade userGrade;
 
-    @Enumerated(EnumType.STRING)
-    private UserLevel userLevel;
 }

@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends UserBase {
-    // 철웅 테스트용
+
     private String nickname;
 
     private String address;
