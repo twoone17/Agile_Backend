@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,7 +21,11 @@ public class Comment {
 
     private String content;
 
-    @OneToMany(mappedBy = "comment_id", fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
     private List<Comment> childComment;
 
     @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
