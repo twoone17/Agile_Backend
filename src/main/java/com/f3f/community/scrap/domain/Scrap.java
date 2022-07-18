@@ -42,8 +42,8 @@ public class Scrap {
     }
     public void updateScrap(String name){
         this.name = name;
-        this.user = user;
-        this.postList = postList;
+//        this.user = user;
+//        this.postList = postList;
     }
 
 
