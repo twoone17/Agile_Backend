@@ -23,6 +23,8 @@ public class Scrap {
     @Column(name = "scrap_id")
     private Long id;
 
+    private String name;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
