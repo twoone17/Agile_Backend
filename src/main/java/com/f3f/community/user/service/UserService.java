@@ -18,7 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional  // 변경이 일어남
+    @Transactional
     public Long join(User user) {
         validation(user);
         User saveUser = userRepository.save(user);
@@ -27,7 +27,7 @@ public class UserService {
 
     // 중복 검증
     private void validation(User user) {
-        if(userRepository.existsById(user.getId()) || userRepository.existsByNickname(user.getNickname())) {
+        if(userRepository.existsByNickname(user.getNickname())) {
             throw new IllegalArgumentException("유저 정보 중복");
         }
     }
