@@ -2,12 +2,15 @@ package com.f3f.community.comment.domain;
 
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+
+import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -19,6 +22,11 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "comment_id")
     private Long id;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "user_id")
+    private User author; // 댓글 도메인에 작성자 필드가 없는 것 같아서 추가했습니당
+
 
     private String content;
 
