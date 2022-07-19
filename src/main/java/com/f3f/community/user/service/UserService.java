@@ -20,19 +20,23 @@ public class UserService {
 
     @Transactional  // 변경이 일어남
     public Long join(User user) {
-        // 예외처리 해주기
-        User saveUser;
-        boolean dupUser = userRepository.existsById(user.getId());
-        if(!dupUser){
-           saveUser = userRepository.save(user);
-        }else{
-            throw new IllegalArgumentException();
-        }
+        validation(user);
+        User saveUser = userRepository.save(user);
         return saveUser.getId();
+    }
+
+    // 중복 검증
+    private void validation(User user) {
+        if(userRepository.existsById(user.getId()) || userRepository.existsByNickname(user.getNickname())) {
+            throw new IllegalArgumentException("유저 정보 중복");
+        }
     }
 
     public Optional<User> findOne(Long id) {
         return userRepository.findById(id);
     }
 
+    public List<User> findUsers() {
+        return userRepository.findAll();
+    }
 }
