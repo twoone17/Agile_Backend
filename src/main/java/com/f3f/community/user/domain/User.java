@@ -28,9 +28,9 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private List<Likes> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Scrap> scraps = new ArrayList<>(); // 유저가 스크랩 리스트를 안 가지고 있어서 추가했습니다
+    private List<Scrap> scraps = new ArrayList<>();
 }
