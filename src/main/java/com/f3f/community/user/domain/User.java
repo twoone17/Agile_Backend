@@ -3,6 +3,7 @@ package com.f3f.community.user.domain;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.scrap.domain.Scrap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,4 +31,6 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
     private List<Likes> likes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Scrap> scraps = new ArrayList<>();
 }
