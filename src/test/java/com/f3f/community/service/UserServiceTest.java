@@ -62,4 +62,27 @@ class UserServiceTest {
         Assertions.assertThat(userService.findUsers().size()).isEqualTo(2);
     }
 
+    @Test
+    public void validationTest() {
+        // given
+        // 이메일 중복 시나리오
+        User EmailTester1 = new User("temp1@temp.com", "12345", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        User EmailTester2 = new User("temp1@temp.com", "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap");
+
+        // 닉네임 중복 시나리오
+        User NicknameTester1 = new User("temp33@temp.com", "12345", "01012345678", UserGrade.BRONZE, "cheolwoong", "changwon");
+        User NicknameTester2 = new User("temp312@temp.com", "1234567", "01012345678", UserGrade.BRONZE, "cheolwoong", "yatap");
+        //when
+        userService.join(EmailTester1);
+        userService.join(NicknameTester1);
+        //then
+
+        // 이메일 중복 발생
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> userService.join(EmailTester2));
+        // 닉네임 중복 발생
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> userService.join(NicknameTester2));
+    }
+
 }

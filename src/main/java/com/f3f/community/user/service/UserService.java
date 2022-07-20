@@ -28,8 +28,14 @@ public class UserService {
 
     // 중복 검증
     private void validation(User user) {
+        if(userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("이메일 중복");
+        }
+        // DB에 아직 들어가지 않았기 때문에 user.getId()의 값이 없을 것이다.
+        // auto-increment이면 근데 중복검사를 굳이 할 필요가 있을까?
+        // 일단은 제외하도록 하겠다.
         if(userRepository.existsByNickname(user.getNickname())) {
-            throw new IllegalArgumentException("유저 정보 중복");
+            throw new IllegalArgumentException("User 정보 중복");
         }
     }
 
