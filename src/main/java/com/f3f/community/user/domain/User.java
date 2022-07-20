@@ -14,9 +14,22 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class User extends UserBase {
+    public User(Long id, String email, String password, String phone, UserGrade userGrade,
+                String nickname, String address, List<Post> posts, List<Comment> comments,
+                List<Likes> likes, List<Scrap> scraps) {
+        super(id, email, password, phone, userGrade);
+        this.nickname = nickname;
+        this.address = address;
+        this.posts = posts;
+        this.comments = comments;
+        this.likes = likes;
+        this.scraps = scraps;
+    }
+
+    public User() {
+
+    }
 
     private String nickname;
 
@@ -25,7 +38,7 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
@@ -33,4 +46,5 @@ public class User extends UserBase {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
+
 }

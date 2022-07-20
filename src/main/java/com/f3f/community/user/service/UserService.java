@@ -1,5 +1,6 @@
 package com.f3f.community.user.service;
 
+import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserBase;
@@ -32,8 +33,14 @@ public class UserService {
         }
     }
 
-    public Optional<User> findOne(Long id) {
-        return userRepository.findById(id);
+// The given id must not be null!
+//    public Optional<User> findOne(Long id) {
+//        return userRepository.findById(id);
+//    }
+
+    // 아이디로 조회하면 위와 같이 The given id must not be null! 오류가 발생한다.
+    public User findOneNickname(User user) {
+        return userRepository.findByNickname(user.getNickname());
     }
 
     public List<User> findUsers() {
