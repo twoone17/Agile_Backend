@@ -2,6 +2,7 @@ package com.f3f.community.service;
 
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.assertj.core.api.Assertions;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 class UserServiceTest {
@@ -22,13 +22,10 @@ class UserServiceTest {
     @Autowired
     UserService userService;
 
-    long id = 1;
-
     @Test
     public void joinTest() {
         // given
-        User user = new User(id++, "temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon",
-                null, null, null, null);
+        User user = new User("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
 
         // when
         Long joinId = userService.join(user);
@@ -40,24 +37,22 @@ class UserServiceTest {
     @Test
     public void findTest() {
         // given
-        User user = new User(id++, "temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon",
-                null, null, null, null);
+        User user = new User("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
 
         // when
         Long joinId = userService.join(user);
-        User oneNickname = userService.findOneNickname(user);
+        Optional<User> findId = userService.findOne(joinId);
 
         // then
-        Assertions.assertThat(oneNickname.getNickname()).isEqualTo(user.getNickname());
+        Assertions.assertThat(findId.get().getId()).isEqualTo(joinId);
     }
 
     @Test
     public void findUsersTest() {
         // given
-        User user1 = new User(id++, "temp1@temp.com", "12345", "01012345678", UserGrade.BRONZE, "james", "changwon",
-                null, null, null, null);
-        User user2 = new User(id++, "temp2@temp.com", "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap",
-                null, null, null, null);
+        long id = 1;
+        User user1 = new User("temp1@temp.com", "12345", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        User user2 = new User("temp2@temp.com", "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap");
 
         //when
         userService.join(user1);

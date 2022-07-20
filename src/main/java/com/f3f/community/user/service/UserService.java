@@ -33,15 +33,11 @@ public class UserService {
         }
     }
 
-// The given id must not be null!
-//    public Optional<User> findOne(Long id) {
-//        return userRepository.findById(id);
-//    }
-
-    // 아이디로 조회하면 위와 같이 The given id must not be null! 오류가 발생한다.
-    public User findOneNickname(User user) {
-        return userRepository.findByNickname(user.getNickname());
+    public Optional<User> findOne(Long id) {
+        return userRepository.findById(id);
     }
+
+
 
     public List<User> findUsers() {
         return userRepository.findAll();
