@@ -2,6 +2,7 @@ package com.f3f.community.comment.domain;
 
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.user.domain.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,11 +34,14 @@ public class Comment {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
     private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
