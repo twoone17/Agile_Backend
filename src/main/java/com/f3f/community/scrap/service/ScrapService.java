@@ -30,7 +30,7 @@ public class ScrapService {
 
     // 스크랩 컬렉션 생성
     public long createScrap(ScrapDto scrapDto) throws Exception{
-        if (!scrapRepository.existsByUserAndAndName(scrapDto.getUser(), scrapDto.getName())) {
+        if (!scrapRepository.existsByUserAndName(scrapDto.getUser(), scrapDto.getName())) {
             Scrap newScrap = Scrap.builder(scrapDto).build();
             scrapRepository.save(newScrap);
             return newScrap.getId();
@@ -86,7 +86,7 @@ public class ScrapService {
     @Transactional
     public void updateCollectionName(Long scrapId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findByIdScrap(scrapId);
-        boolean existsByName = scrapRepository.existsById(scrapId);
+        boolean existsByName = scrapRepository.existsByName(newName);
         if (!existsByName) {
             scrap.updateScrap(newName);
             scrapRepository.save(scrap);
