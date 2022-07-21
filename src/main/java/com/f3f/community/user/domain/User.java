@@ -5,7 +5,6 @@ import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.scrap.domain.Scrap;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
+@Builder
 public class User extends UserBase {
     private String nickname;
 
