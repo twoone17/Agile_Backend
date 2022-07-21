@@ -2,6 +2,7 @@ package com.f3f.community.scrap.domain;
 
 
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,8 +16,9 @@ import static javax.persistence.FetchType.*;
 
 @Getter
 @Entity
-//@AllArgsConstructor
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder(builderMethodName = "ScrapBuilder")
 public class Scrap {
 
     @Id
@@ -33,12 +35,12 @@ public class Scrap {
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
     private List<Post> postList;
 
-    @Builder
-    public Scrap(Long id, String name, User user, List<Post> postList) {
-        this.id = id;
-        this.name = name;
-        this.user = user;
-        this.postList = postList;
+    public static ScrapBuilder builder(ScrapDto scrapDto) {
+        return ScrapBuilder()
+                .id(scrapDto.getId())
+                .name(scrapDto.getName())
+                .user(scrapDto.getUser())
+                .postList(scrapDto.getPostList());
     }
     public void updateScrap(String name){
         this.name = name;

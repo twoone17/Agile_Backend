@@ -13,7 +13,8 @@ public interface ScrapRepository extends JpaRepository<Scrap,Long> {
 
     boolean existsById(Long id);
 
-    Optional<Scrap> findByName(String name);
+    boolean existsByName(String name);
 
-    List<Scrap> findByUser(User user);
+    boolean existsByUserAndAndName(User user, String name);
+    List<Scrap> findScrapListByUserId(Long userid);
 }
