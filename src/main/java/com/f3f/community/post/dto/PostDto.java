@@ -21,6 +21,7 @@ import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
 
+//관심사 분리를 위한 DTO 클래스
 @Data
 @AllArgsConstructor
 @Builder
@@ -45,6 +46,7 @@ public class PostDto {
 
     private List<PostTag> tagList = new ArrayList<>();
 
+
     public Post toEntity(){
         return Post.builder()
                 .id(this.id)
@@ -58,7 +60,7 @@ public class PostDto {
                 .likesList(this.likesList)
                 .tagList(this.tagList)
                 .build();
-
     }
+
 
 }

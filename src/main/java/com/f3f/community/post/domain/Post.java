@@ -22,7 +22,8 @@ import static javax.persistence.FetchType.*;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
+//Builder 패턴을 사용, 빌더 메서드에만 @Builder 적용
 public class Post {
 
     @Id
@@ -84,18 +85,19 @@ public class Post {
 
     }
 
+
     public PostDto toDto(){
         return PostDto.builder()
-                .id(id)
-                .author(author)
-                .title(title)
-                .content(content)
-                .media(media)
-                .viewCount(viewCount)
-                .scrap(scrap)
-                .comments(comments)
-                .likesList(likesList)
-                .tagList(tagList)
+                .id(this.id)
+                .author(this.author)
+                .title(this.title)
+                .content(this.content)
+                .media(this.media)
+                .viewCount(this.viewCount)
+                .scrap(this.scrap)
+                .comments(this.comments)
+                .likesList(this.likesList)
+                .tagList(this.tagList)
                 .build();
     }
 
