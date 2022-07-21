@@ -21,7 +21,7 @@ public class ScrapDto {
 
     public Scrap toEntity(){
         return Scrap.builder()
-                .id(id)
+                .id(this.id)
                 .name(name)
                 .user(user)
                 .postList(postList)

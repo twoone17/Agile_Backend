@@ -8,12 +8,12 @@ import java.util.List;
 
 public interface ScrapRepository extends JpaRepository<Scrap,Long> {
 
-    Scrap findScrapById(Long id);
+    Scrap findByScrapId(Long id);
 
-    boolean existsById(Long id);
+    boolean existsByScrapId(Long id);
 
     boolean existsByName(String name);
 
-    boolean existsByUserAndName(User user, String name);
-    List<Scrap> findScrapListByUserId(Long userid);
+    boolean existsByUser(User user);
+    List<Scrap> findScrapsByUserId(Long userid);
 }

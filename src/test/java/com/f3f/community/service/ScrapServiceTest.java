@@ -1,14 +1,12 @@
 package com.f3f.community.service;
 
-import com.f3f.community.exception.scrapException.RebundantScrapNameException;
+import com.f3f.community.exception.scrapException.DuplicateScrapNameException;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
-import com.f3f.community.user.domain.User;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,17 +37,19 @@ class ScrapServiceTest {
     public void scrapSaveTest() throws Exception{
         //given
         ScrapDto scrapDto = ScrapDto.builder()
-                .id(1L)
                 .name("test")
                 .postList(null)
                 .user(null)
                 .build();
-
+        Scrap newScrap = scrapDto.toEntity();
 
         // when
-        service.createScrapCollection(scrapDto);
+        scrapRepository.save(newScrap);
+//        service.createScrapCollection(scrapDto);
         // then
-        Assertions.assertThat(true).isEqualTo(scrapRepository.existsByName("test"));
+//        Assertions.assertThat(true).isEqualTo(scrapRepository.existsByName("test"));
+//        Assertions.assertThat(true).isEqualTo(scrapRepository.existsByScrapId(1L));
+        Assertions.assertThat(newScrap).isEqualTo(scrapRepository.findByScrapId(newScrap.getScrapId()));
     }
 
     @Test
@@ -95,7 +93,7 @@ class ScrapServiceTest {
 
 
         // then
-        assertThrows(RebundantScrapNameException.class, () -> {
+        assertThrows(DuplicateScrapNameException.class, () -> {
             service.updateCollectionName(2L, "test");
         });
     }

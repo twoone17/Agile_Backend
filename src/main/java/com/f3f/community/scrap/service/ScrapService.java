@@ -1,10 +1,10 @@
 package com.f3f.community.scrap.service;
 
-import com.f3f.community.exception.postException.NoPostByIdException;
-import com.f3f.community.exception.scrapException.NoScrapByIdException;
-import com.f3f.community.exception.scrapException.RebundantPostException;
-import com.f3f.community.exception.scrapException.RebundantScrapException;
-import com.f3f.community.exception.scrapException.RebundantScrapNameException;
+import com.f3f.community.exception.postException.NotFoundPostByIdException;
+import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
+import com.f3f.community.exception.scrapException.DuplicatePostException;
+import com.f3f.community.exception.scrapException.DuplicateScrapException;
+import com.f3f.community.exception.scrapException.DuplicateScrapNameException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
@@ -26,14 +26,13 @@ public class ScrapService {
 
     // 스크랩 컬렉션 생성
     public Long createScrapCollection(ScrapDto scrapDto) throws Exception{
-        if (!scrapRepository.existsByUserAndName(scrapDto.getUser(), scrapDto.getName())) {
+        if (!scrapRepository.existsById(scrapDto.getId())) {
             Scrap newScrap = scrapDto.toEntity();
             scrapRepository.save(newScrap);
-            return newScrap.getId();
+            return newScrap.getScrapId();
         } else {
-            throw new RebundantScrapException();
+            throw new DuplicateScrapException();
         }
-
 
     }
 
@@ -41,18 +40,18 @@ public class ScrapService {
     @Transactional(readOnly = true)
     public List<Scrap> getScrapListByUserId(Long userId) {
         // 스크랩 리포지토리에서 해당 유저의 스크랩 컬렉션만 꺼내올 수 있게
-        return scrapRepository.findScrapListByUserId(userId);
+        return scrapRepository.findScrapsByUserId(userId);
     }
 
     // 스크랩 컬렉션에 해당 게시글 리스트 가져오기
     @Transactional(readOnly = true)
     public List<Post> findAllByCollection(Long scrapId) throws Exception {
         if (scrapRepository.existsById(scrapId)) { // 스크랩 컬렉션이 리포지토리에 존재하는지 아이디 값으로 조회
-            Scrap scrap = scrapRepository.findScrapById(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
+            Scrap scrap = scrapRepository.findByScrapId(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
 
             return scrap.getPostList();
         }else{
-            throw new NoScrapByIdException(); // 없는 아이디 값을 전달 받았을때, 예외를 던진다,
+            throw new NotFoundScrapByIdException(); // 없는 아이디 값을 전달 받았을때, 예외를 던진다,
         }
 
     }
@@ -62,16 +61,16 @@ public class ScrapService {
     public void saveCollection(Long scrapId, Post post) throws Exception{
 
         if (scrapRepository.existsById(scrapId)) {
-            Scrap scrap = scrapRepository.findScrapById(scrapId);
+            Scrap scrap = scrapRepository.findByScrapId(scrapId);
             if (!scrap.getPostList().contains(post)) {
                 scrap.getPostList().add(post);
                 scrapRepository.save(scrap);
             } else {
-                throw new RebundantPostException();
+                throw new DuplicatePostException();
             }
 
         } else {
-            throw new NoScrapByIdException();
+            throw new NotFoundScrapByIdException();
         }
 
     }
@@ -81,13 +80,13 @@ public class ScrapService {
     // 스크랩 컬렉션 이름 변경
     @Transactional
     public void updateCollectionName(Long scrapId, String newName) throws Exception {
-        Scrap scrap = scrapRepository.findScrapById(scrapId);
+        Scrap scrap = scrapRepository.findByScrapId(scrapId);
         boolean existsByName = scrapRepository.existsByName(newName);
         if (!existsByName) {
             scrap.updateScrap(newName);
             scrapRepository.save(scrap);
         }else {
-            throw new RebundantScrapNameException();
+            throw new DuplicateScrapNameException();
         }
 
     }
@@ -96,7 +95,7 @@ public class ScrapService {
     // 스크랩 컬렉션 삭제
     @Transactional
     public void deleteCollection(Long scrapId) {
-        Scrap scrap = scrapRepository.findScrapById(scrapId);
+        Scrap scrap = scrapRepository.findByScrapId(scrapId);
         scrapRepository.delete(scrap);
     }
 
@@ -106,15 +105,15 @@ public class ScrapService {
 
         if (postRepository.existsById(postId)) { // 게시글이 존재하는지 확인
             if (scrapRepository.existsById(scrapId)) { // 해당 스크랩 컬렉션이 존재하는지 확인
-                Scrap scrap = scrapRepository.findScrapById(scrapId);
+                Scrap scrap = scrapRepository.findByScrapId(scrapId);
                 Post post = postRepository.findPostById(postId);
                 scrap.getPostList().remove(post); // remove 메소드로 제거하였는데, 성능 문제는 없는지
                 scrapRepository.save(scrap);
             } else { // 스크랩 컬렉션 없으면 터지는 예외
-                throw new NoScrapByIdException();
+                throw new NotFoundScrapByIdException();
             }
         } else { // 게시글 없으면 터지는 예외
-            throw new NoPostByIdException();
+            throw new NotFoundPostByIdException();
         }
     }
 

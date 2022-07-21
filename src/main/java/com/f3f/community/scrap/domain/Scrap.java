@@ -16,15 +16,13 @@ import static javax.persistence.FetchType.*;
 
 @Getter
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Scrap {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "scrap_id")
-    private Long id;
+    private Long scrapId;
 
     private String name;
 
@@ -35,6 +33,13 @@ public class Scrap {
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
     private List<Post> postList;
 
+    @Builder
+    public Scrap(Long id, String name, User user, List<Post> postList) {
+        this.scrapId = id;
+        this.name = name;
+        this.user = user;
+        this.postList = postList;
+    }
 
     public void updateScrap(String name){
         this.name = name;
@@ -42,14 +47,6 @@ public class Scrap {
 //        this.postList = postList;
     }
 
-    public ScrapDto toDto() {
-        return ScrapDto.builder()
-                .id(id)
-                .name(name)
-                .user(user)
-                .postList(postList)
-                .build();
-    }
 
 
 }
