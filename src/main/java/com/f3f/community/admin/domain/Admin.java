@@ -12,7 +12,7 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 public class Admin extends UserBase {
 
 }
