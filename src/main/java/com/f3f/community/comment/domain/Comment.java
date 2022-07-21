@@ -26,16 +26,13 @@ public class Comment {
     @Column(name = "comment_id")
     private Long id;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_id")
-    private User author; // 댓글 도메인에 작성자 필드가 없는 것 같아서 추가했습니당
 
 
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")

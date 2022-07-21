@@ -5,11 +5,10 @@ import com.f3f.community.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ScrapRepository extends JpaRepository<Scrap,Long> {
 
-    Scrap findByIdScrap(long id);
+    Scrap findScrapById(Long id);
 
     boolean existsById(Long id);
 

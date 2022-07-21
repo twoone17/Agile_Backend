@@ -10,15 +10,11 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
-import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +25,9 @@ public class ScrapService {
 
 
     // 스크랩 컬렉션 생성
-    public long createScrap(ScrapDto scrapDto) throws Exception{
+    public Long createScrapCollection(ScrapDto scrapDto) throws Exception{
         if (!scrapRepository.existsByUserAndName(scrapDto.getUser(), scrapDto.getName())) {
-            Scrap newScrap = Scrap.builder(scrapDto).build();
+            Scrap newScrap = scrapDto.toEntity();
             scrapRepository.save(newScrap);
             return newScrap.getId();
         } else {
@@ -52,7 +48,7 @@ public class ScrapService {
     @Transactional(readOnly = true)
     public List<Post> findAllByCollection(Long scrapId) throws Exception {
         if (scrapRepository.existsById(scrapId)) { // 스크랩 컬렉션이 리포지토리에 존재하는지 아이디 값으로 조회
-            Scrap scrap = scrapRepository.findByIdScrap(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
+            Scrap scrap = scrapRepository.findScrapById(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
 
             return scrap.getPostList();
         }else{
@@ -66,7 +62,7 @@ public class ScrapService {
     public void saveCollection(Long scrapId, Post post) throws Exception{
 
         if (scrapRepository.existsById(scrapId)) {
-            Scrap scrap = scrapRepository.findByIdScrap(scrapId);
+            Scrap scrap = scrapRepository.findScrapById(scrapId);
             if (!scrap.getPostList().contains(post)) {
                 scrap.getPostList().add(post);
                 scrapRepository.save(scrap);
@@ -85,7 +81,7 @@ public class ScrapService {
     // 스크랩 컬렉션 이름 변경
     @Transactional
     public void updateCollectionName(Long scrapId, String newName) throws Exception {
-        Scrap scrap = scrapRepository.findByIdScrap(scrapId);
+        Scrap scrap = scrapRepository.findScrapById(scrapId);
         boolean existsByName = scrapRepository.existsByName(newName);
         if (!existsByName) {
             scrap.updateScrap(newName);
@@ -100,7 +96,7 @@ public class ScrapService {
     // 스크랩 컬렉션 삭제
     @Transactional
     public void deleteCollection(Long scrapId) {
-        Scrap scrap = scrapRepository.findByIdScrap(scrapId);
+        Scrap scrap = scrapRepository.findScrapById(scrapId);
         scrapRepository.delete(scrap);
     }
 
@@ -110,8 +106,8 @@ public class ScrapService {
 
         if (postRepository.existsById(postId)) { // 게시글이 존재하는지 확인
             if (scrapRepository.existsById(scrapId)) { // 해당 스크랩 컬렉션이 존재하는지 확인
-                Scrap scrap = scrapRepository.findByIdScrap(scrapId);
-                Post post = postRepository.findByIdPost(postId);
+                Scrap scrap = scrapRepository.findScrapById(scrapId);
+                Post post = postRepository.findPostById(postId);
                 scrap.getPostList().remove(post); // remove 메소드로 제거하였는데, 성능 문제는 없는지
                 scrapRepository.save(scrap);
             } else { // 스크랩 컬렉션 없으면 터지는 예외

@@ -18,7 +18,7 @@ import static javax.persistence.FetchType.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(builderMethodName = "ScrapBuilder")
+@Builder
 public class Scrap {
 
     @Id
@@ -35,17 +35,20 @@ public class Scrap {
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
     private List<Post> postList;
 
-    public static ScrapBuilder builder(ScrapDto scrapDto) {
-        return ScrapBuilder()
-                .id(scrapDto.getId())
-                .name(scrapDto.getName())
-                .user(scrapDto.getUser())
-                .postList(scrapDto.getPostList());
-    }
+
     public void updateScrap(String name){
         this.name = name;
 //        this.user = user;
 //        this.postList = postList;
+    }
+
+    public ScrapDto toDto() {
+        return ScrapDto.builder()
+                .id(id)
+                .name(name)
+                .user(user)
+                .postList(postList)
+                .build();
     }
 
 
