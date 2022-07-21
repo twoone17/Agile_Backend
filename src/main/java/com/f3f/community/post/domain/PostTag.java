@@ -2,14 +2,15 @@ package com.f3f.community.post.domain;
 
 
 import com.f3f.community.tag.domain.Tag;
+import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
+@Getter
 public class PostTag {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @ManyToOne

@@ -1,32 +1,34 @@
-package com.f3f.community.likes.domain;
+package com.f3f.community.scrap.domain;
 
 
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.user.domain.User;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
-@Entity
+import static javax.persistence.FetchType.*;
+
 @Getter
-@NoArgsConstructor
+@Entity
 @AllArgsConstructor
-public class Likes {
+@NoArgsConstructor
+public class Scrap {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "likes_id")
+    @Column(name = "scrap_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
+    private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "scrap", fetch = LAZY)
+    private List<Post> postList;
 }
