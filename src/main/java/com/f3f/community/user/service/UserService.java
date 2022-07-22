@@ -1,17 +1,15 @@
 package com.f3f.community.user.service;
 
-import com.f3f.community.post.domain.Post;
-import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.exception.userException.EmailDuplicationException;
+import com.f3f.community.exception.userException.NicknameDuplicationException;
+import com.f3f.community.exception.userException.NoEssentialFieldException;
 import com.f3f.community.user.domain.User;
-import com.f3f.community.user.domain.UserBase;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +20,19 @@ public class UserService {
     @Transactional
     public Long join(User user) {
         if(userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("이메일 중복");
+            throw new EmailDuplicationException();
         }
         if(userRepository.existsByNickname(user.getNickname())) {
-            throw new IllegalArgumentException("User 정보 중복");
+            throw new NicknameDuplicationException();
         }
         if(user.getNickname().equals("")) {
-            throw new IllegalArgumentException("닉네임 누락");
+            throw new NoEssentialFieldException("닉네임 누락");
         }
         if(user.getEmail().equals("")) {
-
+            throw new NoEssentialFieldException("이메일 누락");
+        }
+        if(user.getPassword().equals("")) {
+            throw new NoEssentialFieldException("비밀번호 누락");
         }
         User saveUser = userRepository.save(user);
         return saveUser.getId();
@@ -40,6 +41,11 @@ public class UserService {
     public List<User> findUsers() {
         return userRepository.findAll();
     }
+
+//    private void createRequiredInformation(User user) {
+//        // scrap, post, comment 등의 리스트 여기서 추가하기.
+//    }
+
 
 
 }

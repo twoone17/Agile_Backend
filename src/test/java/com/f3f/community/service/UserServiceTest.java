@@ -1,5 +1,6 @@
 package com.f3f.community.service;
 
+import com.f3f.community.exception.userException.NoEssentialFieldException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
@@ -118,34 +119,52 @@ class UserServiceTest {
                 () -> userService.join(NicknameTester2));
     }
     
-//    @Test
-//    @DisplayName("닉네임 누락 테스트")
-//    public void NoNicknameTestToFail() throws Exception {
-//        //given
-//
-//        //when
-//
-//        //then
-//    }
-//
-//    @Test
-//    @DisplayName("이메일 누락 테스트")
-//    public void NoEmailTestToFail() throws Exception {
-//        //given
-//
-//        //when
-//
-//        //then
-//    }
-//
-//    @Test
-//    @DisplayName("패스워드 누락 테스트")
-//    public void NoPasswordTestToFail() throws Exception {
-//        //given
-//
-//        //when
-//
-//        //then
-//    }
+    @Test
+    @DisplayName("닉네임 누락 테스트")
+    public void NoNicknameTestToFail() {
+        //given
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("temp33@temp.com", "12345", "01012345678",
+                UserGrade.BRONZE, "", "changwon");
+        User NoNicknameUser = saveRequest1.toEntity();
+
+        //when
+        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
+                () -> userService.join(NoNicknameUser));
+
+        //then
+        assertThat(e.getMessage()).isEqualTo("닉네임 누락");
+    }
+
+    @Test
+    @DisplayName("이메일 누락 테스트")
+    public void NoEmailTestToFail() {
+        //given
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("", "12345", "01012345678",
+                UserGrade.BRONZE, "CheolWoong", "changwon");
+        User NoEmailUser = saveRequest1.toEntity();
+
+        //when
+        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
+                () -> userService.join(NoEmailUser));
+
+        //then
+        assertThat(e.getMessage()).isEqualTo("이메일 누락");
+    }
+
+    @Test
+    @DisplayName("비밀번호 누락 테스트")
+    public void NoPasswordTestToFail() {
+        //given
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("temmp@temp.com", "", "01012345678",
+                UserGrade.BRONZE, "CheolWoong", "changwon");
+        User NoPasswordUser = saveRequest1.toEntity();
+
+        //when
+        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
+                () -> userService.join(NoPasswordUser));
+
+        //then
+        assertThat(e.getMessage()).isEqualTo("비밀번호 누락");
+    }
 
 }

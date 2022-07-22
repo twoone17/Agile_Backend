@@ -5,6 +5,7 @@ import com.f3f.community.user.domain.UserGrade;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Getter
@@ -19,12 +20,14 @@ public class UserDto {
     @Builder
     public static class SaveRequest {
         @NotBlank
+        @Pattern(regexp = "[a-zA-z0-9]+@[a-zA-z]+[.]+[a-zA-z.]+")
         private String email;
 
         @NotBlank
         @Size(min = 4, max = 15)
         private String password;
 
+        @Pattern(regexp = "\\d{3}-\\d{3,4}-\\d{4}")
         private String phone;
         private UserGrade userGrade;
 
