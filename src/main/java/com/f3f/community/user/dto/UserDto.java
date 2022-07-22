@@ -24,7 +24,8 @@ public class UserDto {
         private String email;
 
         @NotBlank
-        @Size(min = 4, max = 15)
+        // 최소 8자, 최소 하나의 문자, 하나의 숫자 및 하나의 특수 문자
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String password;
 
         @Pattern(regexp = "\\d{3}-\\d{3,4}-\\d{4}")
@@ -47,6 +48,28 @@ public class UserDto {
                     .phone(this.phone)
                     .address(this.address)
                     .build();
+        }
+    }
+    @Getter
+    @NoArgsConstructor
+    public static class ChangePasswordRequest {
+        private String email;
+
+        private String OriginalPassword;
+
+        @NotBlank
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+        private String ChangedPassword;
+
+        @Builder
+        public ChangePasswordRequest(String email,
+                                     @NotBlank
+                                     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+                                     String ChangedPassword,
+                                     String OriginalPassword) {
+            this.email = email;
+            this.OriginalPassword = OriginalPassword;
+            this.ChangedPassword = ChangedPassword;
         }
     }
 

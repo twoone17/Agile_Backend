@@ -1,6 +1,7 @@
 package com.f3f.community.user.service;
 
 import com.f3f.community.exception.userException.EmailDuplicationException;
+import com.f3f.community.exception.userException.EmailNotFoundException;
 import com.f3f.community.exception.userException.NicknameDuplicationException;
 import com.f3f.community.exception.userException.NoEssentialFieldException;
 import com.f3f.community.user.domain.User;
@@ -8,8 +9,9 @@ import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
+
+import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +44,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-//    private void createRequiredInformation(User user) {
-//        // scrap, post, comment 등의 리스트 여기서 추가하기.
-//    }
+    @Transactional
+    public void updatePassword(ChangePasswordRequest changePasswordRequest) {
+        String email = changePasswordRequest.getEmail();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
+
+        if(changePasswordRequest.getOriginalPassword().equals(changePasswordRequest.getChangedPassword()))
+            throw new IllegalArgumentException("기존 비밀번호와 변경 비밀번호가 일치합니다.");
+
+        user.updatePassword(changePasswordRequest.getChangedPassword());
+    }
 
 
 

@@ -30,4 +30,8 @@ public class UserBase extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private UserGrade userGrade;
+
+    protected void updatePassword(String password) {
+        this.password = password;
+    }
 }

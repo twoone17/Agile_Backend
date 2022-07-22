@@ -30,6 +30,11 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
 
+
+    public void updatePassword(String password) {
+        super.updatePassword(password);
+    }
+
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address) {
