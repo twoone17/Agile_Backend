@@ -1,6 +1,6 @@
 package com.f3f.community.exception.scrapException;
 
-public class DuplicatePostException extends Exception{
+public class DuplicatePostException extends IllegalArgumentException{
     public DuplicatePostException() {
         super("컬렉션에 이미 해당 포스트가 존재합니다.");
     }
