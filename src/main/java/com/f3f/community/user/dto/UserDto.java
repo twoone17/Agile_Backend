@@ -2,46 +2,50 @@ package com.f3f.community.user.dto;
 
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class UserDto {
-    // 제약조건은 임의로 걸어둠.
 
-    // UserBase
-    @NotBlank
-    private String email;
+    // Inner classes
 
-    @NotBlank
-    @Size(min = 4, max = 15)
-    private String password;
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @AllArgsConstructor
+    @Builder
+    public static class SaveRequest {
+        @NotBlank
+        private String email;
 
-    private String phone;
-    private UserGrade userGrade;
+        @NotBlank
+        @Size(min = 4, max = 15)
+        private String password;
 
-    // User
-    @NotBlank
-    @Size(min = 4, max = 10)
-    private String nickname;
-    private String address;
+        private String phone;
+        private UserGrade userGrade;
+
+        // User
+        @NotBlank
+        @Size(min = 4, max = 10)
+        private String nickname;
+        private String address;
 
 
-    public User toEntity() {
-        return User.builder()
-                .email((this.email))
-                .password(this.password)
-                .nickname(this.nickname)
-                .userGrade(this.userGrade)
-                .phone(this.phone)
-                .address(this.address)
-                .build();
+        public User toEntity() {
+            return User.builder()
+                    .email((this.email))
+                    .password(this.password)
+                    .nickname(this.nickname)
+                    .userGrade(this.userGrade)
+                    .phone(this.phone)
+                    .address(this.address)
+                    .build();
+        }
     }
+
 
 }

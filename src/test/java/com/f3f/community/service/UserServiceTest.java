@@ -29,30 +29,30 @@ class UserServiceTest {
     @DisplayName("유저서비스 가입 테스트")
     public void UserSaveTest() {
         // given
-        UserDto userDto = new UserDto("temp@temp.com", "123456", "01012345678",
+        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
-        User user = userDto.toEntity();
+        User user = userInfo.toEntity();
         // when
         Long joinId = userService.join(user);
-        Optional<User> joinOne = userService.findOne(joinId);
+        Optional<User> byId = userRepository.findById(joinId);
         // then
-        assertThat(joinOne.get().getId()).isEqualTo(joinId);
+        assertThat(byId.get().getId()).isEqualTo(joinId);
     }
 
     @Test
     @DisplayName("Id로 유저 검색 테스트")
     public void findUserByIdTest() {
         // given
-        UserDto userDto = new UserDto("temp@temp.com", "123456", "01012345678",
+        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
-        User user = userDto.toEntity();
+        User user = userInfo.toEntity();
 
         // when
         Long joinId = userService.join(user);
-        Optional<User> findId = userService.findOne(joinId);
+        Optional<User> byId = userRepository.findById(joinId);
 
         // then
-        assertThat(findId.get().getId()).isEqualTo(joinId);
+        assertThat(byId.get().getId()).isEqualTo(joinId);
     }
 
     @Test
@@ -60,13 +60,15 @@ class UserServiceTest {
     public void findAllUsersTest() {
         // given
         long id = 1;
-        UserDto userDto1 = new UserDto("temp1@temp.com", "12345", "01012345678",
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("temp1@temp.com",
+                "12345", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
-        UserDto userDto2 = new UserDto("temp2@temp.com", "1234567", "01012345678",
+        UserDto.SaveRequest saveRequest2 = new UserDto.SaveRequest("temp2@temp.com",
+                "1234567", "01012345678",
                 UserGrade.BRONZE, "jack", "yatap");
 
-        User user1 = userDto1.toEntity();
-        User user2 = userDto2.toEntity();
+        User user1 = saveRequest1.toEntity();
+        User user2 = saveRequest2.toEntity();
 
         //when
         userService.join(user1);
@@ -81,11 +83,13 @@ class UserServiceTest {
     public void EmailDuplicationToFailTest() {
         // given
         // 이메일 중복 시나리오
-        UserDto EmailTesterDto1 = new UserDto("temp1@temp.com", "12345", "01012345678", UserGrade.BRONZE, "james", "changwon");
-        UserDto EmailTesterDto2 = new UserDto("temp1@temp.com", "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap");
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("temp1@temp.com",
+                "12345", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        UserDto.SaveRequest saveRequest2 = new UserDto.SaveRequest("temp1@temp.com",
+                "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap");
 
-        User EmailTester1 = EmailTesterDto1.toEntity();
-        User EmailTester2 = EmailTesterDto2.toEntity();
+        User EmailTester1 = saveRequest1.toEntity();
+        User EmailTester2 = saveRequest2.toEntity();
 
         //when
         userService.join(EmailTester1);
@@ -99,13 +103,13 @@ class UserServiceTest {
     @DisplayName("닉네임 중복 검사 테스트")
     public void NicknameDuplicationTestToFail() {
         //given
-        UserDto NicknameTesterDto1 = new UserDto("temp33@temp.com", "12345", "01012345678",
+        UserDto.SaveRequest saveRequest1 = new UserDto.SaveRequest("temp33@temp.com", "12345", "01012345678",
                 UserGrade.BRONZE, "cheolwoong", "changwon");
-        UserDto NicknameTesterDto2 = new UserDto("temp312@temp.com", "1234567", "01012345678",
+        UserDto.SaveRequest saveRequest2 = new UserDto.SaveRequest("temp312@temp.com", "1234567", "01012345678",
                 UserGrade.BRONZE, "cheolwoong", "yatap");
 
-        User NicknameTester1 = NicknameTesterDto1.toEntity();
-        User NicknameTester2 = NicknameTesterDto2.toEntity();
+        User NicknameTester1 = saveRequest1.toEntity();
+        User NicknameTester2 = saveRequest2.toEntity();
         //when
         userService.join(NicknameTester1);
 
@@ -113,5 +117,35 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> userService.join(NicknameTester2));
     }
+    
+//    @Test
+//    @DisplayName("닉네임 누락 테스트")
+//    public void NoNicknameTestToFail() throws Exception {
+//        //given
+//
+//        //when
+//
+//        //then
+//    }
+//
+//    @Test
+//    @DisplayName("이메일 누락 테스트")
+//    public void NoEmailTestToFail() throws Exception {
+//        //given
+//
+//        //when
+//
+//        //then
+//    }
+//
+//    @Test
+//    @DisplayName("패스워드 누락 테스트")
+//    public void NoPasswordTestToFail() throws Exception {
+//        //given
+//
+//        //when
+//
+//        //then
+//    }
 
 }
