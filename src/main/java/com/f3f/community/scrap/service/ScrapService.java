@@ -10,11 +10,15 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
+import com.f3f.community.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.f3f.community.scrap.dto.ScrapDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,22 +29,29 @@ public class ScrapService {
 
 
     // 스크랩 컬렉션 생성
-    public Long createScrapCollection(ScrapDto scrapDto) throws Exception{
-        if (!scrapRepository.existsById(scrapDto.getId())) {
-            Scrap newScrap = scrapDto.toEntity();
+    @Transactional
+    public Long createScrapCollection(SaveRequest saveRequest) throws Exception{
+        Scrap newScrap = saveRequest.toEntity();
+        if (scrapRepository.existsByUser(newScrap.getUser())) {
+            if (scrapRepository.existsByName(newScrap.getName())) {
+                scrapRepository.save(newScrap);
+                return newScrap.getScrapId();
+            } else {
+                throw new DuplicateScrapException();
+            }
+        } else {
             scrapRepository.save(newScrap);
             return newScrap.getScrapId();
-        } else {
-            throw new DuplicateScrapException();
         }
-
     }
 
     // 해당 유저의 전체 스크랩 컬렉션 가져오기
     @Transactional(readOnly = true)
-    public List<Scrap> getScrapListByUserId(Long userId) {
+    public List<Scrap> getScrapListByUserId(UserDto userDto) {
         // 스크랩 리포지토리에서 해당 유저의 스크랩 컬렉션만 꺼내올 수 있게
-        return scrapRepository.findScrapsByUserId(userId);
+        List<Scrap> result = new ArrayList<>();
+        return result;
+
     }
 
     // 스크랩 컬렉션에 해당 게시글 리스트 가져오기

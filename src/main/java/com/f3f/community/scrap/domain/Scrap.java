@@ -25,17 +25,19 @@ public class Scrap {
     private Long scrapId;
 
     private String name;
+    // NotNull
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    // NotNull
 
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
     private List<Post> postList;
+    // 생성될때는 빈 리스트
 
     @Builder
-    public Scrap(Long id, String name, User user, List<Post> postList) {
-        this.scrapId = id;
+    public Scrap(String name, User user, List<Post> postList) {
         this.name = name;
         this.user = user;
         this.postList = postList;
