@@ -13,7 +13,6 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-@Builder
 public class User extends UserBase {
     private String nickname;
 
@@ -31,9 +30,10 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
 
-    public User(String email, String password, String phone, UserGrade userGrade,
+    @Builder
+    public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address) {
-        super(email, password, phone, userGrade);
+        super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
         this.posts = null;

@@ -32,11 +32,16 @@ public class UserDto {
     private String nickname;
     private String address;
 
-    public Long toEntity() {
-        User user = new User(email, password, phone, userGrade, nickname, address);
-        return user.getId();
-    }
 
-//    public User toEntityWithPasswordEncode()
+    public User toEntity() {
+        return User.builder()
+                .email((this.email))
+                .password(this.password)
+                .nickname(this.nickname)
+                .userGrade(this.userGrade)
+                .phone(this.phone)
+                .address(this.address)
+                .build();
+    }
 
 }
