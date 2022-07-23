@@ -1,14 +1,10 @@
 package com.f3f.community.scrap.service;
 
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
-import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
-import com.f3f.community.exception.scrapException.DuplicatePostException;
-import com.f3f.community.exception.scrapException.DuplicateScrapException;
-import com.f3f.community.exception.scrapException.DuplicateScrapNameException;
+import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
-import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -30,18 +26,27 @@ public class ScrapService {
 
     // 스크랩 컬렉션 생성
     @Transactional
-    public Long createScrapCollection(SaveRequest saveRequest) throws Exception{
+    public Scrap createScrapCollection(SaveRequest saveRequest) throws Exception{
+        if (saveRequest.getName() == null) {
+            throw new NotFoundScrapNameException();
+        }
+        if (saveRequest.getUser() == null) {
+            throw new NotFoundScrapUserException();
+        }
+        if (saveRequest.getPostList() == null) {
+            throw new NotFoundScrapPostListException();
+        }
         Scrap newScrap = saveRequest.toEntity();
         if (scrapRepository.existsByUser(newScrap.getUser())) {
             if (scrapRepository.existsByName(newScrap.getName())) {
                 scrapRepository.save(newScrap);
-                return newScrap.getScrapId();
+                return newScrap;
             } else {
                 throw new DuplicateScrapException();
             }
         } else {
             scrapRepository.save(newScrap);
-            return newScrap.getScrapId();
+            return newScrap;
         }
     }
 

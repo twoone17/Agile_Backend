@@ -20,7 +20,7 @@ import static javax.persistence.FetchType.*;
 public class Scrap {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "scrap_id")
     private Long scrapId;
 
@@ -37,7 +37,8 @@ public class Scrap {
     // 생성될때는 빈 리스트
 
     @Builder
-    public Scrap(String name, User user, List<Post> postList) {
+    public Scrap(Long scrapId,String name, User user, List<Post> postList) {
+        this.scrapId = scrapId;
         this.name = name;
         this.user = user;
         this.postList = postList;
