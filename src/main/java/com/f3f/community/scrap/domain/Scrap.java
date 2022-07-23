@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static javax.persistence.FetchType.*;
@@ -33,7 +34,7 @@ public class Scrap {
     // NotNull
 
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
-    private List<Post> postList;
+    private List<Post> postList = new ArrayList<>();
     // 생성될때는 빈 리스트
 
     @Builder
