@@ -3,7 +3,6 @@ package com.f3f.community.service;
 import com.f3f.community.exception.userException.NoEssentialFieldException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
-import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +33,7 @@ class UserServiceTest {
                 UserGrade.BRONZE, "james", "changwon");
         User user = userInfo.toEntity();
         // when
-        Long joinId = userService.join(user);
+        Long joinId = userService.saveUser(user);
         Optional<User> byId = userRepository.findById(joinId);
         // then
         assertThat(byId.get().getId()).isEqualTo(joinId);
@@ -49,7 +48,7 @@ class UserServiceTest {
         User user = userInfo.toEntity();
 
         // when
-        Long joinId = userService.join(user);
+        Long joinId = userService.saveUser(user);
         Optional<User> byId = userRepository.findById(joinId);
 
         // then
@@ -60,7 +59,6 @@ class UserServiceTest {
     @DisplayName("모든 유저 검색 테스트")
     public void findAllUsersTest() {
         // given
-        long id = 1;
         SaveRequest saveRequest1 = new SaveRequest("temp1@temp.com",
                 "12345", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
@@ -72,8 +70,8 @@ class UserServiceTest {
         User user2 = saveRequest2.toEntity();
 
         //when
-        userService.join(user1);
-        userService.join(user2);
+        userService.saveUser(user1);
+        userService.saveUser(user2);
 
         //then
         assertThat(userService.findUsers().size()).isEqualTo(2);
@@ -93,11 +91,11 @@ class UserServiceTest {
         User EmailTester2 = saveRequest2.toEntity();
 
         //when
-        userService.join(EmailTester1);
+        userService.saveUser(EmailTester1);
 
         //then
         assertThrows(IllegalArgumentException.class,
-                () -> userService.join(EmailTester2));
+                () -> userService.saveUser(EmailTester2));
     }
 
     @Test
@@ -112,11 +110,11 @@ class UserServiceTest {
         User NicknameTester1 = saveRequest1.toEntity();
         User NicknameTester2 = saveRequest2.toEntity();
         //when
-        userService.join(NicknameTester1);
+        userService.saveUser(NicknameTester1);
 
         //then
         assertThrows(IllegalArgumentException.class,
-                () -> userService.join(NicknameTester2));
+                () -> userService.saveUser(NicknameTester2));
     }
     
     @Test
@@ -129,7 +127,7 @@ class UserServiceTest {
 
         //when
         IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.join(NoNicknameUser));
+                () -> userService.saveUser(NoNicknameUser));
 
         //then
         assertThat(e.getMessage()).isEqualTo("닉네임 누락");
@@ -145,7 +143,7 @@ class UserServiceTest {
 
         //when
         IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.join(NoEmailUser));
+                () -> userService.saveUser(NoEmailUser));
 
         //then
         assertThat(e.getMessage()).isEqualTo("이메일 누락");
@@ -161,7 +159,7 @@ class UserServiceTest {
 
         //when
         IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.join(NoPasswordUser));
+                () -> userService.saveUser(NoPasswordUser));
 
         //then
         assertThat(e.getMessage()).isEqualTo("비밀번호 누락");
@@ -174,7 +172,7 @@ class UserServiceTest {
         SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
                 UserGrade.BRONZE, "CheolWoong", "changwon");
         User user = saveRequest1.toEntity();
-        userService.join(user);
+        userService.saveUser(user);
 
         // given - 그 후 위에서 생성한 유저의 이메일로 비밀번호 변경을 요청하겠다.
         ChangePasswordRequest changePasswordRequest =

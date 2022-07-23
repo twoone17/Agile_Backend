@@ -20,7 +20,6 @@ public class UserDto {
     @Builder
     public static class SaveRequest {
         @NotBlank
-        @Pattern(regexp = "[a-zA-z0-9]+@[a-zA-z]+[.]+[a-zA-z.]+")
         private String email;
 
         @NotBlank
@@ -55,21 +54,21 @@ public class UserDto {
     public static class ChangePasswordRequest {
         private String email;
 
-        private String OriginalPassword;
+        private String BeforePassword;
 
         @NotBlank
         @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
-        private String ChangedPassword;
+        private String AfterPassword;
 
         @Builder
         public ChangePasswordRequest(String email,
                                      @NotBlank
                                      @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
                                      String ChangedPassword,
-                                     String OriginalPassword) {
+                                     String BeforePassword) {
             this.email = email;
-            this.OriginalPassword = OriginalPassword;
-            this.ChangedPassword = ChangedPassword;
+            this.BeforePassword = BeforePassword;
+            this.AfterPassword = ChangedPassword;
         }
     }
 

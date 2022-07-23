@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 import static com.f3f.community.user.dto.UserDto.*;
 
@@ -18,7 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long join(User user) {
+    public Long saveUser(User user) {
         if(userRepository.existsByEmail(user.getEmail())) {
             throw new EmailDuplicationException();
         }
@@ -49,10 +48,10 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
 
-        if(changePasswordRequest.getOriginalPassword().equals(changePasswordRequest.getChangedPassword()))
+        if(changePasswordRequest.getBeforePassword().equals(changePasswordRequest.getAfterPassword()))
             throw new IllegalArgumentException("기존 비밀번호와 변경 비밀번호가 일치합니다.");
 
-        user.updatePassword(changePasswordRequest.getChangedPassword());
+        user.updatePassword(changePasswordRequest.getAfterPassword());
     }
 
     @Transactional
