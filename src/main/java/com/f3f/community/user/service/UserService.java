@@ -1,15 +1,13 @@
 package com.f3f.community.user.service;
 
-import com.f3f.community.exception.userException.EmailDuplicationException;
-import com.f3f.community.exception.userException.EmailNotFoundException;
-import com.f3f.community.exception.userException.NicknameDuplicationException;
-import com.f3f.community.exception.userException.NoEssentialFieldException;
+import com.f3f.community.exception.userException.*;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 import static com.f3f.community.user.dto.UserDto.*;
 
@@ -57,6 +55,16 @@ public class UserService {
         user.updatePassword(changePasswordRequest.getChangedPassword());
     }
 
+    @Transactional
+    public void delete(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
+
+        if(!userRepository.existsByEmailAndPassword(email, password)) {
+            throw new NoEmailAndPasswordException("이메일과 비밀번호가 없습니다.");
+        }
+        // 구현 예정
+    }
 
 
 }
