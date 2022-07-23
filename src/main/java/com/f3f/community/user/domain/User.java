@@ -4,16 +4,23 @@ import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.scrap.domain.Scrap;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User extends UserBase {
+
     private String nickname;
 
     private String address;
@@ -32,7 +39,7 @@ public class User extends UserBase {
 
 
     public void updatePassword(String password) {
-        super.updatePassword(password);
+        this.password = password;
     }
 
     @Builder
