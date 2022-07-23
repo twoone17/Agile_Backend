@@ -4,10 +4,12 @@ import com.f3f.community.post.domain.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
 
-    Post findPostById(long id);
+    Optional<Post> findById(long id);
 
     boolean existsById(Long id);
 

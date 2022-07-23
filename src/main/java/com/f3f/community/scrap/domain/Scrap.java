@@ -22,7 +22,7 @@ public class Scrap {
     @Id
     @GeneratedValue
     @Column(name = "scrap_id")
-    private Long scrapId;
+    private Long id;
 
     private String name;
     // NotNull
@@ -37,8 +37,8 @@ public class Scrap {
     // 생성될때는 빈 리스트
 
     @Builder
-    public Scrap(Long scrapId,String name, User user, List<Post> postList) {
-        this.scrapId = scrapId;
+    public Scrap(Long id,String name, User user, List<Post> postList) {
+        this.id = id;
         this.name = name;
         this.user = user;
         this.postList = postList;

@@ -2,11 +2,12 @@ package com.f3f.community.scrap.service;
 
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.repository.ScrapRepository;
-import com.f3f.community.user.dto.UserDto;
+import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,11 +24,12 @@ public class ScrapService {
 
     private final ScrapRepository scrapRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
 
     // 스크랩 컬렉션 생성
     @Transactional
-    public Scrap createScrapCollection(SaveRequest saveRequest) throws Exception{
+    public Long createScrap(SaveRequest saveRequest) throws Exception{
         if (saveRequest.getName() == null) {
             throw new NotFoundScrapNameException();
         }
@@ -38,100 +40,79 @@ public class ScrapService {
             throw new NotFoundScrapPostListException();
         }
         Scrap newScrap = saveRequest.toEntity();
-        if (scrapRepository.existsByUser(newScrap.getUser())) {
-            if (scrapRepository.existsByName(newScrap.getName())) {
-                scrapRepository.save(newScrap);
-                // 유저 리포지토리에서 유저 꺼내서 스크랩 리스트에 스크랩 컬렉션 추가해주는 코드 추가해야함
-                return newScrap;
-            } else {
-                throw new DuplicateScrapException();
+        User user = newScrap.getUser();
+        List<Scrap> scraps = scrapRepository.findScrapsByUser(newScrap.getUser());
+        for (Scrap userScrap : scraps) {
+            if (userScrap.getName().equals(newScrap.getName())) {
+                throw new DuplicateScrapNameException();
             }
-        } else {
-            scrapRepository.save(newScrap);
-            return newScrap;
         }
+        scrapRepository.save(newScrap);
+        user.getScraps().add(newScrap);
+        userRepository.save(user);
+
+        return newScrap.getId();
     }
 
-    // 해당 유저의 전체 스크랩 컬렉션 가져오기
-    @Transactional(readOnly = true)
-    public List<Scrap> getScrapListByUserId(UserDto userDto) {
-        // 스크랩 리포지토리에서 해당 유저의 스크랩 컬렉션만 꺼내올 수 있게
-        List<Scrap> result = new ArrayList<>();
-        return result;
-
-    }
 
     // 스크랩 컬렉션에 해당 게시글 리스트 가져오기
     @Transactional(readOnly = true)
     public List<Post> findAllByCollection(Long scrapId) throws Exception {
-        if (scrapRepository.existsById(scrapId)) { // 스크랩 컬렉션이 리포지토리에 존재하는지 아이디 값으로 조회
-            Scrap scrap = scrapRepository.findByScrapId(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
-            return scrap.getPostList();
-        }else{
-            throw new NotFoundScrapByIdException(); // 없는 아이디 값을 전달 받았을때, 예외를 던진다,
-        }
+
+        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
+        return scrap.getPostList();
 
     }
 
-    // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트
+    // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트, 수정해야함
     @Transactional
-    public void saveCollection(Long scrapId, Post post) throws Exception{
-
-        if (scrapRepository.existsById(scrapId)) {
-            Scrap scrap = scrapRepository.findByScrapId(scrapId);
-            if (!scrap.getPostList().contains(post)) {
-                scrap.getPostList().add(post);
-                scrapRepository.save(scrap);
-            } else {
-                throw new DuplicatePostException();
-            }
-
-        } else {
-            throw new NotFoundScrapByIdException();
-        }
-
-    }
-
-
-
-    // 스크랩 컬렉션 이름 변경, 유저 쪽에서 스크랩 리스트 받아와서 비교하고 변경하게 수정해야한다
-    @Transactional
-    public void updateCollectionName(Long scrapId, String newName) throws Exception {
-        Scrap scrap = scrapRepository.findByScrapId(scrapId);
-        boolean existsByName = scrapRepository.existsByName(newName);
-        if (!existsByName) {
-            scrap.updateScrap(newName);
+    public void saveCollection(Long scrapId, Long postId) throws Exception{
+        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
+        Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
+        if (!scrap.getPostList().contains(post)) {
+            scrap.getPostList().add(post);
             scrapRepository.save(scrap);
-        }else {
-            throw new DuplicateScrapNameException();
         }
+    }
+
+
+
+    // 스크랩 컬렉션 이름 변경, 유저 쪽에서 스크랩 리스트 받아와서 비교하고 변경하게 수정해야한다, 수정해야함
+    @Transactional
+    public String updateCollectionName(Long scrapId, Long userId, String newName) throws Exception {
+        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
+        User user = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        List<Scrap> scraps = user.getScraps();
+        for (Scrap userScrap : scraps) {
+            if (userScrap.getName().equals(newName)) {
+                throw new DuplicateScrapNameException();
+            }
+        }
+        scrap.updateScrap(newName);
+        scrapRepository.save(scrap);
+
+        return "ok";
 
     }
 
 
     // 스크랩 컬렉션 삭제
     @Transactional
-    public void deleteCollection(Long scrapId) {
-        Scrap scrap = scrapRepository.findByScrapId(scrapId);
+    public String deleteCollection(Long scrapId) throws Exception{
+        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         scrapRepository.delete(scrap);
+        return "ok";
     }
 
     // 스크랩 컬렉션 아이템 삭제
     @Transactional
-    public void deleteCollectionItem(Long scrapId, Long postId) throws Exception{
+    public String deleteCollectionItem(Long scrapId, Long postId) throws Exception{
 
-        if (postRepository.existsById(postId)) { // 게시글이 존재하는지 확인
-            if (scrapRepository.existsById(scrapId)) { // 해당 스크랩 컬렉션이 존재하는지 확인
-                Scrap scrap = scrapRepository.findByScrapId(scrapId);
-                Post post = postRepository.findPostById(postId);
-                scrap.getPostList().remove(post); // remove 메소드로 제거하였는데, 성능 문제는 없는지
-                scrapRepository.save(scrap);
-            } else { // 스크랩 컬렉션 없으면 터지는 예외
-                throw new NotFoundScrapByIdException();
-            }
-        } else { // 게시글 없으면 터지는 예외
-            throw new NotFoundPostByIdException();
-        }
+        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
+        Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
+        scrap.getPostList().remove(post);
+        scrapRepository.save(scrap);
+        return "ok";
     }
 
 

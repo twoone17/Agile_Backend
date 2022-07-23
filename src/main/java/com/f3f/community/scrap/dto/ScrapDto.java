@@ -15,14 +15,12 @@ public class ScrapDto {
     @NoArgsConstructor
     @Getter
     public static class SaveRequest{
-        private Long scrapId;
         private String name;
         private User user;
         private List<Post> postList;
 
         public Scrap toEntity(){
             return Scrap.builder()
-                    .scrapId(this.scrapId)
                     .name(name)
                     .user(user)
                     .postList(postList)
