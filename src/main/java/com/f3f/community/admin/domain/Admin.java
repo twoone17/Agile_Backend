@@ -12,7 +12,6 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @NoArgsConstructor
-//@AllArgsConstructor
 public class Admin extends UserBase {
 
 }
