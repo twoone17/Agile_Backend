@@ -7,6 +7,7 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.user.dto.UserDto;
+import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,7 @@ public class ScrapService {
         if (scrapRepository.existsByUser(newScrap.getUser())) {
             if (scrapRepository.existsByName(newScrap.getName())) {
                 scrapRepository.save(newScrap);
+                // 유저 리포지토리에서 유저 꺼내서 스크랩 리스트에 스크랩 컬렉션 추가해주는 코드 추가해야함
                 return newScrap;
             } else {
                 throw new DuplicateScrapException();
@@ -64,7 +66,6 @@ public class ScrapService {
     public List<Post> findAllByCollection(Long scrapId) throws Exception {
         if (scrapRepository.existsById(scrapId)) { // 스크랩 컬렉션이 리포지토리에 존재하는지 아이디 값으로 조회
             Scrap scrap = scrapRepository.findByScrapId(scrapId);// 있으면 스크랩 컬렉션에서 포스트 리스트를 리턴
-
             return scrap.getPostList();
         }else{
             throw new NotFoundScrapByIdException(); // 없는 아이디 값을 전달 받았을때, 예외를 던진다,
@@ -93,7 +94,7 @@ public class ScrapService {
 
 
 
-    // 스크랩 컬렉션 이름 변경
+    // 스크랩 컬렉션 이름 변경, 유저 쪽에서 스크랩 리스트 받아와서 비교하고 변경하게 수정해야한다
     @Transactional
     public void updateCollectionName(Long scrapId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findByScrapId(scrapId);

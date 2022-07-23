@@ -10,7 +10,6 @@ import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
 import com.f3f.community.user.domain.User;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +48,7 @@ class ScrapServiceTest {
     public void saveScrapTest() throws Exception{
         //given
         SaveRequest saveRequest = SaveRequest.builder()
+//                .scrapId(1L)
                 .name("test")
                 .postList(null)
                 .user(null)
@@ -62,6 +62,7 @@ class ScrapServiceTest {
 
         // then
         assertThat(newScrap).isEqualTo(scrapRepository.findByScrapId(newScrap.getScrapId()));
+        assertThat(newScrap).isEqualTo(scrapRepository.findByName(newScrap.getName()));
 
 //        assertThat(newScrap).isEqualTo(scrapRepository.findByName(newScrap.getName()));
     }
@@ -172,7 +173,7 @@ class ScrapServiceTest {
     }
 
 
-    @Test // 여기도 추후에 추가할게영
+    @Test // 여기도 추후에 추가할게영, 유저 쪽에서 스크랩 리스트리턴해주는 코드 추가된 후에 진행
     @DisplayName("스크랩 컬렉션 이름 변경 테스트")
     public void updateNameTest() throws Exception{
         //given
@@ -185,4 +186,27 @@ class ScrapServiceTest {
         // then
 
     }
+
+    @Test
+    @DisplayName("스크랩 리포지토리에서 스크랩 삭제 테스트")
+    public void deleteScrapTest() throws Exception{
+        //given
+        SaveRequest saveRequest = SaveRequest.builder()
+                .name("test")
+                .postList(null)
+                .user(null)
+                .build();
+        Scrap newScrap = saveRequest.toEntity();
+
+        // when
+        scrapRepository.save(newScrap);
+        assertThat(newScrap).isEqualTo(scrapRepository.findByScrapId(newScrap.getScrapId()));
+        // then
+        scrapRepository.delete(newScrap);
+        assertThat(false).isEqualTo(scrapRepository.existsByScrapId(newScrap.getScrapId()));
+        assertThat(false).isEqualTo(scrapRepository.existsByName(newScrap.getName()));
+    }
+
+
+
 }
