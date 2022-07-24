@@ -46,6 +46,3 @@ public class Comment {
 
     @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
     private List<Media> mediaList;
-
- 
-}
