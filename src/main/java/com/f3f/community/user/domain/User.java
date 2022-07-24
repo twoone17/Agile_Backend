@@ -47,9 +47,9 @@ public class User extends UserBase {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
-        this.posts = null;
-        this.comments = null;
-        this.likes = null;
-        this.scraps = null;
+        this.posts = new ArrayList<>();
+        this.comments = new ArrayList<>();
+        this.likes = new ArrayList<>();
+        this.scraps = new ArrayList<>();
     }
 }

@@ -1,9 +1,7 @@
 package com.f3f.community.service;
 
-import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
-import com.f3f.community.exception.scrapException.NotFoundScrapNameException;
-import com.f3f.community.exception.scrapException.NotFoundScrapPostListException;
-import com.f3f.community.exception.scrapException.NotFoundScrapUserException;
+import com.f3f.community.exception.scrapException.*;
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
@@ -138,14 +136,14 @@ class ScrapServiceTest {
         
         
         // when
-        userService.saveUser(user);
-        scrapService.createScrap(scrapDto);
+        Long userId = userService.saveUser(user);
+        Long scrapId = scrapService.createScrap(scrapDto);
         // then
-        assertThat(scrapDto.toEntity()).isEqualTo(scrapRepository.findById(scrapDto.toEntity().getId()).get());
+        scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
     }
 
     @Test
-    @DisplayName("스크랩에 모든 포스트 리턴하는 테스트")
+    @DisplayName("스크랩에 모든 포스트 리턴하는 테스트") // 수정해야함
     public void findPostsByScrapTest() throws Exception{
         //given
 
@@ -218,17 +216,51 @@ class ScrapServiceTest {
     }
 
 
-    @Test // 여기도 추후에 추가할게영, 유저 쪽에서 스크랩 리스트리턴해주는 코드 추가된 후에 진행
-    @DisplayName("스크랩 컬렉션 이름 변경 테스트")
-    public void updateNameTest() throws Exception{
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 스크랩 존재 x")
+    public void updateNameTestToFailByScrapId() throws Exception{
         //given
-
-
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
         // when
-
-
-
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, userId, "test3"));
+
+    }
+
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 유저 존재 x")
+    public void updateNameTestToFailByUserId() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        assertThrows(NotFoundUserByIdException.class, () -> scrapService.updateCollectionName(scrap2 , userId+1, "test3"));
+
+    }
+
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 이름 중복")
+    public void updateNameTestToFailByDuplicateName() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, "test2"));
 
     }
 
