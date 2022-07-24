@@ -14,6 +14,7 @@ import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
+import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,14 +29,17 @@ import java.util.ArrayList;
 import static com.f3f.community.scrap.dto.ScrapDto.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
 class ScrapServiceTest {
 
     @Autowired
-    ScrapService service;
+    ScrapService scrapService;
+
+    @Autowired
+    UserService userService;
 
     @Autowired
     ScrapRepository scrapRepository;
@@ -56,8 +60,7 @@ class ScrapServiceTest {
                 UserGrade.BRONZE, "own", "seoul");
     }
     private ScrapDto.SaveRequest createScrapDto1(User user) {
-
-        return SaveRequest.builder()
+        return ScrapDto.SaveRequest.builder()
                 .name("test")
                 .postList(new ArrayList<>())
                 .user(user)
@@ -65,14 +68,12 @@ class ScrapServiceTest {
     }
 
     private ScrapDto.SaveRequest createScrapDto2(User user) {
-
-        return SaveRequest.builder()
+        return ScrapDto.SaveRequest.builder()
                 .name("test2")
                 .postList(new ArrayList<>())
                 .user(user)
                 .build();
     }
-
 
     @AfterEach
     void clear() {
@@ -81,85 +82,66 @@ class ScrapServiceTest {
         postRepository.deleteAll();
     }
 
-    @Test
-    @DisplayName("스크랩 저장 테스트")
-    public void saveScrapTest() throws Exception{
-        //given
-        SaveRequest saveRequest = createScrapDto1(null);
 
-        Scrap newScrap = saveRequest.toEntity();
-        // when
-        System.out.println("scrap id " + newScrap.getId());
-        scrapRepository.save(newScrap);
-        System.out.println("scrap id " + newScrap.getId());
-
-        // then
-        assertThat(newScrap.getId()).isEqualTo(scrapRepository.findById(newScrap.getId()).get().getId());
-
-    }
 
     @Test
-    @DisplayName("스크랩 아이디로 찾는 테스트")
-    public void findScrapByIdTest() throws Exception{
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다") // 수정해야함,
+    public void createScrapTestToFailByNullUser() throws Exception{
         //given
-        SaveRequest saveRequest = createScrapDto1(null);
-        Scrap newScrap = saveRequest.toEntity();
-
-        // when
-        scrapRepository.save(newScrap);
-        // then
-        assertThat(newScrap).isEqualTo(scrapRepository.findById(newScrap.getId()).get());
-    }
-
-    @Test
-    @DisplayName("스크랩 이름으로 찾는 테스트")
-    public void findScrapByNameTest() throws Exception{
-        //given
-        SaveRequest saveRequest = createScrapDto1(null);
-        Scrap newScrap = saveRequest.toEntity();
-
-        // when
-        scrapRepository.save(newScrap);
-        // then
-        assertThat(newScrap).isEqualTo(scrapRepository.findByName(newScrap.getName()));
-        assertThat(newScrap).isNotEqualTo(scrapRepository.findByName("test2"));
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름, 유저, 포스트리스트 검증") // 수정해야함,
-    public void createScrapCollectionTestToFail() throws Exception{
-        //given
-        SaveRequest saveRequest1 = SaveRequest.builder()
+        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
                 .name("test")
                 .postList(new ArrayList<Post>())
                 .build();
-        SaveRequest saveRequest2 = SaveRequest.builder()
-                .postList(new ArrayList<Post>())
-                .user(new User())
-                .build();
-        SaveRequest saveRequest3 = SaveRequest.builder()
-                .name("test")
-                .user(new User())
-                .postList(null)
-                .build();
+
 
         // then
-        assertThrows(NotFoundScrapUserException.class, ()-> service.createScrap(saveRequest1));
-        assertThrows(NotFoundScrapNameException.class, () -> service.createScrap(saveRequest2));
-        assertThrows(NotFoundScrapPostListException.class, () -> service.createScrap(saveRequest3));
+        assertThrows(NotFoundScrapUserException.class, ()-> scrapService.createScrap(saveRequest1));
+
+    }
+
+    @Test
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 없어서 생성안된다") // 수정해야함,
+    public void createScrapTestToFailByNullName() throws Exception{
+        //given
+        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
+                .user(new User())
+                .postList(new ArrayList<Post>())
+                .build();
+
+
+        // then
+        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
+
+    }
+
+    @Test
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다") // 수정해야함,
+    public void createScrapTestToFailByNullPostList() throws Exception{
+        //given
+        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
+                .name("test")
+                .user(new User())
+                .build();
+
+
+        // then
+        assertThrows(NotFoundScrapPostListException.class, ()-> scrapService.createScrap(saveRequest1));
 
     }
     
     @Test
-    @DisplayName("서비스 createScrapCollection 테스트 - 유저 저장, 중복 유저 저장 불가") // 유저 쪽 구현되면 추가 예정
-    public void createScrapCollectionTest() throws Exception{
+    @DisplayName("서비스 createScrap 성공 테스트 ") // 유저 쪽 구현되면 추가 예정
+    public void createScrapTest() throws Exception{
         //given
-
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest scrapDto = createScrapDto1(user);
         
         
         // when
-        
+        userService.saveUser(user);
+        scrapService.createScrap(scrapDto);
         // then
+        assertThat(scrapDto.toEntity()).isEqualTo(scrapRepository.findById(scrapDto.toEntity().getId()).get());
     }
 
     @Test
@@ -181,7 +163,7 @@ class ScrapServiceTest {
 
         // then
         assertThrows(NotFoundScrapByIdException.class, ()->{
-            service.findAllByCollection(scrap.getId()+1);
+            scrapService.findAllByCollection(scrap.getId()+1);
         });
     }
 
