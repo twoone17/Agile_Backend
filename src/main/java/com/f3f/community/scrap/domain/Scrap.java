@@ -2,8 +2,10 @@ package com.f3f.community.scrap.domain;
 
 
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.user.domain.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,21 +16,40 @@ import static javax.persistence.FetchType.*;
 
 @Getter
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
 public class Scrap {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "scrap_id")
-    private Long id;
+    private Long scrapId;
 
     private String name;
+    // NotNull
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    // NotNull
 
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
     private List<Post> postList;
+    // 생성될때는 빈 리스트
+
+    @Builder
+    public Scrap(Long scrapId,String name, User user, List<Post> postList) {
+        this.scrapId = scrapId;
+        this.name = name;
+        this.user = user;
+        this.postList = postList;
+    }
+
+    public void updateScrap(String name){
+        this.name = name;
+//        this.user = user;
+//        this.postList = postList;
+    }
+
+
+
 }
