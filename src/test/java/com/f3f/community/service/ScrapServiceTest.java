@@ -265,6 +265,24 @@ class ScrapServiceTest {
     }
 
     @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트")
+    public void updateNameTest() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        scrapService.updateCollectionName(scrap1, userId, "test3");
+        assertThat("test3").isEqualTo(scrapRepository.findById(scrap1).get().getName());
+    }
+
+
+
+    @Test
     @DisplayName("스크랩 리포지토리에서 스크랩 삭제 테스트")
     public void deleteScrapTest() throws Exception{
         //given
