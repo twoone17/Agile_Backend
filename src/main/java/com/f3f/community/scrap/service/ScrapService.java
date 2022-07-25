@@ -77,7 +77,7 @@ public class ScrapService {
 
 
 
-    // 스크랩 컬렉션 이름 변경, 유저 쪽에서 스크랩 리스트 받아와서 비교하고 변경하게 수정해야한다, 수정해야함
+    // 스크랩 컬렉션 이름 변경
     @Transactional
     public String updateCollectionName(Long scrapId, Long userId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);

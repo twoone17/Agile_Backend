@@ -83,7 +83,7 @@ class ScrapServiceTest {
 
 
     @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다") // 수정해야함,
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다")
     public void createScrapTestToFailByNullUser() throws Exception{
         //given
         ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
@@ -98,7 +98,7 @@ class ScrapServiceTest {
     }
 
     @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 없어서 생성안된다") // 수정해야함,
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 없어서 생성안된다")
     public void createScrapTestToFailByNullName() throws Exception{
         //given
         ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
@@ -113,7 +113,7 @@ class ScrapServiceTest {
     }
 
     @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다") // 수정해야함,
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다")
     public void createScrapTestToFailByNullPostList() throws Exception{
         //given
         ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
@@ -128,7 +128,7 @@ class ScrapServiceTest {
     }
     
     @Test
-    @DisplayName("서비스 createScrap 성공 테스트 ") // 유저 쪽 구현되면 추가 예정
+    @DisplayName("서비스 createScrap 성공 테스트 ")
     public void createScrapTest() throws Exception{
         //given
         User user = createUserDto1().toEntity();
@@ -174,32 +174,17 @@ class ScrapServiceTest {
 
 
         SaveRequest saveRequest1 = createScrapDto1(user);
-        SaveRequest saveRequest2 = createScrapDto1(user);
-        SaveRequest saveRequest3 = createScrapDto1(user);
-        Scrap scrap1 = saveRequest1.toEntity();
-        Scrap scrap2 = saveRequest2.toEntity();
-        Scrap scrap3 = saveRequest3.toEntity();
+        SaveRequest saveRequest2 = createScrapDto2(user);
 
-        // when
-        userRepository.save(user);
-        scrapRepository.save(scrap1);
-        scrapRepository.save(scrap2);
-        scrapRepository.save(scrap3);
-        // then
-        assertThat(3).isEqualTo(scrapRepository.findScrapsByUser(user).size());
-    }
-
-
-    @Test // 철웅이가 유저쪽 코드 빌더패턴으로 짜서 올려주면 여기 짤게영
-    public void findScrapByUserTest() throws Exception{
-        //given
 
 
         // when
-
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
+        assertThat(2).isEqualTo(userRepository.findById(userId).get().getScraps().size());
     }
-
 
 
 
@@ -265,8 +250,8 @@ class ScrapServiceTest {
     }
 
     @Test
-    @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트")
-    public void updateNameTest() throws Exception{
+    @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트 - 같은 유저에서 다른 이름으로 변경")
+    public void updateNameTestSameUser() throws Exception{
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
@@ -280,24 +265,57 @@ class ScrapServiceTest {
         assertThat("test3").isEqualTo(scrapRepository.findById(scrap1).get().getName());
     }
 
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트 - 다른 유저에서 같은 이름으로 변경")
+    public void updateNameTestDifferentUser() throws Exception{
+        //given
+        User user1 = createUserDto1().toEntity();
+        User user2 = createUserDto2().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user1);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user2);
+
+        // when
+        Long user1Id = userService.saveUser(user1);
+        Long user2Id = userService.saveUser(user2);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        scrapService.updateCollectionName(scrap1, user1Id, "test2");
+        assertThat("test2").isEqualTo(scrapRepository.findById(scrap1).get().getName());
+    }
+
 
 
     @Test
-    @DisplayName("스크랩 리포지토리에서 스크랩 삭제 테스트")
-    public void deleteScrapTest() throws Exception{
+    @DisplayName("스크랩 리포지토리에서 스크랩 삭제 실패 테스트 - 아이디 없어서 삭제 실패")
+    public void deleteScrapTestToFail() throws Exception{
         //given
-        SaveRequest saveRequest = createScrapDto1(null);
-        Scrap newScrap = saveRequest.toEntity();
+        User user = createUserDto1().toEntity();
+        SaveRequest saveRequest = createScrapDto1(user);
 
         // when
-        scrapRepository.save(newScrap);
-        assertThat(newScrap).isEqualTo(scrapRepository.findById(newScrap.getId()).get());
+        Long userId = userService.saveUser(user);
+        Long scrap = scrapService.createScrap(saveRequest);
         // then
-        scrapRepository.delete(newScrap);
-        assertThat(false).isEqualTo(scrapRepository.existsById(newScrap.getId()));
-        assertThat(false).isEqualTo(scrapRepository.existsByName(newScrap.getName()));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1));
+
     }
 
+    @Test
+    @DisplayName("스크랩 리포지토리에서 스크랩 삭제 성공 테스트")
+    public void deleteScrapTest() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        SaveRequest saveRequest = createScrapDto1(user);
+
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap = scrapService.createScrap(saveRequest);
+
+        // then
+        String ok = scrapService.deleteCollection(scrap);
+        assertThat(ok).isEqualTo("ok");
+    }
 
 
 }
