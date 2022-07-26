@@ -16,21 +16,22 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class PostService {
-//
-//    private final PostRepository postRepository;
-//
-//    //게시글 작성 , 게시글 수정
-//    @Transactional
-//    public void uploadPost(PostDto postDto){
-//        Post post = postDto.toEntity();
-//        postRepository.save(post);
-//    }
-//
-//    //게시글 삭제
-//    @Transactional
-//    public void deletePost(Long postId){
-//        postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을 지운다
-//    }
+
+    //final이나 @NonNull인 필드 값만 파라미터로 받는 생성자 만듦
+    private final PostRepository postRepository;
+
+    //게시글 작성 , 게시글 수정
+    @Transactional
+    public void uploadPost(PostDto postDto){
+        Post post = postDto.toEntity();
+        postRepository.save(post);
+    }
+
+    //게시글 삭제
+    @Transactional
+    public void deletePost(Long postId){
+        postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을 지운다
+    }
 
     //게시글 조회
     //userId로 게시글을 찾을때

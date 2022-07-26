@@ -22,7 +22,7 @@ import static javax.persistence.FetchType.*;
 @Entity
 @Getter
 @NoArgsConstructor
-//@AllArgsConstructor
+//@AllArgsConstructor 모든 필드 값을 파라미터로 받는 생성자를 만듦
 //Builder 패턴을 사용, 빌더 메서드에만 @Builder 적용
 public class Post {
 
@@ -88,7 +88,6 @@ public class Post {
 
     public PostDto toDto(){
         return PostDto.builder()
-                .id(this.id)
                 .author(this.author)
                 .title(this.title)
                 .content(this.content)

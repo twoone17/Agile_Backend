@@ -49,7 +49,6 @@ public class PostDto {
 
     public Post toEntity(){
         return Post.builder()
-                .id(this.id)
                 .author(this.author)
                 .title(this.title)
                 .content(this.content)
