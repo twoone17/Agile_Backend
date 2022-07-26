@@ -49,7 +49,7 @@ public class PostService {
      * 게시글 조회 (Read)
      */
 
-    //게시글 id로 게시글을 찾을때
+    //게시글 id로 게시글을 찾을때 ㅇㅇ
 //    @Transactional(readOnly = true)
 //    public Post getPostByPostId(Long postId) throws Exception {
 //        if (postRepository.existsById(postId)) {
