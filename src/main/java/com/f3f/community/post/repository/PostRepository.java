@@ -9,10 +9,10 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
 
-    List<Post> findPostListByUserId(Long userid);
-
-    Post findPostByPostId(Long postid);
-
-    boolean existsById(Long id);
+//    List<Post> findPostListByUserId(Long userid);
+//
+//    Post findPostByPostId(Long postid);
+//
+//    boolean existsById(Long id);
 
 }
