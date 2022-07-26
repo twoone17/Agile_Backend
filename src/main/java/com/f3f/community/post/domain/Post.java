@@ -4,11 +4,9 @@ package com.f3f.community.post.domain;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
-import com.f3f.community.post.dto.PostDto;
+import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,18 +59,8 @@ public class Post {
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder
-    public Post(Long id,
-                User author,
-                String title,
-                String content,
-                List<Media> media,
-                int viewCount,
-                Scrap scrap,
-                List<Comment> comments,
-                List<Likes> likesList,
-                List<PostTag> tagList)
+    public Post(User author,String title,String content,List<Media> media,int viewCount,Scrap scrap,List<Comment> comments,List<Likes> likesList,List<PostTag> tagList)
     {
-        this.id = id;
         this.author = author;
         this.title = title;
         this.content = content;
@@ -86,8 +74,8 @@ public class Post {
     }
 
 
-    public PostDto toDto(){
-        return PostDto.builder()
+    public SaveRequest toDto(){
+        return SaveRequest.builder()
                 .author(this.author)
                 .title(this.title)
                 .content(this.content)

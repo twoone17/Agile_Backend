@@ -1,6 +1,6 @@
 package com.f3f.community.exception.postException;
 
-public class NoPostByIdException extends Exception {
+public class NoPostByIdException extends IllegalArgumentException {
 
     public NoPostByIdException()
     {

@@ -123,7 +123,7 @@ public class ScrapService {
         if (postRepository.existsById(postId)) { // 게시글이 존재하는지 확인
             if (scrapRepository.existsById(scrapId)) { // 해당 스크랩 컬렉션이 존재하는지 확인
                 Scrap scrap = scrapRepository.findByScrapId(scrapId);
-                Post post = postRepository.findPostById(postId);
+                Post post = postRepository.findById(postId).get();
                 scrap.getPostList().remove(post); // remove 메소드로 제거하였는데, 성능 문제는 없는지
                 scrapRepository.save(scrap);
             } else { // 스크랩 컬렉션 없으면 터지는 예외
