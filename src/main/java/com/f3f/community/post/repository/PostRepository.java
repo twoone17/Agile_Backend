@@ -11,7 +11,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
 //    List<Post> findPostListByUserId(Long userid);
 //
-//    Post findPostByPostId(Long postid);
+    Post findPostById(Long postid);
 //
 //    boolean existsById(Long id);
 

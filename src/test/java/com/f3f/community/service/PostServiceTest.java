@@ -16,23 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Transactional
 public class PostServiceTest {
-
-    @Autowired
-    PostService postService;
-
-    @Autowired
-    PostRepository postRepository;
+//
+//    @Autowired
+//    PostService postService;
+//
+//    @Autowired
+//    PostRepository postRepository;
 
     @Test
     @Rollback
     @DisplayName("업로드")
-    public void 업로드() throws Exception{
-    //given
+    public void 업로드(){
+        //given
 //        PostDto postDto = PostDto.builder()
 //                .author(null)
 //                .title("title1")
@@ -44,11 +45,14 @@ public class PostServiceTest {
 //                .likesList(null)
 //                .tagList(null)
 //                .build();
-//        //when
-//        postService.uploadPost(postDto);
-//        //then
-//        assertEquals(postDto.getTitle(),postRepository.findById());
+//
+//        Post newPost = postDto.toEntity();
+////        //when
+//        postRepository.save(newPost);
+////        //then
+//        assertThat(newPost).isEqualTo(postRepository.findById(newPost.getId()));
+//
+//    }
     }
-
 
 }
