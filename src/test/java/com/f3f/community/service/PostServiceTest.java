@@ -21,6 +21,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -44,6 +46,11 @@ public class PostServiceTest {
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
+    }
+
+    private UserDto.SaveRequest createUserDto2(){
+        return new UserDto.SaveRequest("temp2@temp.com", "123456", "010123456782",
+                UserGrade.BRONZE, "euisung", "seoul");
     }
 
     //Dto create TODO: 주석 처리 한것은 왜 빌드가 안되는지 ?
@@ -73,27 +80,29 @@ public class PostServiceTest {
      */
     //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
-    @Rollback
+    @Rollback(false)
     @DisplayName("Service : savePost 성공 테스트")
     //필수값이 다 들어감 : 통과
     public void savePostTestToOk() throws Exception {
         //given
-//        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
-//                .author(new User())
-//                .title("title1")
-//                .content("content1")
-//                .build();
         UserDto.SaveRequest userDto1 = createUserDto1();
         User user = userDto1.toEntity();
-        PostDto.SaveRequest postDto1 = createPostDto1(user);
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(user)
+                .title("title1")
+                .content("content1")
+                .build();
+//        PostDto.SaveRequest postDto1 = createPostDto1(user);
 
         //when
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         //then :  postRepository에 postid인 post가 저장되어있는지 확인, 없으면 exception
         postRepository.findById(postid).orElseThrow(NotFoundPostByIdException::new);
-//        System.out.println("postRepository.findByUser(user)" + postRepository.findByUser(user));
+//        System.out.println("postRepository.findByAuthor(user)" + postRepository.findByAuthor(user));
 
     }
+
+
 
     @Test
     @Rollback
@@ -149,7 +158,7 @@ public class PostServiceTest {
     /**
      * 게시글 조회 테스트( Read Test)
      */
-
+    //Read a-1) post_id로 post 찾기
     @Test
     @Rollback()
     @DisplayName("Service : findPostByPostId 성공 테스트")
@@ -175,8 +184,117 @@ public class PostServiceTest {
 
         //then
         assertThat(post).isEqualTo(postService.findPostByPostId(post.getId()).get()); //postid로 조회한 post가 일치하는지 확인
+
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
+    public void findPostByPostIdTestToFailByNullPostId() throws Exception{
+
         assertThrows(NoPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
 
     }
+
+    @Test
+    @DisplayName("Service : findPostListByAuthor 성공 테스트 (post 하나 저장)")
+    public void findPostListByAuthorTest_One_Ok() throws Exception{
+    //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+    //when
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+    //then
+        List<Post> postListByAuthor = postService.findPostListByAuthor(author); //author에 해당하는 postList 찾기
+        assertThat(postListByAuthor).contains(postRepository.findById(postid).get()); //postList에 저장한 post가 담겨있는지 확인
+
+    }
+
+    @Test
+    @Rollback(value = false)
+    @DisplayName("Service : findPostListByAuthor 성공 테스트 (post 여러개 저장)")
+    public void findPostListByAuthorTest_Multiple_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        UserDto.SaveRequest userDto2 = createUserDto2();
+
+        User author1 = userDto1.toEntity();
+        User author2 = userDto2.toEntity();
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title2")
+                .content("content2")
+                .build();
+
+        PostDto.SaveRequest postDto3 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title3")
+                .content("content3")
+                .build();
+
+        //다른 유저가 저장
+        PostDto.SaveRequest postDto4 = PostDto.SaveRequest.builder()
+                .author(author2)
+                .title("title4")
+                .content("content4")
+                .build();
+        //when
+        Long postid1 = postService.SavePost(postDto1); //author1 게시글 저장
+        Long postid2 = postService.SavePost(postDto2); //author1 게시글 저장
+        Long postid3 = postService.SavePost(postDto3); //author1 게시글 저장
+        Long postid4 = postService.SavePost(postDto4); //author2 게시글 저장 ( 위 3개와 다른 유저)
+
+
+        //then
+        List<Post> postListByAuthor = postService.findPostListByAuthor(author1); //author1에 해당하는 postList 찾기
+        assertThat(postListByAuthor).contains(postRepository.findById(postid1).get(),
+                                              postRepository.findById(postid2).get(),
+                                              postRepository.findById(postid3).get())
+                                    .doesNotContain(postRepository.findById(postid4).get()); //author2 는 포함되어있지 않아야함
+
+        assertThat(3).isEqualTo(postListByAuthor.size()); //author1에 해당하는 postList가 3개인지 확인
+
+    }
+
+    @Test
+    @DisplayName("Service : findPostListByAuthor 예외 발생 테스트 - author에 해당하는 postList 없음")
+    public void findPostListByAuthorTestToFailByNullPostList() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        User author2 = userDto2.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+        //when
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+        //then
+        assertThrows(NotFoundPostListByAuthor.class, ()-> postService.findPostListByAuthor(author2));
+        //TODO: author2를 넣었으니 예외가 발생하는 그림을 원했는데
+        // <org.springframework.dao.InvalidDataAccessApiUsageException>
+        // save the transient instance before flushing: com.f3f.community.user.domain.User
+        // 이렇게 뜬다, CASCADE ALL을 해서 고쳐야 하나요? 어떻게 해결할지 모르겠습니당 ..
+
+
+    }
+
 
 }

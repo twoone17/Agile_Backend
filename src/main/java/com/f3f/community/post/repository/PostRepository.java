@@ -20,6 +20,6 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
      Post findByTitle(String title);
 
-    boolean existsById(Long id);
+    boolean existsByAuthor(User author);
 
 }

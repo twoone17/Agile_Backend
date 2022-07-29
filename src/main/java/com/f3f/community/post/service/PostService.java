@@ -1,9 +1,6 @@
 package com.f3f.community.post.service;
 
-import com.f3f.community.exception.postException.NoPostByPostIdException;
-import com.f3f.community.exception.postException.NotFoundPostAuthorException;
-import com.f3f.community.exception.postException.NotFoundPostContentException;
-import com.f3f.community.exception.postException.NotFoundPostTitleException;
+import com.f3f.community.exception.postException.*;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -52,8 +49,7 @@ public class PostService {
         postRepository.save(post); //postRepository에 저장
         System.out.println("author = " + author);
         System.out.println("author.getPosts() = " + author.getPosts());
-        //TODO: userDto에 postlists를 빌더에 안넣어줘서 nullpointerException이 일어난다, 수정하면 꼬일까봐 일단 냅둠
-//        author.getPosts().add(post); //author의 postList에도 저장
+        author.getPosts().add(post); //author의 postList에도 저장
         userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
         return post.getId();
@@ -87,7 +83,19 @@ public class PostService {
             throw new NoPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
         }
     }
-//    author - userId로 게시글을 찾을때
+
+    // Read b-1) author로 postList 찾기
+    @Transactional(readOnly = true)
+    public List<Post> findPostListByAuthor(User author) throws Exception {
+        if (postRepository.existsByAuthor(author)) {
+            List<Post> postList =  postRepository.findByAuthor(author); //postRepository에 author가 있을때
+            return postList; //author가 작성한 postlist를 반환
+        } else {
+            throw new NotFoundPostListByAuthor(); //postRepository에 author가 작성한 게시글이 없으면 예외처리
+        }
+    }
+
+////    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
 //    @Transactional(readOnly = true)
 //    public List<Post> findPostListByUserId(Long userId) throws Exception {
 //        if (postRepository.existsById(userId)) {
