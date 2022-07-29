@@ -1,20 +1,28 @@
 package com.f3f.community.service;
 
+import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.exception.postException.NotFoundPostAuthorException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.postException.NotFoundPostContentException;
 import com.f3f.community.exception.postException.NotFoundPostTitleException;
 import com.f3f.community.exception.scrapException.NotFoundScrapUserException;
+import com.f3f.community.likes.domain.Likes;
+import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.domain.PostTag;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
+import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
+import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import com.sun.xml.bind.v2.TODO;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +30,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.f3f.community.post.dto.PostDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +54,36 @@ public class PostServiceTest {
     @Autowired
     UserRepository userRepository;
 
-    //Create Test
+    private UserDto.SaveRequest createUserDto1(){
+        return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
+                UserGrade.BRONZE, "james", "changwon");
+    }
+
+    //Dto create TODO: 주석 처리 한것은 왜 빌드가 안되는지 ?
+    private PostDto.SaveRequest createPostDto1(User user) {
+        return SaveRequest.builder()
+                .author(user)
+                .title("title1")
+                .content("content1")
+//                .media((List<Media>) new Media())
+                .viewCount(1000)
+                .scrap(new Scrap())
+//                .comments((List<Comment>) new Comment())
+//                .likesList((List<Likes>) new Likes())
+//                .tagList((List<PostTag>) new PostTag())
+                .build();
+    }
+
+    @AfterEach
+    void clear() {
+        userRepository.deleteAll();
+        postRepository.deleteAll();
+    }
+
+
+    /**
+     * 게시글 작성 테스트 (Create Test)
+     */
     //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
     @Rollback
@@ -52,14 +91,17 @@ public class PostServiceTest {
     //필수값이 다 들어감 : 통과
     public void savePostTestToOk() throws Exception {
         //given
-        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
-                .author(new User())
-                .title("title1")
-                .content("content1")
-                .build();
+//        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
+//                .author(new User())
+//                .title("title1")
+//                .content("content1")
+//                .build();
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User user = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = createPostDto1(user);
 
         //when
-        Long postid = postService.SavePost(SaveRequest); //SavePost한 후 postid를 반환
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         //then :  postRepository에 postid인 post가 저장되어있는지 확인, 없으면 exception
         postRepository.findById(postid).orElseThrow(NotFoundPostByIdException::new);
 
@@ -116,6 +158,34 @@ public class PostServiceTest {
 
     }
 
-    //
+    /**
+     * 게시글 조회 테스트( Read Test)
+     */
+
+    @Test
+    @DisplayName("Service : findPostByPostId 성공 테스트")
+    public void findPostByPostIdTestOk() throws Exception{
+        //given
+        //TODO : 이렇게 진행을 하면 post와 연관되어있는 user의 FK를 찾을수 없어 문제가 발생한다, 이때 CASCADE TYPE 을 ALL로 바꿔주면 되는것같은데, 이렇게 해도 되는건지
+//        UserDto.SaveRequest userDto1 = createUserDto1();
+//        User user = userDto1.toEntity();
+//        SaveRequest postDto1 = createPostDto1(user);
+//        Post post = postDto1.toEntity();
+
+
+        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
+                .author(new User())
+                .title("title1")
+                .content("content1")
+                .build();
+        Post post = SaveRequest.toEntity();
+
+        //when
+        postRepository.save(post);
+        Post postService_post = postService.findPostByPostId(post.getId()).get();
+        //then
+        assertThat(post).as("postid로 가져온 post가 맞는지 확인").isEqualTo(postService.findPostByPostId(post.getId()).get());
+        assertThat(post.getTitle()).as("title같은지 확인").isEqualTo(postService_post.getTitle());
+    }
 
 }

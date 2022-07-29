@@ -1,14 +1,22 @@
 package com.f3f.community.post.service;
 
+import com.f3f.community.exception.postException.NoPostByIdException;
 import com.f3f.community.exception.postException.NotFoundPostAuthorException;
 import com.f3f.community.exception.postException.NotFoundPostContentException;
 import com.f3f.community.exception.postException.NotFoundPostTitleException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Cascade;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.CascadeType;
+import java.util.Optional;
+
+import static org.hibernate.annotations.CascadeType.ALL;
 
 @Service
 @Transactional
@@ -17,6 +25,8 @@ public class PostService {
 
     //final이나 @NonNull인 필드 값만 파라미터로 받는 생성자 만듦
     private final PostRepository postRepository;
+
+    private final UserRepository userRepository;
 
     /**
      * 게시글 작성(Create)
@@ -63,16 +73,16 @@ public class PostService {
      * 이외 여러가지 sort를 활용한 검색 기능
      */
 
-    //게시글 id로 게시글을 찾을때 ㅇㅇㅇ
-//    @Transactional(readOnly = true)
-//    public Post getPostByPostId(Long postId) throws Exception {
-//        if (postRepository.existsById(postId)) {
-//            Post post = postRepository.findPostByPostId(postId);//postRepository에 userId가 있을때
-//            return post;
-//        } else {
-//            throw new NoPostByIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리
-//        }
-//    }
+//    Read a-1) post_id로 post 찾기
+    @Transactional(readOnly = true)
+    public Optional<Post> findPostByPostId(Long postId) throws Exception {
+        if (postRepository.existsById(postId)) {
+            Optional<Post> post = postRepository.findById(postId);//postRepository에 postId가 있을때
+            return post;
+        } else {
+            throw new NoPostByIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리
+        }
+    }
     //userId로 게시글을 찾을때
 //    @Transactional(readOnly = true)
 //    public List<Post> getPostListById(Long userId) throws Exception {
