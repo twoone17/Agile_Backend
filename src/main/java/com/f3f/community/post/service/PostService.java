@@ -47,6 +47,20 @@ public class PostService {
 
     /**
      * 게시글 조회 (Read)
+     * a) return 값 : Post
+     *  1.post_id로 post 찾기
+     *
+     * b) return 값 : PostList
+     *  1) author로 postList 찾기
+     *  2) title로 postList 찾기
+     * -> 여러 게시글의 title이 똑같을 수 있다 : 우선 title과 완벽히 일치하는 postList 찾기 기능 구현
+     *---------------------------------------------------------------------------------------
+     * 추후 검색 class에서 구현해야 할 것들
+     * 1) media로 postList 찾기
+     * 2) title로 postList 찾기 : title 단어가 포함된 모든 postList 반환
+     * 3) date로 postList 찾기
+     * 4) content로 postList 찾기
+     * 이외 여러가지 sort를 활용한 검색 기능
      */
 
     //게시글 id로 게시글을 찾을때 ㅇㅇㅇ
