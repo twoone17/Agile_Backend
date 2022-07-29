@@ -30,7 +30,7 @@ public class Post {
     private Long id;
 
     //필수값
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User author;
 

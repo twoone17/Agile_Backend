@@ -25,7 +25,7 @@ public class PostDto {
     @Builder
     public static class SaveRequest {
         private Long id;
-        private User author;
+        private User author = new User();
         @NotNull
         private String title;
 

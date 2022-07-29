@@ -1,22 +1,20 @@
 package com.f3f.community.post.service;
 
-import com.f3f.community.exception.postException.NoPostByIdException;
+import com.f3f.community.exception.postException.NoPostByPostIdException;
 import com.f3f.community.exception.postException.NotFoundPostAuthorException;
 import com.f3f.community.exception.postException.NotFoundPostContentException;
 import com.f3f.community.exception.postException.NotFoundPostTitleException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Cascade;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.CascadeType;
+import java.util.List;
 import java.util.Optional;
-
-import static org.hibernate.annotations.CascadeType.ALL;
 
 @Service
 @Transactional
@@ -50,8 +48,14 @@ public class PostService {
 //            throw new NotFoundPostCategoryException();
 
         Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
+        User author = post.getAuthor();
+        postRepository.save(post); //postRepository에 저장
+        System.out.println("author = " + author);
+        System.out.println("author.getPosts() = " + author.getPosts());
+        //TODO: userDto에 postlists를 빌더에 안넣어줘서 nullpointerException이 일어난다, 수정하면 꼬일까봐 일단 냅둠
+//        author.getPosts().add(post); //author의 postList에도 저장
+        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
-        postRepository.save(post); //저장
         return post.getId();
     }
 
@@ -80,14 +84,14 @@ public class PostService {
             Optional<Post> post = postRepository.findById(postId);//postRepository에 postId가 있을때
             return post;
         } else {
-            throw new NoPostByIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리
+            throw new NoPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
         }
     }
-    //userId로 게시글을 찾을때
+//    author - userId로 게시글을 찾을때
 //    @Transactional(readOnly = true)
-//    public List<Post> getPostListById(Long userId) throws Exception {
+//    public List<Post> findPostListByUserId(Long userId) throws Exception {
 //        if (postRepository.existsById(userId)) {
-//            List<Post> postList = postRepository.findPostListByUserId(userId); //postRepository에 userId가 있을때
+//            List<Post> postList =  postRepository.findPostListByUserId(userId); //postRepository에 userId가 있을때
 //            return postList;
 //        } else {
 //            throw new NoPostByIdException("UserId와 일치하는 게시글리스트가 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리

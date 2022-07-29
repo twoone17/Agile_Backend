@@ -1,15 +1,7 @@
 package com.f3f.community.service;
 
-import com.f3f.community.comment.domain.Comment;
-import com.f3f.community.exception.postException.NotFoundPostAuthorException;
-import com.f3f.community.exception.postException.NotFoundPostByIdException;
-import com.f3f.community.exception.postException.NotFoundPostContentException;
-import com.f3f.community.exception.postException.NotFoundPostTitleException;
-import com.f3f.community.exception.scrapException.NotFoundScrapUserException;
-import com.f3f.community.likes.domain.Likes;
-import com.f3f.community.media.domain.Media;
+import com.f3f.community.exception.postException.*;
 import com.f3f.community.post.domain.Post;
-import com.f3f.community.post.domain.PostTag;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.post.repository.PostRepository;
@@ -20,9 +12,7 @@ import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import com.sun.xml.bind.v2.TODO;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +21,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
-import static com.f3f.community.post.dto.PostDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -74,11 +61,11 @@ public class PostServiceTest {
                 .build();
     }
 
-    @AfterEach
-    void clear() {
-        userRepository.deleteAll();
-        postRepository.deleteAll();
-    }
+//    @AfterEach
+//    void clear() {
+//        userRepository.deleteAll();
+//        postRepository.deleteAll();
+//    }
 
 
     /**
@@ -104,6 +91,7 @@ public class PostServiceTest {
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         //then :  postRepository에 postid인 post가 저장되어있는지 확인, 없으면 exception
         postRepository.findById(postid).orElseThrow(NotFoundPostByIdException::new);
+//        System.out.println("postRepository.findByUser(user)" + postRepository.findByUser(user));
 
     }
 
@@ -154,7 +142,7 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        assertThrows(NotFoundPostContentException.class, ()-> postService.SavePost(SaveRequest));
+          assertThrows(NotFoundPostContentException.class, ()-> postService.SavePost(SaveRequest));
 
     }
 
@@ -163,6 +151,7 @@ public class PostServiceTest {
      */
 
     @Test
+    @Rollback()
     @DisplayName("Service : findPostByPostId 성공 테스트")
     public void findPostByPostIdTestOk() throws Exception{
         //given
@@ -180,12 +169,14 @@ public class PostServiceTest {
                 .build();
         Post post = SaveRequest.toEntity();
 
+
         //when
         postRepository.save(post);
-        Post postService_post = postService.findPostByPostId(post.getId()).get();
+
         //then
-        assertThat(post).as("postid로 가져온 post가 맞는지 확인").isEqualTo(postService.findPostByPostId(post.getId()).get());
-        assertThat(post.getTitle()).as("title같은지 확인").isEqualTo(postService_post.getTitle());
+        assertThat(post).isEqualTo(postService.findPostByPostId(post.getId()).get()); //postid로 조회한 post가 일치하는지 확인
+        assertThrows(NoPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
+
     }
 
 }
