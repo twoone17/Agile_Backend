@@ -296,6 +296,95 @@ public class PostServiceTest {
 //    }
 //
 
+    @Test
+    @DisplayName("Service : findPostListByTitle 성공 테스트 (일치하는 title 하나) ")
+    public void findPostListByTitleTest_One_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+        //when
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
 
+        //then
+        List<Post> postListBytitle = postService.findPostListByTitle("title1");//title에 해당하는 postList 찾기
+        assertThat(postListBytitle).contains(postRepository.findById(postid).get()); //postList에 저장한 post가 담겨있는지 확인
+
+    }
+
+
+    @Test
+    @DisplayName("Service : findPostListByTitle 성공 테스트 (일치하는 title 여러개) ")
+    public void findPostListByTitleTest_Multiple_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        UserDto.SaveRequest userDto2 = createUserDto2();
+
+        User author1 = userDto1.toEntity();
+        User author2 = userDto2.toEntity();
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title2")
+                .content("content2")
+                .build();
+
+        PostDto.SaveRequest postDto3 = PostDto.SaveRequest.builder()
+                .author(author1)
+                .title("title3")
+                .content("content3")
+                .build();
+
+        //다른 유저가 저장
+        PostDto.SaveRequest postDto4 = PostDto.SaveRequest.builder()
+                .author(author2)
+                .title("title1")
+                .content("content4")
+                .build();
+        //when
+        Long postid1 = postService.SavePost(postDto1); //title1 게시글 저장
+        Long postid2 = postService.SavePost(postDto2); //title2 게시글 저장
+        Long postid3 = postService.SavePost(postDto3); //title3 게시글 저장
+        Long postid4 = postService.SavePost(postDto4); //title1 게시글 저장 ( 위 3개와 다른 유저)
+
+        List<Post> postListBytitle = postService.findPostListByTitle("title1");//author1에 해당하는 postList 찾기
+        assertThat(postListBytitle).contains(postRepository.findById(postid1).get(), //title1 포함
+                                             postRepository.findById(postid4).get())
+                                   .doesNotContain(postRepository.findById(postid2).get(),
+                                                   postRepository.findById(postid3).get()); //title 2, 3 포함 x
+
+        assertThat(2).isEqualTo(postListBytitle.size()); //title1 해당하는 postList가 2개인지 확인
+    }
+
+    @Test
+    @DisplayName("Service : findPostListByTitle 예외 발생 테스트 - 일치하는 title 없음")
+    public void findPostListByTitleTestToFailByNullTitle() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+        //when
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+        //then
+        List<Post> postListBytitle = postService.findPostListByTitle("title2");//title에 해당하는 postList 찾기
+        System.out.println("postListBytitle = " + postListBytitle);
+        assertThrows(NotFoundPostListByTitle.class, ()-> postService.findPostListByTitle("title1")); //title1에 해당하는 title은 없으므로 exception 터트림
+
+    }
 
 }
