@@ -18,8 +18,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      Optional<Post> findById(Long id);
 
 
-     Post findByTitle(String title);
+    List<Post> findByTitle(String title);
 
     boolean existsByAuthor(User author);
+
+    boolean existsByTitle(String title);
 
 }

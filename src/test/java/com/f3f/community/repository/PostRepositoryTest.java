@@ -39,29 +39,29 @@ public class PostRepositoryTest {
         assertThat(newPost).isEqualTo(postRepository.findById(newPost.getId()).get());
         //optional은 .get()으로 받는다
     }
-    @Test
-    @DisplayName(value = "title로 찾기")
-    public void readByTitle() throws Exception{
-        //given
-        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
-                .author(null)
-                .title("title1")
-                .content("content1")
-                .media(null)
-                .viewCount(10)
-                .scrap(null)
-                .comments(null)
-                .likesList(null)
-                .tagList(null)
-                .build();
-
-        Post newPost = SaveRequest.toEntity();
-        //when
-        postRepository.save(newPost);
-        //then
-        Post title1 = postRepository.findByTitle("title1");
-        assertThat(newPost).isEqualTo(title1);
-
-    }
+//    @Test
+//    @DisplayName(value = "title로 찾기")
+//    public void readByTitle() throws Exception{
+//        //given
+//        PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
+//                .author(null)
+//                .title("title1")
+//                .content("content1")
+//                .media(null)
+//                .viewCount(10)
+//                .scrap(null)
+//                .comments(null)
+//                .likesList(null)
+//                .tagList(null)
+//                .build();
+//
+//        Post newPost = SaveRequest.toEntity();
+//        //when
+//        postRepository.save(newPost);
+//        //then
+//        Post title1 = postRepository.findByTitle("title1");
+//        assertThat(newPost).isEqualTo(title1);
+//
+//    }
 
 }

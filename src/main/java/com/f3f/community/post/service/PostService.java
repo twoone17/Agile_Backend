@@ -95,7 +95,18 @@ public class PostService {
         }
     }
 
-////    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
+    //Read b-2) title로 postList 찾기
+    @Transactional(readOnly = true)
+    public List<Post> findPostListByTitle(String title) throws Exception{
+        if (postRepository.existsByTitle(title)) {
+            List<Post> postList =  postRepository.findByTitle(title); //postRepository에 title 있을때
+            return postList; //title에 해당하는 postlist를 반환
+        } else {
+            throw new NotFoundPostListByTitle(); //postRepository에 title과 일치하는 게시글이 없으면 예외처리
+        }
+    }
+
+//    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
 //    @Transactional(readOnly = true)
 //    public List<Post> findPostListByUserId(Long userId) throws Exception {
 //        if (postRepository.existsById(userId)) {
