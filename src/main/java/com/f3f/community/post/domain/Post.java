@@ -73,6 +73,14 @@ public class Post {
 
     }
 
+    //업데이트를 위한 메소드, title, content, media만 수정 가능
+    public void updatePost(String title, String content, List<Media> media)
+    {
+        this.title = title;
+        this.content = content;
+        this.media = media;
+    }
+
 
     public SaveRequest toDto(){
         return SaveRequest.builder()
@@ -87,6 +95,8 @@ public class Post {
                 .tagList(this.tagList)
                 .build();
     }
+
+
 
 
 }

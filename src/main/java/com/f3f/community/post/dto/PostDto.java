@@ -64,5 +64,23 @@ public class PostDto {
         }
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateRequest {
+        private String title;
+        private String content;
+        private List<Media> media;
+
+        public Post toEntity() {
+            return Post.builder()
+                    .title(this.title)
+                    .content(this.content)
+                    .media(this.media)
+                    .build();
+        }
+
+    }
 
 }
