@@ -1,6 +1,7 @@
 package com.f3f.community.post.service;
 
 import com.f3f.community.exception.postException.*;
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -80,7 +81,7 @@ public class PostService {
             Optional<Post> post = postRepository.findById(postId);//postRepository에 postId가 있을때
             return post;
         } else {
-            throw new NoPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
+            throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
         }
     }
 
@@ -116,6 +117,27 @@ public class PostService {
 //            throw new NoPostByIdException("UserId와 일치하는 게시글리스트가 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리
 //        }
 //    }
+
+    /**
+     * 게시글 수정 (Update)
+     * 변경 가능 값 : title, content, media
+     * a) return 값 : String Ok
+     */
+    @Transactional
+    public String UpdatePost(Long postId,PostDto.UpdateRequest updateRequest) throws Exception{ //UpdateDto 활용
+        Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
+        User author = post.getAuthor();
+        post.updatePost(updateRequest.getTitle(), updateRequest.getContent(),updateRequest.getMedia());
+
+        postRepository.save(post); //postRepository에 저장
+//        System.out.println("author = " + author);
+//        System.out.println("author.getPosts() = " + author.getPosts());
+//        author.getPosts().add(post); //author의 postList에도 저장
+//        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
+
+        return "OK";
+    }
+
 
 //    //게시글 삭제
 //    @Transactional

@@ -1,6 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.exception.postException.*;
+import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
@@ -192,7 +193,7 @@ public class PostServiceTest {
     @DisplayName("Service : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
     public void findPostByPostIdTestToFailByNullPostId() throws Exception{
 
-        assertThrows(NoPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
+        assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
 
     }
 
@@ -385,6 +386,42 @@ public class PostServiceTest {
         System.out.println("postListBytitle = " + postListBytitle);
         assertThrows(NotFoundPostListByTitle.class, ()-> postService.findPostListByTitle("title1")); //title1에 해당하는 title은 없으므로 exception 터트림
 
+    }
+
+    @Test
+    @Rollback(false)
+    @DisplayName("Update")
+    public void updateTitle() throws Exception{
+    //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title3")
+                .content("content1")
+                .build();
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+//                .media(Media)
+                .build();
+        //when
+
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        List<Post> postListByAuthor = postService.findPostListByAuthor(author);
+        System.out.println("postListByAuthor = " + postListByAuthor);
+        //then
+        postService.UpdatePost(postid,updateRequest);
+        System.out.println("postListByAuthor = " + postListByAuthor);
+        System.out.println("postListByAuthor = " + postListByAuthor.get(1));
     }
 
 }
