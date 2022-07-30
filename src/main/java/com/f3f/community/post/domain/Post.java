@@ -4,11 +4,9 @@ package com.f3f.community.post.domain;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
-import com.f3f.community.post.dto.PostDto;
+import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +20,7 @@ import static javax.persistence.FetchType.*;
 @Entity
 @Getter
 @NoArgsConstructor
-//@AllArgsConstructor
+//@AllArgsConstructor 모든 필드 값을 파라미터로 받는 생성자를 만듦
 //Builder 패턴을 사용, 빌더 메서드에만 @Builder 적용
 public class Post {
 
@@ -61,18 +59,8 @@ public class Post {
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder
-    public Post(Long id,
-                User author,
-                String title,
-                String content,
-                List<Media> media,
-                int viewCount,
-                Scrap scrap,
-                List<Comment> comments,
-                List<Likes> likesList,
-                List<PostTag> tagList)
+    public Post(User author,String title,String content,List<Media> media,int viewCount,Scrap scrap,List<Comment> comments,List<Likes> likesList,List<PostTag> tagList)
     {
-        this.id = id;
         this.author = author;
         this.title = title;
         this.content = content;
@@ -86,9 +74,8 @@ public class Post {
     }
 
 
-    public PostDto toDto(){
-        return PostDto.builder()
-                .id(this.id)
+    public SaveRequest toDto(){
+        return SaveRequest.builder()
                 .author(this.author)
                 .title(this.title)
                 .content(this.content)

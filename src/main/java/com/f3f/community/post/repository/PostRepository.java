@@ -11,10 +11,17 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
 
-    List<Post> findPostsByAuthor(User user);
+//    List<Post> findPostListByUserId(Long userid);
+     List<Post> findByAuthor(User author);
 
-    Optional<Post> findById(Long id);
+     //primary key인 id값으로 찾기 : 왜 Post로 반환을 하면 오류가 나는걸까?
+     Optional<Post> findById(Long id);
 
-    boolean existsById(Long id);
+
+    List<Post> findByTitle(String title);
+
+    boolean existsByAuthor(User author);
+
+    boolean existsByTitle(String title);
 
 }
