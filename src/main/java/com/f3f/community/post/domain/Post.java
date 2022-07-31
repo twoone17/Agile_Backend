@@ -45,9 +45,8 @@ public class Post {
 
     private int viewCount;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "scrap_id")
-    private Scrap scrap;
+    @OneToMany(mappedBy = "post",fetch = LAZY)
+    private List<ScrapPost> scrapList = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", fetch = LAZY)
     private List<Comment> comments = new ArrayList<>();
@@ -59,14 +58,14 @@ public class Post {
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder
-    public Post(User author,String title,String content,List<Media> media,int viewCount,Scrap scrap,List<Comment> comments,List<Likes> likesList,List<PostTag> tagList)
+    public Post(User author,String title,String content,List<Media> media,int viewCount,List<ScrapPost> scraps,List<Comment> comments,List<Likes> likesList,List<PostTag> tagList)
     {
         this.author = author;
         this.title = title;
         this.content = content;
         this.media = media;
         this.viewCount = viewCount;
-        this.scrap = scrap;
+        this.scrapList = scraps;
         this.comments = comments;
         this.likesList = likesList;
         this.tagList = tagList;
@@ -89,7 +88,7 @@ public class Post {
                 .content(this.content)
                 .media(this.media)
                 .viewCount(this.viewCount)
-                .scrap(this.scrap)
+                .scrapList(this.scrapList)
                 .comments(this.comments)
                 .likesList(this.likesList)
                 .tagList(this.tagList)

@@ -4,7 +4,9 @@ import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.post.repository.ScrapPostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.user.domain.User;
@@ -26,6 +28,7 @@ public class ScrapService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    private final ScrapPostRepository scrapPostRepository;
 
     // 스크랩 컬렉션 생성
     @Transactional
@@ -55,24 +58,28 @@ public class ScrapService {
     }
 
 
-    // 스크랩 컬렉션에 해당 게시글 리스트 가져오기
-    @Transactional(readOnly = true)
-    public List<Post> findAllByCollection(Long scrapId) throws Exception {
 
-        Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
-        return scrap.getPostList();
 
-    }
 
     // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트, 수정해야함
     @Transactional
-    public void saveCollection(Long scrapId, Long postId) throws Exception{
+    public Long saveCollection(Long scrapId, Long postId) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        if (!scrap.getPostList().contains(post)) {
-            scrap.getPostList().add(post);
+
+        if (!scrapPostRepository.existsByPostAndScrap(post, scrap)) {
+            ScrapPost scrapPost = ScrapPost.builder().post(post).scrap(scrap).build();
+            scrapPostRepository.save(scrapPost);
+            scrap.getPostList().add(scrapPost);
+            post.getScrapList().add(scrapPost);
             scrapRepository.save(scrap);
+            postRepository.save(post);
+            return scrapPost.getId();
+        } else {
+            throw new DuplicateScrapPostException();
         }
+
+
     }
 
 
@@ -110,8 +117,12 @@ public class ScrapService {
 
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        scrap.getPostList().remove(post);
+        ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
+        scrap.getPostList().remove(scrapPost);
+        post.getScrapList().remove(scrapPost);
+        scrapPostRepository.delete(scrapPost);
         scrapRepository.save(scrap);
+        postRepository.save(post);
         return "ok";
     }
 

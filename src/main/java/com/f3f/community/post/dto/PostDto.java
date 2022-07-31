@@ -5,6 +5,7 @@ import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.PostTag;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
 import lombok.*;
@@ -37,7 +38,7 @@ public class PostDto {
 
         private int viewCount;
 
-        private Scrap scrap;
+        private List<ScrapPost> scrapList = new ArrayList<>();
 
         private List<Comment> comments = new ArrayList<>();
 
@@ -56,7 +57,7 @@ public class PostDto {
                     .content(this.content)
                     .media(this.media)
                     .viewCount(this.viewCount)
-                    .scrap(this.scrap)
+                    .scraps(this.scrapList)
                     .comments(this.comments)
                     .likesList(this.likesList)
                     .tagList(this.tagList)

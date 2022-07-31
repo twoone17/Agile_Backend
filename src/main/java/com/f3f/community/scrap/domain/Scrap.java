@@ -2,6 +2,7 @@ package com.f3f.community.scrap.domain;
 
 
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -34,11 +35,11 @@ public class Scrap {
     // NotNull
 
     @OneToMany(mappedBy = "scrap", fetch = LAZY)
-    private List<Post> postList = new ArrayList<>();
+    private List<ScrapPost> postList = new ArrayList<>();
     // 생성될때는 빈 리스트
 
     @Builder
-    public Scrap(Long id,String name, User user, List<Post> postList) {
+    public Scrap(Long id,String name, User user, List<ScrapPost> postList) {
         this.id = id;
         this.name = name;
         this.user = user;

@@ -3,6 +3,7 @@ package com.f3f.community.service;
 import com.f3f.community.exception.postException.*;
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.post.repository.PostRepository;
@@ -22,6 +23,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +64,7 @@ public class PostServiceTest {
                 .content("content1")
 //                .media((List<Media>) new Media())
                 .viewCount(1000)
-                .scrap(new Scrap())
+                .scrapList(new ArrayList<ScrapPost>())
 //                .comments((List<Comment>) new Comment())
 //                .likesList((List<Likes>) new Likes())
 //                .tagList((List<PostTag>) new PostTag())
