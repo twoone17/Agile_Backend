@@ -1,14 +1,12 @@
 package com.f3f.community.service;
 
 import com.f3f.community.exception.postException.*;
-import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
-import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
@@ -389,11 +387,10 @@ public class PostServiceTest {
         assertThrows(NotFoundPostListByTitle.class, ()-> postService.findPostListByTitle("title1")); //title1에 해당하는 title은 없으므로 exception 터트림
 
     }
-
     @Test
     @Rollback(false)
-    @DisplayName("Update")
-    public void updateTitle() throws Exception{
+    @DisplayName("Service : UpdatePost 성공 테스트")
+    public void updatePostTestToOk() throws Exception{
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
@@ -418,12 +415,53 @@ public class PostServiceTest {
 
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long user1Id = userService.saveUser(author);
         List<Post> postListByAuthor = postService.findPostListByAuthor(author);
-        System.out.println("postListByAuthor = " + postListByAuthor);
         //then
-        postService.UpdatePost(postid,updateRequest);
-        System.out.println("postListByAuthor = " + postListByAuthor);
-        System.out.println("postListByAuthor = " + postListByAuthor.get(1));
+        postService.updatePost(postid,user1Id,updateRequest);
+//        for (Post post : postListByAuthor) {
+//            System.out.println(postListByAuthor);
+//            System.out.println("post = " + post.getTitle()); //postListByAuthor 에서도 title이 바뀌었는지 확인
+//            System.out.println("post = " + post.getAuthor());
+//        }
+
+        assertThat(postRepository.findById(postid).get().getTitle()).isEqualTo("titleChanged"); //title이 잘 update되었는지 확인
+        assertThat(postRepository.findById(postid).get().getContent()).isEqualTo("contentChanged"); //title이 잘 변경되었는지 확인
+        assertThat(postListByAuthor.get(0).getTitle()).isEqualTo("titleChanged"); //postListByAuthor 에서도 title이 바뀌었는지 확인
     }
 
+    @Test
+    @Rollback()
+    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정하려는 post의 postid가 없음")
+    public void updatePostTestToFailByNullPostId() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title3")
+                .content("content1")
+                .build();
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+//                .media(Media)
+                .build();
+        //when
+
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long user1Id = userService.saveUser(author);
+
+        //then
+        //존재하지 않는 postid를 수정하려고 했을떄 예외처리
+        assertThrows(NotFoundPostByIdException.class, ()-> postService.updatePost(44L,user1Id,updateRequest));
+    }
 }
