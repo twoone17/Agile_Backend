@@ -58,29 +58,7 @@ class UserServiceTest {
         // then
         assertThat(byId.get().getId()).isEqualTo(joinId);
     }
-
-    @Test
-    @DisplayName("모든 유저 검색 테스트")
-    // 어드민 기능으로 이전될 수 있는
-    public void findAllUsersTest() {
-        // given
-        SaveRequest saveRequest1 = new SaveRequest("temp1@temp.com",
-                "12345", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
-        SaveRequest saveRequest2 = new SaveRequest("temp2@temp.com",
-                "1234567", "01012345678",
-                UserGrade.BRONZE, "jack", "yatap");
-
-        User user1 = saveRequest1.toEntity();
-        User user2 = saveRequest2.toEntity();
-
-        //when
-        userService.saveUser(user1);
-        userService.saveUser(user2);
-
-        //then
-        assertThat(userService.findUsers().size()).isEqualTo(2);
-    }
+    
 
     @Test
     @DisplayName("이메일 중복 검사 테스트")

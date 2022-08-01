@@ -3,6 +3,7 @@ package com.f3f.community.user.dto;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import lombok.*;
+import org.aspectj.lang.annotation.Before;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -54,11 +55,10 @@ public class UserDto {
     public static class ChangePasswordRequest {
         private String email;
 
-        private String BeforePassword;
-
         @NotBlank
         @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String AfterPassword;
+        private String BeforePassword;
 
         @Builder
         public ChangePasswordRequest(String email,
@@ -70,6 +70,37 @@ public class UserDto {
             this.BeforePassword = BeforePassword;
             this.AfterPassword = ChangedPassword;
         }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class ChangeNicknameRequest {
+
+        private String email;
+        @NotBlank
+        @Pattern(regexp = "^([a-zA-Z0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣]).{1,10}$")
+        private String AfterNickname;
+        private String BeforeNickname;
+
+        @Builder
+        public ChangeNicknameRequest(String email,
+                                     @NotBlank
+                                     @Pattern(regexp = "^([a-zA-Z0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣]).{1,10}$")
+                                     String AfterNickname,
+                                     String BeforeNickname) {
+            this.email = email;
+            this.BeforeNickname = BeforeNickname;
+            this.AfterNickname = AfterNickname;
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class LoginRequest {
+        private String email;
+        private String password;
     }
 
 
