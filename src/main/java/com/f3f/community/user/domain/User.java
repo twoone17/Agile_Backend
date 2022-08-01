@@ -42,6 +42,10 @@ public class User extends UserBase {
         this.password = password;
     }
 
+    public void updateNickname(String nickname) {
+
+    }
+
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address) {
@@ -51,6 +55,5 @@ public class User extends UserBase {
         this.posts = null;
         this.comments = null;
         this.likes = null;
-        this.scraps = null;
     }
 }

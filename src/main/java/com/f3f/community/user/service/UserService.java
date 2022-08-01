@@ -24,15 +24,6 @@ public class UserService {
         if(userRepository.existsByNickname(user.getNickname())) {
             throw new NicknameDuplicationException();
         }
-        if(user.getNickname().equals("")) {
-            throw new NoEssentialFieldException("닉네임 누락");
-        }
-        if(user.getEmail().equals("")) {
-            throw new NoEssentialFieldException("이메일 누락");
-        }
-        if(user.getPassword().equals("")) {
-            throw new NoEssentialFieldException("비밀번호 누락");
-        }
         User saveUser = userRepository.save(user);
         return saveUser.getId();
     }
@@ -42,7 +33,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(ChangePasswordRequest changePasswordRequest) {
+    public String updatePassword(ChangePasswordRequest changePasswordRequest) {
         String email = changePasswordRequest.getEmail();
 
         User user = userRepository.findByEmail(email)
@@ -52,19 +43,19 @@ public class UserService {
             throw new IllegalArgumentException("기존 비밀번호와 변경 비밀번호가 일치합니다.");
 
         user.updatePassword(changePasswordRequest.getAfterPassword());
+        return "OK";
     }
 
     @Transactional
-    public void delete(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
+    public String delete(String email, String password) {
 
         if(!userRepository.existsByEmailAndPassword(email, password)) {
-            throw new NoEmailAndPasswordException("이메일과 비밀번호가 없습니다.");
+            throw new NoEmailAndPasswordException("이메일이나 비밀번호가 일치하지 않습니다.");
         }
-        // 구현 예정
-
+        userRepository.deleteByEmail(email);
+        return "OK";
     }
+
 
 
 }
