@@ -1,6 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.exception.postException.*;
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
@@ -13,6 +14,7 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ public class PostServiceTest {
     UserRepository userRepository;
 
     private UserDto.SaveRequest createUserDto1(){
-        return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
+        return new UserDto.SaveRequest("temp1@temp.com", "123456", "01012345678",
                 UserGrade.BRONZE, "james", "changwon");
     }
 
@@ -69,16 +71,15 @@ public class PostServiceTest {
                 .build();
     }
 
-//    @AfterEach
-//    void clear() {
-//        userRepository.deleteAll();
-//        postRepository.deleteAll();
-//    }
+    @AfterEach
+    void clear() {
+        userRepository.deleteAll();
+        postRepository.deleteAll();
+    }
 
-
-    /**
-     * 게시글 작성 테스트 (Create Test)
-     */
+    /*************************************************************************************
+     * 게시글 작성 테스트 (Create)
+     **************************************************************************************/
     //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
     @Rollback()
@@ -156,9 +157,9 @@ public class PostServiceTest {
 
     }
 
-    /**
-     * 게시글 조회 테스트( Read Test)
-     */
+    /*************************************************************************************
+     * 게시글 조회 (Read)
+     **************************************************************************************/
     //Read a-1) post_id로 post 찾기
     @Test
     @Rollback()
@@ -166,14 +167,14 @@ public class PostServiceTest {
     public void findPostByPostIdTestOk() throws Exception{
         //given
         //TODO : 이렇게 진행을 하면 post와 연관되어있는 user의 FK를 찾을수 없어 문제가 발생한다, 이때 CASCADE TYPE 을 ALL로 바꿔주면 되는것같은데, 이렇게 해도 되는건지
-//        UserDto.SaveRequest userDto1 = createUserDto1();
-//        User user = userDto1.toEntity();
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User user = userDto1.toEntity();
 //        SaveRequest postDto1 = createPostDto1(user);
 //        Post post = postDto1.toEntity();
 
 
         PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
-                .author(new User())
+                .author(user)
                 .title("title1")
                 .content("content1")
                 .build();
@@ -182,6 +183,12 @@ public class PostServiceTest {
 
         //when
         postRepository.save(post);
+        userRepository.save(user); //TODO: 왜 이부분을 안넣으면 에러가 나는걸까 ?
+//        Long postid = postService.SavePost(SaveRequest); // 아니면 이부분 왜 이부분을 안넣으면 에러가 나는걸까 ?
+//        System.out.println("post = " + post);
+//        System.out.println("post.getId() = " + post.getId());
+//        System.out.println("postService.findPostByPostId(post.getId()).get() = " + postService.findPostByPostId(postid));
+//
 
         //then
         assertThat(post).isEqualTo(postService.findPostByPostId(post.getId()).get()); //postid로 조회한 post가 일치하는지 확인
@@ -286,7 +293,7 @@ public class PostServiceTest {
                 .build();
         //when
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-
+        userRepository.save(author2); //TODO: 이부분 추가해서 일단 에러 안남
         //then
         assertThrows(NotFoundPostListByAuthor.class, ()-> postService.findPostListByAuthor(author2));
         //TODO: author2를 넣었으니 예외가 발생하는 그림을 원했는데
@@ -387,13 +394,19 @@ public class PostServiceTest {
         assertThrows(NotFoundPostListByTitle.class, ()-> postService.findPostListByTitle("title1")); //title1에 해당하는 title은 없으므로 exception 터트림
 
     }
+
+    /*************************************************************************************
+    * 게시글 수정 (Update)
+    **************************************************************************************/
+
     @Test
-    @Rollback(false)
+    @Rollback()
     @DisplayName("Service : UpdatePost 성공 테스트")
     public void updatePostTestToOk() throws Exception{
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
+        Long user1Id = userService.saveUser(author);
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
@@ -415,7 +428,6 @@ public class PostServiceTest {
 
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
-        Long user1Id = userService.saveUser(author);
         List<Post> postListByAuthor = postService.findPostListByAuthor(author);
         //then
         postService.updatePost(postid,user1Id,updateRequest);
@@ -437,6 +449,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
+        Long user1Id = userService.saveUser(author);
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
@@ -458,10 +471,272 @@ public class PostServiceTest {
 
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
-        Long user1Id = userService.saveUser(author);
 
         //then
         //존재하지 않는 postid를 수정하려고 했을떄 예외처리
         assertThrows(NotFoundPostByIdException.class, ()-> postService.updatePost(44L,user1Id,updateRequest));
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정하려는 post가 본인의 게시글이 아님")
+    public void updatePostTestToFailByNullPostInAuthor() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        Long user1Id = userService.saveUser(author);
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        User author2 = userDto2.toEntity();
+        Long user2Id = userService.saveUser(author2);
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title3")
+                .content("content1")
+                .build();
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+//                .media(Media)
+                .build();
+        //when
+
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+
+        //then
+        //수정하려는 post가 자신의 게시글이 아닐때 예외처리
+        assertThrows(NotFoundPostInAuthorException.class, ()-> postService.updatePost(postid,user2Id,updateRequest));
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정시에 Title이 한글자 미만")
+    public void updatePostTestToFailByNullTitle() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        Long user1Id = userService.saveUser(author);
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title3")
+                .content("content1")
+                .build();
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("")
+                .content("contentChanged")
+//                .media(Media)
+                .build();
+
+        PostDto.UpdateRequest updateRequest2 = PostDto.UpdateRequest.builder()
+                .title("")
+                .content("contentChanged")
+//                .media(Media)
+                .build();
+        //when
+
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+
+        //then
+        //수정시 title이 안들어감
+        assertThrows(NotFoundPostTitleException.class, ()-> postService.updatePost(postid,user1Id,updateRequest));
+        assertThrows(NotFoundPostTitleException.class, ()-> postService.updatePost(postid,user1Id,updateRequest2));
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정시에 content가 한글자 미만")
+    public void updatePostTestToFailByNullContent() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        Long user1Id = userService.saveUser(author);
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title3")
+                .content("content1")
+                .build();
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titlechanged")
+                .content("")
+//                .media(Media)
+                .build();
+        //when
+
+        PostDto.UpdateRequest updateRequest2 = PostDto.UpdateRequest.builder()
+                .title("titlechanged")
+//                .content("")
+//                .media(Media)
+                .build();
+
+        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+
+        //then
+        //수정시에 내용이 안들어감
+        System.out.println("updateRequest 내용 = " + updateRequest.getContent());
+        System.out.println("updateRequest 내용 길이 = " + updateRequest.getContent().length());
+        assertThrows(NotFoundPostContentException.class, ()-> postService.updatePost(postid,user1Id,updateRequest));
+        assertThrows(NotFoundPostContentException.class, ()-> postService.updatePost(postid,user1Id,updateRequest2));
+    }
+
+    /*************************************************************************************
+     * 게시글 삭제 (Delete)
+     **************************************************************************************/
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : DeletePost 성공 테스트")
+    public void DeletePostTestToOK() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        User author2 = userDto2.toEntity();
+
+        Long userId1 = userService.saveUser(author);
+        Long userId2 = userService.saveUser(author2);
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title2")
+                .content("content2")
+                .build();
+
+
+        PostDto.SaveRequest postDto3 = PostDto.SaveRequest.builder() //다른 작성자
+                .author(author2)
+                .title("title3")
+                .content("content3")
+                .build();
+
+        //when
+        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid3 = postService.SavePost(postDto3);
+
+        //then
+        //삭제 성공
+        List<Post> all = postRepository.findAll();
+        System.out.println("all = " + all);
+        assertThat(postRepository.findAll().size()).isEqualTo(3); //저장 3개
+
+        postService.deletePost(postid1,userId1); //3 - 1
+        List<Post> all2 = postRepository.findAll();
+        System.out.println("all2 = " + all2);
+        assertThat(postRepository.findAll().size()).isEqualTo(2); //저장 2개로 변경
+
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : DeletePost 예외 발생 테스트 - postid 존재하지 않음 ")
+    public void DeletePostTestToFailByNullPostId() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+
+        Long userId1 = userService.saveUser(author);
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        //when
+        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+
+        //then
+        //삭제
+        assertThrows(NotFoundPostByIdException.class, ()-> postService.deletePost(44L,userId1));
+
+    }
+
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : DeletePost 예외 발생 테스트 - userid 존재하지 않음 ")
+    public void DeletePostTestToFailByNullAuthor() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        Long userId1 = userService.saveUser(author);
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        //when
+        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+
+        //then
+        assertThrows(NotFoundUserByIdException.class, ()-> postService.deletePost(postid1,44L));
+
+    }
+
+    @Test
+    @Rollback()
+    @DisplayName("Service : DeletePost 예외 발생 테스트 - 삭제하려는 post가 본인의 게시글이 아님 ")
+    public void DeletePostTestToFailByNullPostInAuthor() throws Exception{
+        //given
+        UserDto.SaveRequest userDto1 = createUserDto1();
+        User author = userDto1.toEntity();
+        Long userId1 = userService.saveUser(author);
+
+        UserDto.SaveRequest userDto2 = createUserDto2();
+        User author2 = userDto2.toEntity();
+        Long userId2 = userService.saveUser(author2);
+
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(author)
+                .title("title1")
+                .content("content1")
+                .build();
+
+        //when
+        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+
+
+        //then
+        assertThrows(NotFoundPostInAuthorException.class, ()-> postService.deletePost(postid1,userId2));
+
     }
 }

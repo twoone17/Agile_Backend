@@ -137,10 +137,10 @@ public class PostService {
         {
             throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 수정할 수 없습니다");
         }
-        if(updateRequest.getTitle() == null)
+        if(updateRequest.getTitle() == null || updateRequest.getTitle().length()<1)
             throw new NotFoundPostTitleException("수정시 Title은 한글자 이상이어야 합니다.");
-        if(updateRequest.getContent() == null)
-            throw new NotFoundPostTitleException("수정시 Content는 한글자 이상이어야 합니다.");
+        if(updateRequest.getContent() == null || updateRequest.getContent().length()<1)
+            throw new NotFoundPostContentException("수정시 Content는 한글자 이상이어야 합니다.");
         post.updatePost(updateRequest.getTitle(), updateRequest.getContent(),updateRequest.getMedia());
 
         postRepository.save(post); //postRepository에 저장
@@ -153,19 +153,29 @@ public class PostService {
     }
 
 
-//    //게시글 삭제
-//    @Transactional
-//    public void deletePost(Long postId){
-//        postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을 지운다
-//    }
+    /**
+     * 게시글 삭제 (Delete)
+     * a) return 값 : String Ok
+     *
+     * 예외처리 )
+     * 본인 게시물인지 확인
+     * 1.postid 존재하는지
+     * 2.userid 존재하는지
+     * 3.본인의 게시물인지 확인
+     */
+    @Transactional
+    public String deletePost(Long postId, Long userId){
+        Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
+        User author = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        List<Post> author_posts = author.getPosts();
+        if(!author_posts.contains(post))
+        {
+            throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 삭제할 수 없습니다");
+        }
+        postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을
+        return "Delete OK";
+    }
 
-
-
-
-    //모든 게시글 조회
-//    public List<Post> findAllPosts() {
-//        return postRepository.findAll();
-//    }
 
 
 }
