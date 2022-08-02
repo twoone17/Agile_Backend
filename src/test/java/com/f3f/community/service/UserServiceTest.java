@@ -134,7 +134,7 @@ class UserServiceTest {
                 () -> userService.updatePassword(changePasswordRequest));
 
         //then
-        assertThat(e.getMessage()).isEqualTo("사용자가 존재하지 않습니다.");
+        assertThat(e.getMessage()).isEqualTo("비밀번호를 변경할 사용자가 존재하지 않습니다.");
     }
 
     @Test
