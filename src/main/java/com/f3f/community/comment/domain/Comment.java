@@ -27,11 +27,12 @@ public class Comment {
     private Long id;
 
 
+
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;
+    private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
@@ -43,7 +44,7 @@ public class Comment {
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
     private List<Comment> childComment;
 
-    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
     private List<Media> mediaList;
-
 }
+
