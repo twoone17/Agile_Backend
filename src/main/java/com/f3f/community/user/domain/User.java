@@ -1,6 +1,7 @@
 package com.f3f.community.user.domain;
 
 import com.f3f.community.comment.domain.Comment;
+import com.f3f.community.exception.userException.NicknameChangeConditionException;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.scrap.domain.Scrap;
@@ -28,7 +29,7 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -37,19 +38,36 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
 
+    // List<List<Scrap>> 타입의 Collection 이라는 변수가 필요하다고 생각됨.
+
     public void updatePassword(String password) {
         this.password = password;
     }
 
+    public void updateNickname(String nickname) {
+        if(!undefinedCondition()) {
+            this.nickname = nickname;
+        } else {
+            throw new NicknameChangeConditionException();
+        }
+    }
+
+    private boolean undefinedCondition() {
+        // 닉네임 변경 조건 정해지면 작성 예정
+        return true;
+    }
+
+
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
-                String nickname, String address) {
+                String nickname, String address, List<Post> posts, List<Comment> comments,
+                List<Likes> likes, List<Scrap> scraps) {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
-        this.posts = new ArrayList<>();
-        this.comments = new ArrayList<>();
-        this.likes = new ArrayList<>();
-        this.scraps = new ArrayList<>();
+        this.posts = posts;
+        this.comments = comments;
+        this.likes = likes;
+        this.scraps = scraps;
     }
 }

@@ -130,6 +130,7 @@ public class ScrapService {
         scrapRepository.save(scrap);
         postRepository.save(post);
         return "ok";
+
     }
 
 
