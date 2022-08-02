@@ -1,7 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.exception.postException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
@@ -717,7 +717,7 @@ public class PostServiceTest {
 
 
         //then
-        assertThrows(NotFoundUserByIdException.class, ()-> postService.deletePost(postid1,44L));
+        assertThrows(NotFoundUserException.class, ()-> postService.deletePost(postid1,44L));
 
     }
 
