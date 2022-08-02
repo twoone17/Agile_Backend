@@ -67,6 +67,10 @@ public class User extends UserBase {
         this.isBanned = false;
     }
 
+//    public void updateUserGrade() {
+//
+//    }
+
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address, List<Post> posts, List<Comment> comments,

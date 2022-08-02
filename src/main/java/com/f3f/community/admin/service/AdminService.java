@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class AdminService {
 
     private final UserRepository userRepository;
-    private final UserService userService;
 
     public Long banUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new NotFoundUserByIdException("해당 ID의 유저가 없습니다."));
@@ -27,4 +26,8 @@ public class AdminService {
 //        return "OK";
         return user.getId();
     }
+
+//    public Long UpdateUserGrade(Long id) {
+//        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundUserByIdException("해당 ID의 유저가 없습니다."));
+//    }
 }

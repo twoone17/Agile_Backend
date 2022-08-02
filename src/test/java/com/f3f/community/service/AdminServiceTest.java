@@ -1,6 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
@@ -13,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -63,6 +64,21 @@ class AdminServiceTest {
 
         //then
         assertThat(unbannedUser.get().isBanned()).isEqualTo(false);
+    }
 
+    @Test
+    @DisplayName("존재하지 않는 유저 차단 - 차단 해제")
+    public void NoUserToBanToFail() throws Exception {
+        //given
+        User user = createUser();
+
+        //when
+        Long EmptyId = userService.saveUser(user);
+
+        //then
+        assertThrows(NotFoundUserByIdException.class,
+                () -> adminService.banUser(1234L));
+        assertThrows(NotFoundUserByIdException.class,
+                () -> adminService.unbanUser(1234L));
     }
 }
