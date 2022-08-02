@@ -102,6 +102,23 @@ class UserServiceTest {
 
 
     @Test
+    @DisplayName("비밀번호 변경 성공")
+    public void ChangePasswordTest() throws Exception {
+        //given
+        String newPW = "changed";
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(user.getEmail(), newPW, user.getPassword());
+        String result = userService.updatePassword(changePasswordRequest);
+
+        //then
+        assertThat(result).isEqualTo("OK");
+        assertThat(user.getPassword()).isEqualTo(newPW);
+    }
+
+    @Test
     @DisplayName("비밀번호 변경 - 변경 전 비밀번호와 일치")
     public void ChangePassword_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
@@ -125,6 +142,23 @@ class UserServiceTest {
         //when & then
         IllegalArgumentException e = assertThrows(NotFoundUserException.class, () -> userService.updatePassword(changePasswordRequest));
 
+    }
+
+    @Test
+    @DisplayName("닉네임 변경 성공")
+    public void ChangeNicknameTest() throws Exception {
+        //given
+        String newNickname = "changed";
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user.getEmail(), newNickname, user.getNickname());
+        String result = userService.updateNickname(changeNicknameRequest);
+
+        //then
+        assertThat(result).isEqualTo("OK");
+        assertThat(user.getNickname()).isEqualTo(newNickname);
     }
 
     @Test
@@ -168,19 +202,21 @@ class UserServiceTest {
     }
 
 
-//    @Test
-//    @DisplayName("회원탈퇴 성공 테스트")
-//    public void deleteUserTest() {
-//        //given
-//        User user = createUser();
-//
-//        //when
-//        userService.saveUser(user);
-//        String msg = userService.delete(user.getEmail(), user.getPassword());
-//
-//        //then
-//        assertThat(msg).isEqualTo("OK");
-//    }
+    @Test
+    @DisplayName("회원탈퇴 성공 테스트")
+    public void deleteUserTest() {
+       //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        UserRequest userRequest = new UserRequest(user.getEmail(), user.getPassword());
+        String result = userService.delete(userRequest);
+
+        //then
+        assertThat(result).isEqualTo("OK");
+        assertThat(userRepository.existsByEmail(userRequest.getEmail())).isEqualTo(false);
+    }
 
 //    @Test
 //    @DisplayName("회원탈퇴 실패 테스트 - 이메일 비밀번호 불일치")

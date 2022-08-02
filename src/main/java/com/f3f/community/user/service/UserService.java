@@ -70,27 +70,30 @@ public class UserService {
 
 
     @Transactional
-    public String delete(String email, String password) {
+    public String delete(UserRequest userRequest) {
 
-        // delete에 들어가기엔 위험요소가 있음 - DB에 존재여부만 보고 삭제한다는게 말이 안된다고 함
-        //
-        //if(!userRepository.existsByEmailAndPassword(email, password)) {
-        //    throw new NoEmailAndPasswordException("이메일이나 비밀번호가 일치하지 않습니다.");
-        //}
-
-        // 로그인 여부(나중에), password 암호화
+        //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
-        // 패스워드도 DB에 존재하는지 검사하고,
 
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(() -> new NotFoundUserException());
 
+        if(!userRepository.existsByPassword(userRequest.getPassword())) {
+            throw new InvalidPasswordException();
+        }
 
-        userRepository.deleteByEmail(email);
+        // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
+        // 요청으로 들어온 패스워드와 DB에서 이메일로 받아온 유저 객체의 패스워드를 비교한다.
+        if(!user.getPassword().equals(userRequest.getPassword())) {
+            throw new NotMatchPasswordInDeleteUserException();
+        }
+
+        userRepository.deleteByEmail(userRequest.getEmail());
         return "OK";
     }
 
     //  유저 조회
     //  repository에서 제공하긴 하지만 에러 처리,
-    //  조회 관련 추가
+
 
     //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
 

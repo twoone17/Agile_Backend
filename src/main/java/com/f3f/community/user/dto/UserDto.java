@@ -100,7 +100,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class LoginRequest {
+    public static class UserRequest {
         private String email;
         private String password;
     }
