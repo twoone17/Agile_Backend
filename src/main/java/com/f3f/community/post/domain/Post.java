@@ -1,6 +1,7 @@
 package com.f3f.community.post.domain;
 
 
+import com.f3f.community.category.domain.Category;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
@@ -45,11 +46,13 @@ public class Post {
 
     private int viewCount;
 
-    @OneToMany(mappedBy = "post",fetch = LAZY)
+    @ManyToOne(fetch = LAZY)
+    private Category category;
+    @OneToMany(mappedBy = "post", fetch = LAZY)
     private List<ScrapPost> scrapList = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", fetch = LAZY)
-    private List<Comment> comments = new ArrayList<>();
+    private List<Comment> commentList = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", fetch = LAZY)
     private List<Likes> likesList = new ArrayList<>();
@@ -58,15 +61,16 @@ public class Post {
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder
-    public Post(User author,String title,String content,List<Media> media,int viewCount,List<ScrapPost> scraps,List<Comment> comments,List<Likes> likesList,List<PostTag> tagList)
+    public Post(User author,String title,String content,List<Media> media,int viewCount,Category category,List<ScrapPost> scraps,List<Comment> commentList,List<Likes> likesList,List<PostTag> tagList)
     {
         this.author = author;
         this.title = title;
         this.content = content;
         this.media = media;
         this.viewCount = viewCount;
+        this.category = category;
         this.scrapList = scraps;
-        this.comments = comments;
+        this.commentList = commentList;
         this.likesList = likesList;
         this.tagList = tagList;
 
@@ -89,7 +93,7 @@ public class Post {
                 .media(this.media)
                 .viewCount(this.viewCount)
                 .scrapList(this.scrapList)
-                .comments(this.comments)
+                .commentList(this.commentList)
                 .likesList(this.likesList)
                 .tagList(this.tagList)
                 .build();

@@ -216,6 +216,7 @@ public class PostServiceTest {
                 .content("content1")
                 .build();
     //when
+        Long uid = userService.saveUser(author);
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
 
     //then
@@ -260,6 +261,8 @@ public class PostServiceTest {
                 .content("content4")
                 .build();
         //when
+        Long uid1 = userService.saveUser(author1);
+        Long uid2 = userService.saveUser(author2);
         Long postid1 = postService.SavePost(postDto1); //author1 게시글 저장
         Long postid2 = postService.SavePost(postDto2); //author1 게시글 저장
         Long postid3 = postService.SavePost(postDto3); //author1 게시글 저장
@@ -292,6 +295,8 @@ public class PostServiceTest {
                 .content("content1")
                 .build();
         //when
+        Long uid1 = userService.saveUser(author);
+        Long uid2 = userService.saveUser(author2);
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
         userRepository.save(author2); //TODO: 이부분 추가해서 일단 에러 안남
         //then
@@ -316,6 +321,7 @@ public class PostServiceTest {
                 .content("content1")
                 .build();
         //when
+        Long uid = userService.saveUser(author);
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
 
         //then
@@ -360,6 +366,8 @@ public class PostServiceTest {
                 .content("content4")
                 .build();
         //when
+        Long uid1 = userService.saveUser(author1);
+        Long uid2 = userService.saveUser(author2);
         Long postid1 = postService.SavePost(postDto1); //title1 게시글 저장
         Long postid2 = postService.SavePost(postDto2); //title2 게시글 저장
         Long postid3 = postService.SavePost(postDto3); //title3 게시글 저장
@@ -386,6 +394,7 @@ public class PostServiceTest {
                 .content("content1")
                 .build();
         //when
+        Long uid = userService.saveUser(author);
         Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
 
         //then

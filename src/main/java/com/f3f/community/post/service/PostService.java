@@ -40,15 +40,15 @@ public class PostService {
             throw new NotFoundPostTitleException();
         if(SaveRequest.getContent()==null)
             throw new NotFoundPostContentException();
-        //category는 추후에 추가예정
-//        if(SaveDto.getCategory()==null)
+//        if(SaveRequest.getCategory()==null)
 //            throw new NotFoundPostCategoryException();
 
         Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
         User author = post.getAuthor();
         postRepository.save(post); //postRepository에 저장
         author.getPosts().add(post); //author의 postList에도 저장
-        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
+        post.getCategory().getPostList().add(post);
+//        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
         return post.getId();
     }
