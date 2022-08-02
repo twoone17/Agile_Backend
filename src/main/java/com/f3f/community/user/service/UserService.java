@@ -42,7 +42,7 @@ public class UserService {
         }
 
         if(beforeNickname.equals(afterNickname)) {
-            throw new DuplicateInChangeNicknameException();
+            throw new DuplicateNicknameException();
         }
 
         user.updateNickname(afterNickname);

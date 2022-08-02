@@ -26,7 +26,7 @@ class UserServiceTest {
     UserService userService;
 
     private User createUser() {
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -50,6 +50,12 @@ class UserServiceTest {
                 userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
                 break;
         }
+        User user = userInfo.toEntity();
+        return user;
+    }
+
+    private User createUserWithUniqueCount(int i) {
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com" + i, "ppadb123" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -114,8 +120,7 @@ class UserServiceTest {
     @DisplayName("비밀번호 변경 - 이메일 누락")
     public void ChangePassword_MissingEmail() {
         //given
-        ChangePasswordRequest changePasswordRequest =
-                new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
 
         //when & then
         IllegalArgumentException e = assertThrows(NotFoundUserException.class, () -> userService.updatePassword(changePasswordRequest));
@@ -130,19 +135,17 @@ class UserServiceTest {
         userService.saveUser(user);
 
         // given - 그 후 위에서 생성한 유저의 이메일로 닉네임 변경을 요청하겠다.
-        ChangeNicknameRequest changeNicknameRequest =
-                new ChangeNicknameRequest(user.getEmail(), user.getNickname(), user.getNickname());
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user.getEmail(), user.getNickname(), user.getNickname());
 
         // when & then
-        IllegalArgumentException e = assertThrows(DuplicateInChangeNicknameException.class, () -> userService.updateNickname(changeNicknameRequest));
+        IllegalArgumentException e = assertThrows(DuplicateNicknameException.class, () -> userService.updateNickname(changeNicknameRequest));
     }
 
     @Test
     @DisplayName("닉네임 변경 - 존재하지 않는 이메일")
     public void ChangeNickname_MissingEmail() {
         //given
-        ChangeNicknameRequest changeNicknameRequest =
-                new ChangeNicknameRequest("emptyEmail", "james", "michael");
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest("emptyEmail", "james", "michael");
 
         //when & then
         assertThrows(NotFoundUserException.class, () -> userService.updateNickname(changeNicknameRequest));
@@ -152,11 +155,16 @@ class UserServiceTest {
     @DisplayName("닉네임 변경 - 이미 존재하는 닉네임")
     public void ChangeNicknameToAlreadyExists() throws Exception {
         //given
-
+        User user1 = createUserWithParams("email");
+        User user2 = createUser();
+        userService.saveUser(user1);
+        userService.saveUser(user2);
 
         //when
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user1.getEmail(), user2.getNickname(), user1.getNickname());
 
         //then
+        assertThrows(DuplicateNicknameException.class, () -> userService.updateNickname(changeNicknameRequest));
     }
 
 
