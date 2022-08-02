@@ -48,6 +48,7 @@ public class PostService {
         User author = post.getAuthor();
         postRepository.save(post); //postRepository에 저장
         author.getPosts().add(post); //author의 postList에도 저장
+        post.getCategory().getPostList().add(post);
 //        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
         return post.getId();
