@@ -138,6 +138,44 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("닉네임 변경 - 변경 전 닉네임과 일치")
+    public void ChangeNickname_DuplicationToFail()  {
+        // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
+        SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
+                UserGrade.BRONZE, "CheolWoong", "changwon");
+        User user = saveRequest1.toEntity();
+        userService.saveUser(user);
+
+        // given - 그 후 위에서 생성한 유저의 이메일로 닉네임 변경을 요청하겠다.
+        ChangeNicknameRequest changeNicknameRequest =
+                new ChangeNicknameRequest("oldstyle4@naver.com", "CheolWoong", "CheolWoong");
+
+        // when
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> userService.updateNickname(changeNicknameRequest));
+
+        // then
+        assertThat(e.getMessage()).isEqualTo("기존 닉네임과 변경 닉네임이 일치합니다.");
+    }
+
+    @Test
+    @DisplayName("닉네임 변경 - 이메일 누락")
+    public void ChangeNickname_MissingEmail() {
+        //given
+        ChangeNicknameRequest changeNicknameRequest =
+                new ChangeNicknameRequest("emptyEmail", "james", "michael");
+
+        //when
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> userService.updateNickname(changeNicknameRequest));
+
+        //then
+        assertThat(e.getMessage()).isEqualTo("닉네임을 변경할 사용자가 존재하지 않습니다.");
+    }
+
+
+
+    @Test
     @DisplayName("회원탈퇴 성공 테스트")
     public void deleteUserTest() {
         //given
