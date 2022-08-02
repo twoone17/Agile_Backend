@@ -33,7 +33,7 @@ public class ScrapService {
     // 스크랩 컬렉션 생성
     @Transactional
     public Long createScrap(SaveRequest saveRequest) throws Exception{
-        if (saveRequest.getName() == null) {
+        if (saveRequest.getName() == null || saveRequest.getName().length() == 0) {
             throw new NotFoundScrapNameException();
         }
         if (saveRequest.getUser() == null) {
@@ -94,6 +94,12 @@ public class ScrapService {
             if (userScrap.getName().equals(newName)) {
                 throw new DuplicateScrapNameException();
             }
+        }
+        if (newName == null) {
+            throw new NotFoundNewScrapNameException();
+        }
+        if (newName == "") {
+            throw new NotFoundNewScrapNameException("스크랩 이름이 empty String입니다");
         }
         scrap.updateScrap(newName);
         scrapRepository.save(scrap);
