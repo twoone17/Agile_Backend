@@ -1,5 +1,6 @@
 package com.f3f.community.post.dto;
 
+import com.f3f.community.category.domain.Category;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
@@ -38,9 +39,11 @@ public class PostDto {
 
         private int viewCount;
 
+        private Category category;
+
         private List<ScrapPost> scrapList = new ArrayList<>();
 
-        private List<Comment> comments = new ArrayList<>();
+        private List<Comment> commentList = new ArrayList<>();
 
         private List<Likes> likesList = new ArrayList<>();
 
@@ -57,8 +60,9 @@ public class PostDto {
                     .content(this.content)
                     .media(this.media)
                     .viewCount(this.viewCount)
+                    .category(this.category)
                     .scraps(this.scrapList)
-                    .comments(this.comments)
+                    .commentList(this.commentList)
                     .likesList(this.likesList)
                     .tagList(this.tagList)
                     .build();

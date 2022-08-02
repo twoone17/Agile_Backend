@@ -52,7 +52,6 @@ public class ScrapService {
         }
         scrapRepository.save(newScrap);
         user.getScraps().add(newScrap);
-        userRepository.save(user);
 
         return newScrap.getId();
     }
@@ -72,8 +71,6 @@ public class ScrapService {
             scrapPostRepository.save(scrapPost);
             scrap.getPostList().add(scrapPost);
             post.getScrapList().add(scrapPost);
-            scrapRepository.save(scrap);
-            postRepository.save(post);
             return scrapPost.getId();
         } else {
             throw new DuplicateScrapPostException();
@@ -102,7 +99,6 @@ public class ScrapService {
             throw new NotFoundNewScrapNameException("스크랩 이름이 empty String입니다");
         }
         scrap.updateScrap(newName);
-        scrapRepository.save(scrap);
 
         return "ok";
 
@@ -127,8 +123,6 @@ public class ScrapService {
         scrap.getPostList().remove(scrapPost);
         post.getScrapList().remove(scrapPost);
         scrapPostRepository.delete(scrapPost);
-        scrapRepository.save(scrap);
-        postRepository.save(post);
         return "ok";
 
     }
