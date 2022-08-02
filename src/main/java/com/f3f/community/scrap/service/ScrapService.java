@@ -2,7 +2,7 @@ package com.f3f.community.scrap.service;
 
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.repository.PostRepository;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.f3f.community.scrap.dto.ScrapDto.*;
@@ -88,7 +87,7 @@ public class ScrapService {
     @Transactional
     public String updateCollectionName(Long scrapId, Long userId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
-        User user = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        User user = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
         List<Scrap> scraps = user.getScraps();
         for (Scrap userScrap : scraps) {
             if (userScrap.getName().equals(newName)) {

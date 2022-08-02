@@ -105,5 +105,6 @@ public class UserDto {
         private String password;
     }
 
+    // 유저 정보 조회용 DTO 만들기
 
 }

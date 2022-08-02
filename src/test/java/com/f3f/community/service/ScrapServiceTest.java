@@ -2,7 +2,7 @@ package com.f3f.community.service;
 
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import static com.f3f.community.scrap.dto.ScrapDto.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
@@ -311,7 +311,7 @@ class ScrapServiceTest {
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundUserByIdException.class, () -> scrapService.updateCollectionName(scrap2 , userId+1, "test3"));
+        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , userId+1, "test3"));
 
     }
 

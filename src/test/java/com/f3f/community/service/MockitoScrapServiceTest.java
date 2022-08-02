@@ -1,6 +1,6 @@
 package com.f3f.community.service;
 
-import com.f3f.community.exception.userException.EmailDuplicationException;
+import com.f3f.community.exception.userException.DuplicateEmailException;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 
 
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -91,7 +90,7 @@ public class MockitoScrapServiceTest {
 
 
         // then
-        Assertions.assertThrows(EmailDuplicationException.class, () -> userService.saveUser(userDto.toEntity()));
+        Assertions.assertThrows(DuplicateEmailException.class, () -> userService.saveUser(userDto.toEntity()));
         verify(userRepository, atLeastOnce()).existsByEmail("temp@temp.com");
     }
 }

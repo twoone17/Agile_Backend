@@ -1,7 +1,6 @@
 package com.f3f.community.post.service;
 
 import com.f3f.community.exception.postException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;

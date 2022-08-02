@@ -1,7 +1,6 @@
 package com.f3f.community.user.domain;
 
 import com.f3f.community.comment.domain.Comment;
-import com.f3f.community.exception.userException.NicknameChangeConditionException;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.scrap.domain.Scrap;
@@ -40,23 +39,15 @@ public class User extends UserBase {
 
     private boolean isBanned;
 
-    // List<List<Scrap>> 타입의 Collection 이라는 변수가 필요하다고 생각됨.
 
     public void updatePassword(String password) {
         this.password = password;
     }
 
+    // User 업데이트에서는 서비스 로직 절대로 넣지 말자.
+    // domain 클래스에는 특별한 기능이 들어가면 안됨. 그냥 데이터 처리? 만
     public void updateNickname(String nickname) {
-        if(!undefinedCondition()) {
             this.nickname = nickname;
-        } else {
-            throw new NicknameChangeConditionException();
-        }
-    }
-
-    private boolean undefinedCondition() {
-        // 닉네임 변경 조건 정해지면 작성 예정
-        return true;
     }
 
     public void banUser() {
@@ -70,6 +61,8 @@ public class User extends UserBase {
 //    public void updateUserGrade() {
 //
 //    }
+
+
 
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
