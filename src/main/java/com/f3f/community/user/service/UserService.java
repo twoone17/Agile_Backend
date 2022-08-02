@@ -1,13 +1,12 @@
 package com.f3f.community.user.service;
 
-import com.f3f.community.exception.userException.*;
-import com.f3f.community.post.domain.Post;
-import com.f3f.community.user.domain.User;
-import com.f3f.community.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import com.f3f.community.user.repository.UserRepository;
+import com.f3f.community.exception.userException.*;
+import org.springframework.stereotype.Service;
+import com.f3f.community.user.domain.User;
+import lombok.RequiredArgsConstructor;
+
 
 import static com.f3f.community.user.dto.UserDto.*;
 

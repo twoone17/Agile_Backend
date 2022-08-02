@@ -58,12 +58,12 @@ class ScrapServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, "james", "changwon", false);
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp2.com", "1234567", "01012341234",
-                UserGrade.BRONZE, "own", "seoul");
+                UserGrade.BRONZE, "own", "seoul", false);
     }
     private ScrapDto.SaveRequest createScrapDto1(User user) {
         return ScrapDto.SaveRequest.builder()

@@ -26,7 +26,7 @@ class UserServiceTest {
     UserService userService;
 
     private User createUser() {
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -48,7 +48,7 @@ class UserServiceTest {
     public void findUserByIdTest() {
         // given
         SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, "james", "changwon", false);
         User user = userInfo.toEntity();
 
         // when
@@ -66,9 +66,9 @@ class UserServiceTest {
         // given
         // 이메일 중복 시나리오
         SaveRequest saveRequest1 = new SaveRequest("temp1@temp.com",
-                "12345", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                "12345", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
         SaveRequest saveRequest2 = new SaveRequest("temp1@temp.com",
-                "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap");
+                "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap", false);
 
         User EmailTester1 = saveRequest1.toEntity();
         User EmailTester2 = saveRequest2.toEntity();
@@ -86,9 +86,9 @@ class UserServiceTest {
     public void NicknameDuplicationTestToFail() {
         //given
         SaveRequest saveRequest1 = new SaveRequest("temp33@temp.com", "12345", "01012345678",
-                UserGrade.BRONZE, "cheolwoong", "changwon");
+                UserGrade.BRONZE, "cheolwoong", "changwon", false);
         SaveRequest saveRequest2 = new SaveRequest("temp312@temp.com", "1234567", "01012345678",
-                UserGrade.BRONZE, "cheolwoong", "yatap");
+                UserGrade.BRONZE, "cheolwoong", "yatap", false);
 
         User NicknameTester1 = saveRequest1.toEntity();
         User NicknameTester2 = saveRequest2.toEntity();
@@ -106,7 +106,7 @@ class UserServiceTest {
     public void ChangePassword_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
         SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
-                UserGrade.BRONZE, "CheolWoong", "changwon");
+                UserGrade.BRONZE, "CheolWoong", "changwon", false);
         User user = saveRequest1.toEntity();
         userService.saveUser(user);
 
@@ -134,8 +134,46 @@ class UserServiceTest {
                 () -> userService.updatePassword(changePasswordRequest));
 
         //then
-        assertThat(e.getMessage()).isEqualTo("사용자가 존재하지 않습니다.");
+        assertThat(e.getMessage()).isEqualTo("비밀번호를 변경할 사용자가 존재하지 않습니다.");
     }
+
+    @Test
+    @DisplayName("닉네임 변경 - 변경 전 닉네임과 일치")
+    public void ChangeNickname_DuplicationToFail()  {
+        // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
+        SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
+                UserGrade.BRONZE, "CheolWoong", "changwon", false);
+        User user = saveRequest1.toEntity();
+        userService.saveUser(user);
+
+        // given - 그 후 위에서 생성한 유저의 이메일로 닉네임 변경을 요청하겠다.
+        ChangeNicknameRequest changeNicknameRequest =
+                new ChangeNicknameRequest("oldstyle4@naver.com", "CheolWoong", "CheolWoong");
+
+        // when
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> userService.updateNickname(changeNicknameRequest));
+
+        // then
+        assertThat(e.getMessage()).isEqualTo("기존 닉네임과 변경 닉네임이 일치합니다.");
+    }
+
+    @Test
+    @DisplayName("닉네임 변경 - 이메일 누락")
+    public void ChangeNickname_MissingEmail() {
+        //given
+        ChangeNicknameRequest changeNicknameRequest =
+                new ChangeNicknameRequest("emptyEmail", "james", "michael");
+
+        //when
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> userService.updateNickname(changeNicknameRequest));
+
+        //then
+        assertThat(e.getMessage()).isEqualTo("닉네임을 변경할 사용자가 존재하지 않습니다.");
+    }
+
+
 
     @Test
     @DisplayName("회원탈퇴 성공 테스트")
