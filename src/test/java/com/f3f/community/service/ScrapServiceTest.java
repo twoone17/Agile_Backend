@@ -118,11 +118,27 @@ class ScrapServiceTest {
     }
 
     @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 없어서 생성안된다")
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 null 이어서 생성안된다")
     public void createScrapTestToFailByNullName() throws Exception{
         //given
         ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
                 .user(new User())
+                .postList(new ArrayList<ScrapPost>())
+                .build();
+
+
+        // then
+        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
+
+    }
+
+    @Test
+    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 empty String 이어서 생성안된다")
+    public void createScrapTestToFailByEmptyName() throws Exception{
+        //given
+        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
+                .user(new User())
+                .name("")
                 .postList(new ArrayList<ScrapPost>())
                 .build();
 
@@ -328,6 +344,38 @@ class ScrapServiceTest {
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
         assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, "test2"));
+
+    }
+
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - null 이름")
+    public void updateNameTestToFailByNullName() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, null));
+
+    }
+
+    @Test
+    @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 빈 이름")
+    public void updateNameTestToFailByEmptyName() throws Exception{
+        //given
+        User user = createUserDto1().toEntity();
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        // when
+        Long userId = userService.saveUser(user);
+        Long scrap1 = scrapService.createScrap(saveRequest1);
+        Long scrap2 = scrapService.createScrap(saveRequest2);
+        // then
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, ""));
 
     }
 
