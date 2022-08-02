@@ -29,7 +29,7 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -65,9 +65,9 @@ public class User extends UserBase {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
-        this.posts = posts;
-        this.comments = comments;
-        this.likes = likes;
-        this.scraps = scraps;
+        this.posts = new ArrayList<>();
+        this.comments = new ArrayList<>();
+        this.likes = new ArrayList<>();
+        this.scraps = new ArrayList<>();
     }
 }
