@@ -1,12 +1,11 @@
 package com.f3f.community.admin.service;
 
+import com.f3f.community.exception.userException.NotFoundUserByIdException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,8 +14,17 @@ public class AdminService {
     private final UserRepository userRepository;
     private final UserService userService;
 
-    public String banUser(Long id) {
-        Optional<User> byId = userRepository.findById(id);
-        return "구현중";
+    public Long banUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundUserByIdException("해당 ID의 유저가 없습니다."));
+        user.banUser();
+//        return "OK";
+        return user.getId();
+    }
+
+    public Long unbanUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NotFoundUserByIdException("해당 ID의 유저가 없습니다."));
+        user.unBanUser();
+//        return "OK";
+        return user.getId();
     }
 }

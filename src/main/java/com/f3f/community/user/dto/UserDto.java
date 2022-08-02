@@ -37,6 +37,7 @@ public class UserDto {
         @Size(min = 4, max = 10)
         private String nickname;
         private String address;
+        private boolean isBanned;
 
 
         public User toEntity() {
@@ -47,6 +48,7 @@ public class UserDto {
                     .userGrade(this.userGrade)
                     .phone(this.phone)
                     .address(this.address)
+                    .isBanned(this.isBanned)
                     .build();
         }
     }

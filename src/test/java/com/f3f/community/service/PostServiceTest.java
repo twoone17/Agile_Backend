@@ -48,12 +48,12 @@ public class PostServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, "james", "changwon", false);
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp.com", "123456", "010123456782",
-                UserGrade.BRONZE, "euisung", "seoul");
+                UserGrade.BRONZE, "euisung", "seoul", false);
     }
 
     //Dto create TODO: 주석 처리 한것은 왜 빌드가 안되는지 ?

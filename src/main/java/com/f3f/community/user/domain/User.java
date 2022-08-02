@@ -38,6 +38,8 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
 
+    private boolean isBanned;
+
     // List<List<Scrap>> 타입의 Collection 이라는 변수가 필요하다고 생각됨.
 
     public void updatePassword(String password) {
@@ -57,11 +59,18 @@ public class User extends UserBase {
         return true;
     }
 
+    public void banUser() {
+        this.isBanned = true;
+    }
+
+    public void unBanUser() {
+        this.isBanned = false;
+    }
 
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address, List<Post> posts, List<Comment> comments,
-                List<Likes> likes, List<Scrap> scraps) {
+                List<Likes> likes, List<Scrap> scraps, boolean isBanned) {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
@@ -69,5 +78,6 @@ public class User extends UserBase {
         this.comments = comments;
         this.likes = likes;
         this.scraps = scraps;
+        this.isBanned = isBanned;
     }
 }
