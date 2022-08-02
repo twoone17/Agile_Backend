@@ -1,6 +1,7 @@
 package com.f3f.community.user.service;
 
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.post.domain.Post;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,47 +25,57 @@ public class UserService {
         if(userRepository.existsByNickname(user.getNickname())) {
             throw new NicknameDuplicationException();
         }
-        if(user.getNickname().equals("")) {
-            throw new NoEssentialFieldException("닉네임 누락");
-        }
-        if(user.getEmail().equals("")) {
-            throw new NoEssentialFieldException("이메일 누락");
-        }
-        if(user.getPassword().equals("")) {
-            throw new NoEssentialFieldException("비밀번호 누락");
-        }
         User saveUser = userRepository.save(user);
         return saveUser.getId();
     }
 
-    public List<User> findUsers() {
-        return userRepository.findAll();
+    @Transactional
+    public String updateNickname(ChangeNicknameRequest changeNicknameRequest) {
+        String email = changeNicknameRequest.getEmail();
+        String beforeNickname = changeNicknameRequest.getBeforeNickname();
+        String afterNickname = changeNicknameRequest.getAfterNickname();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException("닉네임을 변경할 사용자가 존재하지 않습니다."));
+
+        if(beforeNickname.equals(afterNickname)) {
+            throw new IllegalArgumentException("기존 닉네임과 변경 닉네임이 일치합니다.");
+        }
+
+        user.updateNickname(afterNickname);
+        return "OK";
     }
 
     @Transactional
-    public void updatePassword(ChangePasswordRequest changePasswordRequest) {
+    public String updatePassword(ChangePasswordRequest changePasswordRequest) {
         String email = changePasswordRequest.getEmail();
+        String beforePassword = changePasswordRequest.getBeforePassword();
+        String afterPassword = changePasswordRequest.getAfterPassword();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new EmailNotFoundException("비밀번호를 변경할 사용자가 존재하지 않습니다."));
 
-        if(changePasswordRequest.getBeforePassword().equals(changePasswordRequest.getAfterPassword()))
+        if(beforePassword.equals(afterPassword)) {
             throw new IllegalArgumentException("기존 비밀번호와 변경 비밀번호가 일치합니다.");
+        }
 
-        user.updatePassword(changePasswordRequest.getAfterPassword());
+        user.updatePassword(afterPassword);
+
+        return "OK";
     }
 
+
     @Transactional
-    public void delete(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("사용자가 존재하지 않습니다."));
+    public String delete(String email, String password) {
 
         if(!userRepository.existsByEmailAndPassword(email, password)) {
-            throw new NoEmailAndPasswordException("이메일과 비밀번호가 없습니다.");
+            throw new NoEmailAndPasswordException("이메일이나 비밀번호가 일치하지 않습니다.");
         }
-        // 구현 예정
-
+        userRepository.deleteByEmail(email);
+        return "OK";
     }
+
+
 
 
 }

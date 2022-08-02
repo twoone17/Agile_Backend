@@ -1,6 +1,6 @@
 package com.f3f.community.service;
 
-import com.f3f.community.exception.userException.NoEssentialFieldException;
+import com.f3f.community.exception.userException.NoEmailAndPasswordException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.repository.UserRepository;
@@ -25,13 +25,17 @@ class UserServiceTest {
     @Autowired
     UserService userService;
 
+    private User createUser() {
+        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        User user = userInfo.toEntity();
+        return user;
+    }
+
     @Test
     @DisplayName("유저서비스 가입 테스트")
     public void UserSaveTest() {
         // given
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
-        User user = userInfo.toEntity();
+        User user = createUser();
         // when
         Long joinId = userService.saveUser(user);
         Optional<User> byId = userRepository.findById(joinId);
@@ -54,28 +58,7 @@ class UserServiceTest {
         // then
         assertThat(byId.get().getId()).isEqualTo(joinId);
     }
-
-    @Test
-    @DisplayName("모든 유저 검색 테스트")
-    public void findAllUsersTest() {
-        // given
-        SaveRequest saveRequest1 = new SaveRequest("temp1@temp.com",
-                "12345", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
-        SaveRequest saveRequest2 = new SaveRequest("temp2@temp.com",
-                "1234567", "01012345678",
-                UserGrade.BRONZE, "jack", "yatap");
-
-        User user1 = saveRequest1.toEntity();
-        User user2 = saveRequest2.toEntity();
-
-        //when
-        userService.saveUser(user1);
-        userService.saveUser(user2);
-
-        //then
-        assertThat(userService.findUsers().size()).isEqualTo(2);
-    }
+    
 
     @Test
     @DisplayName("이메일 중복 검사 테스트")
@@ -116,54 +99,7 @@ class UserServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> userService.saveUser(NicknameTester2));
     }
-    
-    @Test
-    @DisplayName("닉네임 누락 테스트")
-    public void MissingNicknameTestToFail() {
-        //given
-        SaveRequest saveRequest1 = new SaveRequest("temp33@temp.com", "12345", "01012345678",
-                UserGrade.BRONZE, "", "changwon");
-        User NoNicknameUser = saveRequest1.toEntity();
 
-        //when
-        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.saveUser(NoNicknameUser));
-
-        //then
-        assertThat(e.getMessage()).isEqualTo("닉네임 누락");
-    }
-
-    @Test
-    @DisplayName("이메일 누락 테스트")
-    public void MissingEmailTestToFail() {
-        //given
-        SaveRequest saveRequest1 = new SaveRequest("", "12345", "01012345678",
-                UserGrade.BRONZE, "CheolWoong", "changwon");
-        User NoEmailUser = saveRequest1.toEntity();
-
-        //when
-        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.saveUser(NoEmailUser));
-
-        //then
-        assertThat(e.getMessage()).isEqualTo("이메일 누락");
-    }
-
-    @Test
-    @DisplayName("비밀번호 누락 테스트")
-    public void MissingPasswordTestToFail() {
-        //given
-        SaveRequest saveRequest1 = new SaveRequest("temmp@temp.com", "", "01012345678",
-                UserGrade.BRONZE, "CheolWoong", "changwon");
-        User NoPasswordUser = saveRequest1.toEntity();
-
-        //when
-        IllegalArgumentException e = assertThrows(NoEssentialFieldException.class,
-                () -> userService.saveUser(NoPasswordUser));
-
-        //then
-        assertThat(e.getMessage()).isEqualTo("비밀번호 누락");
-    }
 
     @Test
     @DisplayName("비밀번호 변경 - 변경 전 비밀번호와 일치")
@@ -199,6 +135,34 @@ class UserServiceTest {
 
         //then
         assertThat(e.getMessage()).isEqualTo("사용자가 존재하지 않습니다.");
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 성공 테스트")
+    public void deleteUserTest() {
+        //given
+        User user = createUser();
+
+        //when
+        userService.saveUser(user);
+        String msg = userService.delete(user.getEmail(), user.getPassword());
+
+        //then
+        assertThat(msg).isEqualTo("OK");
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 실패 테스트 - 이메일 비밀번호 불일치")
+    public void delete() {
+        //given
+        User user = createUser();
+
+        //when
+        userService.saveUser(user);
+        NoEmailAndPasswordException e = assertThrows(NoEmailAndPasswordException.class,
+                () -> userService.delete("oldstyle4@naver.com", "123456789a"));
+        //then
+        assertThat(e.getMessage()).isEqualTo("이메일이나 비밀번호가 일치하지 않습니다.");
     }
 
 }
