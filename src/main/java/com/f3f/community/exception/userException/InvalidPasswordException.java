@@ -1,5 +1,5 @@
 package com.f3f.community.exception.userException;
 
 public class InvalidPasswordException extends IllegalArgumentException{
-    public InvalidPasswordException() {super("존재하지 않는 패스워드입니다.");}
+    public InvalidPasswordException() {super("유효하지 않은 비밀번호입니다.");}
 }

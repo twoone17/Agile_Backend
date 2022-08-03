@@ -6,19 +6,14 @@ import com.f3f.community.exception.userException.*;
 import org.springframework.stereotype.Service;
 import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
 
 
-import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
-@Validated
+//@Validated
 @RequiredArgsConstructor
 public class UserService {
 
@@ -26,6 +21,18 @@ public class UserService {
 
     @Transactional
     public Long saveUser(User user) {
+
+        if(user.getEmail().length() <= 0) {
+            throw new InvalidEmailException();
+        }
+
+        if(user.getPassword().length() <= 0) {
+            throw new InvalidPasswordException();
+        }
+
+        if(user.getNickname().length() <= 0) {
+            throw new InvalidNicknameException();
+        }
 
         if(userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateEmailException();
@@ -43,7 +50,7 @@ public class UserService {
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        User user = FindUserByEmail(email);
 
 
         if(userRepository.existsByNickname(afterNickname)) {
@@ -64,7 +71,7 @@ public class UserService {
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        User user = FindUserByEmail(email);
 
         if(beforePassword.equals(afterPassword)) {
             throw new DuplicateInChangePasswordException();
@@ -75,19 +82,22 @@ public class UserService {
         return "OK";
     }
 
-    // findPassword, findEmail
+//    public String findPasswordWithoutSignIn() {
+//
+//    }
+//      findPassword, findEmail
 
 
     @Transactional
-    public String delete(@Valid UserRequest userRequest) {
+    public String delete(UserRequest userRequest) {
 
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
 
-        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(() -> new NotFoundUserException());
+        User user = FindUserByEmail(userRequest.getEmail());
 
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
-            throw new InvalidPasswordException();
+            throw new NotFoundPasswordException();
         }
 
         // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
@@ -100,10 +110,22 @@ public class UserService {
         return "OK";
     }
 
-    //  유저 조회
-    //  repository에서 제공하긴 하지만 에러 처리,
+    // 공통화
+    private User FindUserByEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        return user;
+    }
 
+    public User FindUserByUserRequest(UserRequest userRequest) {
+        if(!userRepository.existsByPassword(userRequest.getPassword())) {
+            throw new NotFoundPasswordException();
+        }
+        User user = FindUserByEmail(userRequest.getEmail());
+        return user;
+    }
 
-    //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
+//    public User FindUsersByNickname(String nickname) {
+//
+//    }
 
 }

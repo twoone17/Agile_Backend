@@ -5,15 +5,12 @@ import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.h2.command.ddl.CreateUser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +27,7 @@ class UserServiceTest {
     UserService userService;
 
     private User createUser() {
-        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -39,19 +36,19 @@ class UserServiceTest {
         SaveRequest userInfo;
         switch (key) {
             case "email" :
-                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
                 break;
             case "password" :
-                userInfo = new SaveRequest("temp@temp.com", "UniquePassword", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
                 break;
             case "phone" :
-                userInfo = new SaveRequest("temp@temp.com", "123456", "uniquePhone", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, "james", "changwon", false);
                 break;
             case "nickname" :
-                userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon", false);
                 break;
             default:
-                userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
                 break;
         }
         User user = userInfo.toEntity();
@@ -59,7 +56,7 @@ class UserServiceTest {
     }
 
     private User createUserWithUniqueCount(int i) {
-        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com" + i, "ppadb123" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu", false);
+        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -77,15 +74,44 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - 이메일 누락")
+    @DisplayName("회원가입 실패 - 유효하지 않은 이메일")
     public void MissingEmailInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("12356789", "1231",
-                "01012345678", UserGrade.BRONZE, "james", "here", false);
+        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here", false);
+
         //when
+        User user = saveRequest.toEntity();
 
         //then
+        assertThrows(InvalidEmailException.class, () -> userService.saveUser(user));
     }
+
+    @Test
+    @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")
+    public void MissingPasswordInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, "james", "here", false);
+
+        //when
+        User user = saveRequest.toEntity();
+
+        //then
+        assertThrows(InvalidPasswordException.class, () -> userService.saveUser(user));
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 유효하지 않은 닉네임")
+    public void MissingNicknameInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, "", "here", false);
+
+        //when
+        User user = saveRequest.toEntity();
+
+        //then
+        assertThrows(InvalidNicknameException.class, () -> userService.saveUser(user));
+    }
+
 
     @Test
     @DisplayName("이메일 중복 검사 테스트")
@@ -238,7 +264,7 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 존재하지 않는 유저 이메일")
     public void deleteInvalidEmailUserToFail() {
         //given
-        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+        UserRequest userRequest = new UserRequest("invalidEmail@Email.com", "tempPW123@");
 
         //when & then
         assertThrows(NotFoundUserException.class, () -> userService.delete(userRequest));
@@ -252,10 +278,10 @@ class UserServiceTest {
         userService.saveUser(user);
 
         //when
-        UserRequest userRequest = new UserRequest(user.getEmail(), "tempPW");
+        UserRequest userRequest = new UserRequest(user.getEmail(), "tempPW12@");
 
         //then
-        assertThrows(InvalidPasswordException.class, () -> userService.delete(userRequest));
+        assertThrows(NotFoundPasswordException.class, () -> userService.delete(userRequest));
     }
 
     @Test
@@ -275,6 +301,5 @@ class UserServiceTest {
         //then
         assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
     }
-
 
 }
