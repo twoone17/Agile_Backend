@@ -16,20 +16,19 @@ public class UserBase extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "user_id")
-    private Long id;
+    protected Long id;
 
     @Column(name = "user_email")
-    private String email;
+    protected String email;
 
     @Column(name = "user_password")
-    private String password;
+    protected String password;
 
     @Column(name = "user_phone")
-    private String phone;
+    protected String phone;
 
     @Enumerated(EnumType.STRING)
-    private UserGrade userGrade;
+    protected UserGrade userGrade;
 
-    @Enumerated(EnumType.STRING)
-    private UserLevel userLevel;
+
 }

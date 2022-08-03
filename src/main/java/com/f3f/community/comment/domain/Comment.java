@@ -1,12 +1,18 @@
 package com.f3f.community.comment.domain;
 
 import com.f3f.community.media.domain.Media;
+import com.f3f.community.post.domain.Post;
+import com.f3f.community.user.domain.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 import javax.persistence.*;
 import java.util.List;
+
+import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -14,15 +20,25 @@ import java.util.List;
 @AllArgsConstructor
 public class Comment {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "comment_id")
     private Long id;
 
+
+
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     private Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
@@ -31,3 +47,4 @@ public class Comment {
     @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
     private List<Media> mediaList;
 }
+
