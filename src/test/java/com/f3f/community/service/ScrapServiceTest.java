@@ -1,5 +1,9 @@
 package com.f3f.community.service;
 
+import com.f3f.community.category.domain.Category;
+import com.f3f.community.category.dto.CategoryDto;
+import com.f3f.community.category.repository.CategoryRepository;
+import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
@@ -45,6 +49,9 @@ class ScrapServiceTest {
     PostService postService;
 
     @Autowired
+    CategoryService categoryService;
+
+    @Autowired
     ScrapRepository scrapRepository;
 
     @Autowired
@@ -55,6 +62,9 @@ class ScrapServiceTest {
 
     @Autowired
     ScrapPostRepository scrapPostRepository;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
@@ -81,22 +91,32 @@ class ScrapServiceTest {
                 .build();
     }
 
-    private PostDto.SaveRequest createPostDto1(User user) {
+    private PostDto.SaveRequest createPostDto1(User user, Category cat) {
         return PostDto.SaveRequest.builder()
                 .title("test title")
                 .content("test content for test")
                 .author(user)
                 .scrapList(new ArrayList<>())
+                .category(cat)
                 .build();
     }
 
-    private PostDto.SaveRequest createPostDto2(User user) {
+    private PostDto.SaveRequest createPostDto2(User user, Category cat) {
         return PostDto.SaveRequest.builder()
                 .title("test title2")
                 .content("test content for test2")
                 .author(user)
                 .scrapList(new ArrayList<>())
+                .category(cat)
                 .build();
+    }
+
+    private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
+        return CategoryDto.SaveRequest.builder()
+                .categoryName(name)
+                .childCategory(new ArrayList<>())
+                .parents(parent)
+                .postList(new ArrayList<>()).build();
     }
 
 
@@ -213,7 +233,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
         // when
         Long uid = userService.saveUser(user);
@@ -230,7 +253,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
         // when
         Long uid = userService.saveUser(user);
@@ -247,7 +273,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
         // when
         Long uid = userService.saveUser(user);
@@ -265,8 +294,11 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post1 = createPostDto1(user);
-        PostDto.SaveRequest post2 = createPostDto2(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post1 = createPostDto1(user, cat);
+        PostDto.SaveRequest post2 = createPostDto2(user, cat);
 
         // when
         Long uid = userService.saveUser(user);
@@ -285,7 +317,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when
@@ -453,11 +488,14 @@ class ScrapServiceTest {
     // deleteCollectionItem 테스트 시작
     @Test
     @DisplayName("deleteCollectionItem 실패 테스트 - 스크랩 아이디 존재 x")
-    public void deleteCollectionItemTesetToFailByScrapId() throws Exception{
+    public void deleteCollectionItemTestToFailByScrapId() throws Exception{
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when
@@ -475,7 +513,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when
@@ -494,7 +535,10 @@ class ScrapServiceTest {
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap1 = createScrapDto1(user);
         ScrapDto.SaveRequest scrap2 = createScrapDto2(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when
@@ -513,7 +557,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when
@@ -533,7 +580,10 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        PostDto.SaveRequest post = createPostDto1(user);
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post = createPostDto1(user, cat);
 
 
         // when

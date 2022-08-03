@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Before;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 
 @Getter
 @Builder
@@ -49,6 +50,10 @@ public class UserDto {
                     .phone(this.phone)
                     .address(this.address)
                     .isBanned(this.isBanned)
+                    .scraps(new ArrayList<>())
+                    .likes(new ArrayList<>())
+                    .posts(new ArrayList<>())
+                    .comments(new ArrayList<>())
                     .build();
         }
     }
