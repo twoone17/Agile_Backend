@@ -2,7 +2,7 @@ package com.f3f.community.scrap.service;
 
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.repository.PostRepository;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.f3f.community.scrap.dto.ScrapDto.*;
@@ -52,7 +51,6 @@ public class ScrapService {
         }
         scrapRepository.save(newScrap);
         user.getScraps().add(newScrap);
-        userRepository.save(user);
 
         return newScrap.getId();
     }
@@ -72,8 +70,6 @@ public class ScrapService {
             scrapPostRepository.save(scrapPost);
             scrap.getPostList().add(scrapPost);
             post.getScrapList().add(scrapPost);
-            scrapRepository.save(scrap);
-            postRepository.save(post);
             return scrapPost.getId();
         } else {
             throw new DuplicateScrapPostException();
@@ -88,7 +84,7 @@ public class ScrapService {
     @Transactional
     public String updateCollectionName(Long scrapId, Long userId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
-        User user = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        User user = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
         List<Scrap> scraps = user.getScraps();
         for (Scrap userScrap : scraps) {
             if (userScrap.getName().equals(newName)) {
@@ -102,7 +98,6 @@ public class ScrapService {
             throw new NotFoundNewScrapNameException("스크랩 이름이 empty String입니다");
         }
         scrap.updateScrap(newName);
-        scrapRepository.save(scrap);
 
         return "ok";
 
@@ -127,8 +122,6 @@ public class ScrapService {
         scrap.getPostList().remove(scrapPost);
         post.getScrapList().remove(scrapPost);
         scrapPostRepository.delete(scrapPost);
-        scrapRepository.save(scrap);
-        postRepository.save(post);
         return "ok";
 
     }

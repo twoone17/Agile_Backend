@@ -1,11 +1,13 @@
 package com.f3f.community.category.domain;
 
+import com.f3f.community.post.domain.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,16 +24,33 @@ public class Category {
     private  String categoryName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categroy_id")
-    private Category parentCategory;
+    private Category parents;
 
-    @OneToMany(mappedBy = "parentCategory" , fetch = FetchType.LAZY)
-    private List<Category> childCategory;
+    @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<Category> childCategory = new ArrayList<>();
+
+    private Long depth;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private List<Post> postList = new ArrayList<>();
 
     @Builder
-    public Category(String categoryName, Category parentCategory, List<Category> childCategory) {
+    public Category(String categoryName, Category parents, List<Category> childCategory, Long depth, List<Post> postList) {
         this.categoryName = categoryName;
-        this.parentCategory = parentCategory;
+        this.parents = parents;
         this.childCategory = childCategory;
+        this.depth = depth;
+        this.postList = postList;
     }
+
+    public void setDepth(Long depth) {
+        this.depth = depth;
+    }
+
+
+    public void updateName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+
 }

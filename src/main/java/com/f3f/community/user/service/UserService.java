@@ -19,10 +19,10 @@ public class UserService {
     @Transactional
     public Long saveUser(User user) {
         if(userRepository.existsByEmail(user.getEmail())) {
-            throw new EmailDuplicationException();
+            throw new DuplicateEmailException();
         }
         if(userRepository.existsByNickname(user.getNickname())) {
-            throw new NicknameDuplicationException();
+            throw new DuplicateNicknameException();
         }
         User saveUser = userRepository.save(user);
         return saveUser.getId();
@@ -34,11 +34,15 @@ public class UserService {
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("닉네임을 변경할 사용자가 존재하지 않습니다."));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+
+
+        if(userRepository.existsByNickname(afterNickname)) {
+            throw new DuplicateNicknameException();
+        }
 
         if(beforeNickname.equals(afterNickname)) {
-            throw new IllegalArgumentException("기존 닉네임과 변경 닉네임이 일치합니다.");
+            throw new DuplicateNicknameException();
         }
 
         user.updateNickname(afterNickname);
@@ -51,11 +55,10 @@ public class UserService {
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("비밀번호를 변경할 사용자가 존재하지 않습니다."));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
 
         if(beforePassword.equals(afterPassword)) {
-            throw new IllegalArgumentException("기존 비밀번호와 변경 비밀번호가 일치합니다.");
+            throw new DuplicateInChangePasswordException();
         }
 
         user.updatePassword(afterPassword);
@@ -63,18 +66,35 @@ public class UserService {
         return "OK";
     }
 
+    // findPassword, findEmail
+
 
     @Transactional
-    public String delete(String email, String password) {
+    public String delete(UserRequest userRequest) {
 
-        if(!userRepository.existsByEmailAndPassword(email, password)) {
-            throw new NoEmailAndPasswordException("이메일이나 비밀번호가 일치하지 않습니다.");
+        //TODO: 로그인 여부(나중에), password 암호화
+        // 이메일 검증, 본인의 이메일임을 검증해야함
+
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(() -> new NotFoundUserException());
+
+        if(!userRepository.existsByPassword(userRequest.getPassword())) {
+            throw new InvalidPasswordException();
         }
-        userRepository.deleteByEmail(email);
+
+        // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
+        // 요청으로 들어온 패스워드와 DB에서 이메일로 받아온 유저 객체의 패스워드를 비교한다.
+        if(!user.getPassword().equals(userRequest.getPassword())) {
+            throw new NotMatchPasswordInDeleteUserException();
+        }
+
+        userRepository.deleteByEmail(userRequest.getEmail());
         return "OK";
     }
 
+    //  유저 조회
+    //  repository에서 제공하긴 하지만 에러 처리,
 
 
+    //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
 
 }

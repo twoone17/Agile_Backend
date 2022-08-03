@@ -1,7 +1,7 @@
 package com.f3f.community.post.service;
 
 import com.f3f.community.exception.postException.*;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -41,15 +41,15 @@ public class PostService {
             throw new NotFoundPostTitleException();
         if(SaveRequest.getContent()==null)
             throw new NotFoundPostContentException();
-        //category는 추후에 추가예정
-//        if(SaveDto.getCategory()==null)
-//            throw new NotFoundPostCategoryException();
+        if(SaveRequest.getCategory()==null)
+            throw new NotFoundPostCategoryException();
 
         Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
         User author = post.getAuthor();
         postRepository.save(post); //postRepository에 저장
         author.getPosts().add(post); //author의 postList에도 저장
-        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
+        post.getCategory().getPostList().add(post);
+//        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
         return post.getId();
     }
@@ -131,7 +131,7 @@ public class PostService {
     public String updatePost(Long postId,Long userId, PostDto.UpdateRequest updateRequest) throws Exception{ //UpdateDto 활용
 
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        User author = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
         List<Post> author_posts = author.getPosts();
         if(!author_posts.contains(post))
         {
@@ -166,7 +166,7 @@ public class PostService {
     @Transactional
     public String deletePost(Long postId, Long userId){
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        User author = userRepository.findById(userId).orElseThrow(NotFoundUserByIdException::new);
+        User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
         List<Post> author_posts = author.getPosts();
         if(!author_posts.contains(post))
         {

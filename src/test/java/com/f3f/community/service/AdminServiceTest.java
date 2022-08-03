@@ -1,7 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
-import com.f3f.community.exception.userException.NotFoundUserByIdException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
@@ -76,9 +76,9 @@ class AdminServiceTest {
         Long EmptyId = userService.saveUser(user);
 
         //then
-        assertThrows(NotFoundUserByIdException.class,
+        assertThrows(NotFoundUserException.class,
                 () -> adminService.banUser(1234L));
-        assertThrows(NotFoundUserByIdException.class,
+        assertThrows(NotFoundUserException.class,
                 () -> adminService.unbanUser(1234L));
     }
 }
