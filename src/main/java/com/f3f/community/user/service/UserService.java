@@ -6,11 +6,19 @@ import com.f3f.community.exception.userException.*;
 import org.springframework.stereotype.Service;
 import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 
+
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class UserService {
 
@@ -18,6 +26,7 @@ public class UserService {
 
     @Transactional
     public Long saveUser(User user) {
+
         if(userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateEmailException();
         }
@@ -70,7 +79,7 @@ public class UserService {
 
 
     @Transactional
-    public String delete(UserRequest userRequest) {
+    public String delete(@Valid UserRequest userRequest) {
 
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함

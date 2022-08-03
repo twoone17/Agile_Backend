@@ -5,11 +5,15 @@ import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
+import org.h2.command.ddl.CreateUser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +77,17 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("회원가입 실패 - 이메일 누락")
+    public void MissingEmailInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("12356789", "1231",
+                "01012345678", UserGrade.BRONZE, "james", "here", false);
+        //when
+
+        //then
+    }
+
+    @Test
     @DisplayName("이메일 중복 검사 테스트")
     public void EmailDuplicationToFailTest() {
         // given
@@ -119,7 +134,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("비밀번호 변경 - 변경 전 비밀번호와 일치")
+    @DisplayName("비밀번호 변경 실패 - 변경 전 비밀번호와 일치")
     public void ChangePassword_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
         User user = createUser();
@@ -134,7 +149,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("비밀번호 변경 - 이메일 누락")
+    @DisplayName("비밀번호 변경 실패 - 이메일 누락")
     public void ChangePassword_MissingEmail() {
         //given
         ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
@@ -143,6 +158,7 @@ class UserServiceTest {
         IllegalArgumentException e = assertThrows(NotFoundUserException.class, () -> userService.updatePassword(changePasswordRequest));
 
     }
+
 
     @Test
     @DisplayName("닉네임 변경 성공")
@@ -162,7 +178,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("닉네임 변경 - 변경 전 닉네임과 일치")
+    @DisplayName("닉네임 변경 실패 - 변경 전 닉네임과 일치")
     public void ChangeNickname_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
         User user = createUser();
@@ -176,7 +192,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("닉네임 변경 - 존재하지 않는 이메일")
+    @DisplayName("닉네임 변경 실패 - 존재하지 않는 이메일")
     public void ChangeNickname_MissingEmail() {
         //given
         ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest("emptyEmail", "james", "michael");
@@ -186,7 +202,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("닉네임 변경 - 이미 존재하는 닉네임")
+    @DisplayName("닉네임 변경 실패 - 이미 존재하는 닉네임")
     public void ChangeNicknameToAlreadyExists() {
         //given
         User user1 = createUserWithParams("email");
@@ -232,9 +248,13 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 존재하지 않는 패스워드")
     public void deleteInvalidPasswordUserToFail() {
         //given
-        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+        User user = createUser();
+        userService.saveUser(user);
 
-        //when & then
+        //when
+        UserRequest userRequest = new UserRequest(user.getEmail(), "tempPW");
+
+        //then
         assertThrows(InvalidPasswordException.class, () -> userService.delete(userRequest));
     }
 
