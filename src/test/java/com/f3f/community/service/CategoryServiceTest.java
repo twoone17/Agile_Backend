@@ -48,8 +48,6 @@ public class CategoryServiceTest {
     UserRepository userRepository;
 
     String[] names = {"djkim", "djryu", "cwchoi", "eshong", "yjkim", "asdf", "qwer", "zxcv", "hjkl"}; // 9 명 이하로 선택해줘야합니당
-    String[] titles = {"temp1", "temp2", "temp3", "temp4", "temp5", "temp6", "temp7", "temp8"}; // 이건 8명
-    String[] catName = {"cat1", "cat2", "cat3", "cat4", "cat5", "cat6", "cat7", "cat8"};
 
     private UserDto.SaveRequest createUserDto(String name) {
         return new UserDto.SaveRequest(name + "@" + name + ".com", "a1234567@", "01012345678",
@@ -88,7 +86,7 @@ public class CategoryServiceTest {
         for (int i = 0; i < n; i++) {
             while (true) {
                 try {
-                    CategoryDto.SaveRequest categoryDto = createCategoryDto(catName[i], categories.get(random.nextInt(i+1)));
+                    CategoryDto.SaveRequest categoryDto = createCategoryDto("cat"+i, categories.get(random.nextInt(i+1)));
                     Long cid = categoryService.createCategory(categoryDto);
                     categories.add(categoryRepository.findById(cid).get());
                     break;
@@ -105,7 +103,7 @@ public class CategoryServiceTest {
         ArrayList<Post> posts = new ArrayList<>();
         Random random = new Random();
         for (int i = 0; i < n; i++) {
-            PostDto.SaveRequest postDto = createPostDto(titles[i], users.get(random.nextInt(users.size())), cats.get(random.nextInt(cats.size())));
+            PostDto.SaveRequest postDto = createPostDto("title"+i, users.get(random.nextInt(users.size())), cats.get(random.nextInt(cats.size())));
             Long pid = postService.SavePost(postDto);
             posts.add(postRepository.findById(pid).get());
         }
@@ -223,13 +221,13 @@ public class CategoryServiceTest {
     public void getPostsTestCheckBySize() throws Exception {
         //given
         List<User> users = createUsers(5);
-        List<Category> cats = createCategories(7);
-        List<Post> posts = createPosts(users, cats, 6);
+        List<Category> cats = createCategories(100);
+        List<Post> posts = createPosts(users, cats, 200);
 
         // when
         List<Post> result = categoryService.getPosts(cats.get(0).getId());
         // then
-        assertThat(6).isEqualTo(posts.size());
+        assertThat(200).isEqualTo(posts.size());
         for (Post post : posts) {
             System.out.println(post.getTitle());
         }
@@ -309,8 +307,8 @@ public class CategoryServiceTest {
 //        Long pid5 = postService.SavePost(post5);
 //        Long pid6 = postService.SavePost(post6);
         List<User> users = createUsers(5);
-        List<Category> cats = createCategories(7);
-        List<Post> posts = createPosts(users, cats, 6);
+        List<Category> cats = createCategories(150);
+        List<Post> posts = createPosts(users, cats, 150);
 
         // when
         List<Post> result = categoryService.getPosts(cats.get(0).getId());
