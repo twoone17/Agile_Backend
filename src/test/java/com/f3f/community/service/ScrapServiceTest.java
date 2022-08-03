@@ -101,6 +101,12 @@ class ScrapServiceTest {
                 .build();
     }
 
+    private Category createRoot() throws Exception{
+        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+        Long rid = categoryService.createCategory(cat);
+        return categoryRepository.findById(rid).get();
+    }
+
     private PostDto.SaveRequest createPostDto2(User user, Category cat) {
         return PostDto.SaveRequest.builder()
                 .title("test title2")
@@ -233,7 +239,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -253,7 +260,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -273,7 +281,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -294,7 +303,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post1 = createPostDto1(user, cat);
@@ -317,7 +327,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -492,7 +503,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -513,7 +525,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -535,7 +548,8 @@ class ScrapServiceTest {
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap1 = createScrapDto1(user);
         ScrapDto.SaveRequest scrap2 = createScrapDto2(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -557,7 +571,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
@@ -580,7 +595,8 @@ class ScrapServiceTest {
         //given
         User user = createUserDto1().toEntity();
         ScrapDto.SaveRequest scrap = createScrapDto1(user);
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", null);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest post = createPostDto1(user, cat);
