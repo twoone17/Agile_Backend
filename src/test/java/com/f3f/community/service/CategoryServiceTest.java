@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.*;
@@ -47,7 +48,7 @@ public class CategoryServiceTest {
     @Autowired
     UserRepository userRepository;
 
-    String[] names = {"djkim", "djryu", "cwchoi", "eshong", "yjkim", "asdf", "qwer", "zxcv", "hjkl"}; // 9 명 이하로 선택해줘야합니당
+    String[] names = {"djkim", "djryu", "cwchoi", "eshong", "yjkim", "asdf", "qwer", "zxcv", "hjkl","rwnw"};
 
     private UserDto.SaveRequest createUserDto(String name) {
         return new UserDto.SaveRequest(name + "@" + name + ".com", "a1234567@", "01012345678",
@@ -69,10 +70,10 @@ public class CategoryServiceTest {
         return categoryRepository.findById(rid).get();
     }
 
-    private List<User> createUsers(int n) {
+    private List<User> createUsers() {
         ArrayList<User> users = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            UserDto.SaveRequest userDto = createUserDto(names[i]);
+        for (String name : names) {
+            UserDto.SaveRequest userDto = createUserDto(name);
             Long uid = userService.saveUser(userDto.toEntity());
             users.add(userRepository.findById(uid).get());
         }
@@ -215,22 +216,31 @@ public class CategoryServiceTest {
         assertThrows(NotFoundParentCategoryException.class, () -> categoryService.createCategory(cat1));
     }
 
-
+    // getPosts 리팩터링 전에는 리턴되는 포스트 수로 판단하는 메소드였는데, 리팩터링 후 리턴되는 포스트 수로 판단하는 것보다
+    // 깊이 마다 제대로 받아왔는지 확인할 수 있어서 이렇게 변경하였습니당. 피드백 후에 방식 정해지면 메소드명이랑 displayName 수정할게다
     @Test
     @DisplayName("자녀의 포스트까지 가져오는지 확인하는 테스트 - 리턴되는 포스트의 수로 판단")
     public void getPostsTestCheckBySize() throws Exception {
         //given
-        List<User> users = createUsers(5);
+        List<User> users = createUsers();
         List<Category> cats = createCategories(100);
         List<Post> posts = createPosts(users, cats, 200);
 
         // when
-        List<Post> result = categoryService.getPosts(cats.get(0).getId());
+//        List<Post> result = categoryService.getPosts(cats.get(0).getId());
+        Map<Long, List<Post>> result = categoryService.getPosts(cats.get(0).getId());
+        List<Category> next = new ArrayList<>();
+        next.add(categoryRepository.findById(cats.get(0).getId()).get());
         // then
-        assertThat(200).isEqualTo(posts.size());
-        for (Post post : posts) {
-            System.out.println(post.getTitle());
+        while (!next.isEmpty()) {
+            List<Category> temp = new ArrayList<>();
+            for (Category category : next) {
+                temp.addAll(category.getChildCategory());
+                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
+            }
+            next = temp;
         }
+//        assertThat(200).isEqualTo(posts.size());
     }
 
     /*
@@ -271,12 +281,23 @@ public class CategoryServiceTest {
         postService.SavePost(post6);
 
         // when
-        List<Post> posts = categoryService.getPosts(id1);
+//        List<Post> posts = categoryService.getPosts(id1);
+        Map<Long, List<Post>> result = categoryService.getPosts(id1);
+        List<Category> next = new ArrayList<>();
+        next.add(categoryRepository.findById(id1).get());
         // then
-        assertThat(6).isEqualTo(posts.size());
-        for (Post post : posts) {
-            System.out.println(post.getTitle());
+        while (!next.isEmpty()) {
+            List<Category> temp = new ArrayList<>();
+            for (Category category : next) {
+                temp.addAll(category.getChildCategory());
+                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
+            }
+            next = temp;
         }
+//        assertThat(6).isEqualTo(posts.size());
+//        for (Post post : posts) {
+//            System.out.println(post.getTitle());
+//        }
     }
 
     // 밑 테스트 코드도 수동으로 카테고리 구조 설정한 것은 주석 처리하였고, 자동화한 부분만 남겨두었습니다.
@@ -306,16 +327,26 @@ public class CategoryServiceTest {
 //        Long pid4 = postService.SavePost(post4);
 //        Long pid5 = postService.SavePost(post5);
 //        Long pid6 = postService.SavePost(post6);
-        List<User> users = createUsers(5);
+        List<User> users = createUsers();
         List<Category> cats = createCategories(150);
         List<Post> posts = createPosts(users, cats, 150);
 
         // when
-        List<Post> result = categoryService.getPosts(cats.get(0).getId());
+//        List<Post> result = categoryService.getPosts(cats.get(0).getId());
+        Map<Long, List<Post>> result = categoryService.getPosts(cats.get(0).getId());
+        List<Category> next = new ArrayList<>();
+        next.add(categoryRepository.findById(cats.get(0).getId()).get());
         // then
-//        assertThat(result).isEqualTo(posts);
-        for (Post post : posts) {
-            assertThat(result).contains(post);
+//        for (Post post : posts) {
+//            assertThat(result).contains(post);
+//        }
+        while (!next.isEmpty()) {
+            List<Category> temp = new ArrayList<>();
+            for (Category category : next) {
+                temp.addAll(category.getChildCategory());
+                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
+            }
+            next = temp;
         }
         for (Post post : posts) {
             System.out.println(post.getTitle());

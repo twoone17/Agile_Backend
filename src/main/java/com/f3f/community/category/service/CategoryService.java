@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -57,15 +59,38 @@ public class CategoryService {
         return category.getId();
     }
 
+    // 기존에 짯던 포스트리스트만 리턴하는 getPost입니다
+//    @Transactional(readOnly = true)
+//    public List<Post> getPosts(Long catId) {
+//        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+//        List<Post> post = new ArrayList<>(category.getPostList());
+//        for (Category child : category.getChildCategory()) {
+//            post.addAll(getPosts(child.getId()));
+//        }
+//
+//        return post;
+//    }
+
+    // 리팩터링해서 깊이를 키로 가지고, 해당 깊이에 포스트리스트를 밸류로 가지는 해쉬맵을 리턴하게 변경하였습니다
     @Transactional(readOnly = true)
-    public List<Post> getPosts(Long catId) {
+    public Map<Long,List<Post>> getPosts(Long catId) {
         Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
-        List<Post> post = new ArrayList<>(category.getPostList());
+        List<Post> posts = new ArrayList<>(category.getPostList());
+        Map<Long, List<Post>> result = new HashMap<>();
+        result.put(category.getDepth(), posts);
+
+
         for (Category child : category.getChildCategory()) {
-            post.addAll(getPosts(child.getId()));
+            Map<Long, List<Post>> temp = getPosts(child.getId());
+            for (Long key : temp.keySet()) {
+                if (!result.containsKey(key)) {
+                    result.put(key, new ArrayList<>());
+                }
+                result.get(key).addAll(temp.get(key));
+            }
         }
 
-        return post;
+        return result;
     }
 
     @Transactional
