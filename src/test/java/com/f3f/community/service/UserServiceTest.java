@@ -103,7 +103,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("비밀번호 변경 성공")
-    public void ChangePasswordTest() throws Exception {
+    public void ChangePasswordTest() {
         //given
         String newPW = "changed";
         User user = createUser();
@@ -146,7 +146,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("닉네임 변경 성공")
-    public void ChangeNicknameTest() throws Exception {
+    public void ChangeNicknameTest() {
         //given
         String newNickname = "changed";
         User user = createUser();
@@ -187,7 +187,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("닉네임 변경 - 이미 존재하는 닉네임")
-    public void ChangeNicknameToAlreadyExists() throws Exception {
+    public void ChangeNicknameToAlreadyExists() {
         //given
         User user1 = createUserWithParams("email");
         User user2 = createUser();
@@ -218,17 +218,43 @@ class UserServiceTest {
         assertThat(userRepository.existsByEmail(userRequest.getEmail())).isEqualTo(false);
     }
 
-//    @Test
-//    @DisplayName("회원탈퇴 실패 테스트 - 이메일 비밀번호 불일치")
-//    public void delete() {
-//        //given
-//        User user = createUser();
-//
-//        //when
-//        userService.saveUser(user);
-//
-//        //then
-//
-//    }
+    @Test
+    @DisplayName("회원탈퇴 실패 - 존재하지 않는 유저 이메일")
+    public void deleteInvalidEmailUserToFail() {
+        //given
+        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> userService.delete(userRequest));
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 실패 - 존재하지 않는 패스워드")
+    public void deleteInvalidPasswordUserToFail() {
+        //given
+        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+
+        //when & then
+        assertThrows(InvalidPasswordException.class, () -> userService.delete(userRequest));
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 실패 - 다른 유저의 패스워드")
+    public void deleteOtherUserToFail() throws Exception {
+        //given
+        User user1 = createUser();
+        User user2 = createUserWithUniqueCount(1);
+        userService.saveUser(user1);
+        // user2의 패스워드는 ppadb1231 이다.
+        userService.saveUser(user2);
+
+        //when
+        // user1의 이메일, user2의 패스워드 모두 db에 존재하지만, 서로 매핑되지 않는 값이다.
+        UserRequest userRequest = new UserRequest(user1.getEmail(), user2.getPassword());
+
+        //then
+        assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
+    }
+
 
 }
