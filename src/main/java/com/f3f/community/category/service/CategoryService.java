@@ -33,14 +33,20 @@ public class CategoryService {
         if (saveRequest.getPostList() == null) {
             throw new NotFoundCategoryPostListException();
         }
+        if (saveRequest.getChildCategory() == null) {
+            throw new NotFoundChildCategoryListException();
+        }
         if (categoryRepository.existsByCategoryName(saveRequest.getCategoryName())) {
             throw new DuplicateCategoryNameException();
+        }
+        if (saveRequest.getParents() == null && !saveRequest.getCategoryName().equals("root")) {
+            throw new NotFoundParentCategoryException();
         }
         Category category = saveRequest.toEntity();
         if (category.getParents() != null) {
             Category parent = saveRequest.getParents();
             parent.getChildCategory().add(category);
-            if (parent.getDepth() == 2) {
+            if (parent.getDepth() == 3) {
                 throw new MaxDepthException();
             }
             category.setDepth(parent.getDepth() + 1);
@@ -60,6 +66,17 @@ public class CategoryService {
         }
 
         return post;
+    }
+
+    @Transactional
+    public String updateCategoryName(Long catId, String newName) {
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        if (categoryRepository.existsByCategoryName(newName)) {
+            throw new DuplicateCategoryNameException();
+        } else {
+            category.updateName(newName);
+            return "ok";
+        }
     }
 
     @Transactional
