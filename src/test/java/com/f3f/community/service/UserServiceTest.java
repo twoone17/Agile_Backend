@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -143,6 +144,64 @@ class UserServiceTest {
 
 
     @Test
+    @DisplayName("이메일, 패스워드 DTO로 회원정보 조회 성공 테스트")
+    public void FindUserByUserRequestDTOTest() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        UserRequest userRequest = new UserRequest(user.getEmail(), user.getPassword());
+        User user1 = userService.FindUserByUserRequest(userRequest);
+
+        //then
+        assertThat(user1.getEmail()).isEqualTo(user.getEmail());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 패스워드 DTO로 회원정보 조회")
+    public void FindUserByUnknownPWUserRequestToFail() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        UserRequest userRequest = new UserRequest(user.getEmail(), "wrongpw123@");
+
+        //then
+        assertThrows(NotFoundPasswordException.class, () -> userService.FindUserByUserRequest(userRequest));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일 DTO로 회원정보 조회")
+    public void FindUserByunknownEmailUserRequestToFail() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        UserRequest userRequest = new UserRequest("wrongEmail@xxx.com", user.getPassword());
+
+        //then
+        assertThrows(NotFoundUserException.class, () -> userService.FindUserByUserRequest(userRequest));
+    }
+
+    @Test
+    @DisplayName("닉네임으로 유저 조회 테스트")
+    public void FindUsersByNicknameTest() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        User user1 = userService.FindUsersByNickname(user.getNickname());
+
+        //then
+        assertThat(user1.getEmail()).isEqualTo(user.getEmail());
+    }
+
+
+    @Test
     @DisplayName("비밀번호 변경 성공")
     public void ChangePasswordTest() {
         //given
@@ -161,7 +220,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("비밀번호 변경 실패 - 변경 전 비밀번호와 일치")
-    public void ChangePassword_DuplicationToFail()  {
+    public void ChangePasswordWithDuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
         User user = createUser();
         userService.saveUser(user);
@@ -176,7 +235,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("비밀번호 변경 실패 - 이메일 누락")
-    public void ChangePassword_MissingEmail() {
+    public void ChangePasswordWithMissingEmailToFail() {
         //given
         ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
 
@@ -219,7 +278,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("닉네임 변경 실패 - 존재하지 않는 이메일")
-    public void ChangeNickname_MissingEmail() {
+    public void ChangeNicknameWithMissingEmailToFail() {
         //given
         ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest("emptyEmail", "james", "michael");
 
@@ -229,7 +288,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("닉네임 변경 실패 - 이미 존재하는 닉네임")
-    public void ChangeNicknameToAlreadyExists() {
+    public void ChangeNicknameToAlreadyExistsToFail() {
         //given
         User user1 = createUserWithParams("email");
         User user2 = createUser();

@@ -83,6 +83,22 @@ public class UserDto {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public  static class ChangePasswordWithoutSignInRequest {
+
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+        private String AfterPassword;
+    }
+
+
+    @Getter
+    @NoArgsConstructor
     public static class ChangeNicknameRequest {
         @NotBlank
         @Email
@@ -118,6 +134,5 @@ public class UserDto {
         private String password;
     }
 
-    // 유저 정보 조회용 DTO 만들기
 
 }
