@@ -39,16 +39,16 @@ public class CategoryService {
         if (categoryRepository.existsByCategoryName(saveRequest.getCategoryName())) {
             throw new DuplicateCategoryNameException();
         }
-        if (saveRequest.getParents() == null && !saveRequest.getCategoryName().equals("root")) {
+        if (saveRequest.getParents() == null && categoryRepository.existsByCategoryName("root")) {
             throw new NotFoundParentCategoryException();
         }
         Category category = saveRequest.toEntity();
         if (category.getParents() != null) {
             Category parent = saveRequest.getParents();
-            parent.getChildCategory().add(category);
             if (parent.getDepth() == 3) {
                 throw new MaxDepthException();
             }
+            parent.getChildCategory().add(category);
             category.setDepth(parent.getDepth() + 1);
         }
 

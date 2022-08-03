@@ -198,7 +198,7 @@ public class CategoryServiceTest {
 
 
     @Test
-    @DisplayName("자녀의 포스트까지 가져오는지 확인하는 테스트 - 최종 depth 1")
+    @DisplayName("자녀의 포스트까지 가져오는지 확인하는 테스트 - 최종 depth 2")
     public void getPostsTestOneChildOneDepth() throws Exception{
         //given
         Category root = createRoot();
@@ -223,7 +223,7 @@ public class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("자녀의 자녀 포스트까지 가져오는지 확인하는 테스트 - 최종 depth 2")
+    @DisplayName("자녀의 자녀 포스트까지 가져오는지 확인하는 테스트 - depth 3")
     public void getPostTestThreeChildMaxDepth() throws Exception{
         //given
         Category root = createRoot();
@@ -257,6 +257,29 @@ public class CategoryServiceTest {
         for (Post post : posts) {
             System.out.println(post.getTitle());
         }
+    }
+
+    @Test
+    @DisplayName("최고 깊이 도달하여 카테고리 생성안되는 테스트")
+    public void createCategoryTestToFailByMaxDepth() throws Exception{
+        //given
+        Category root = createRoot();
+        CategoryDto.SaveRequest cat1 = createCategoryDto("temp1", root);
+        Long id1 = categoryService.createCategory(cat1);
+        Category category1 = categoryRepository.findById(id1).get();
+        CategoryDto.SaveRequest cat2 = createCategoryDto("temp2", category1);
+        Long id2 = categoryService.createCategory(cat2);
+        Category category2 = categoryRepository.findById(id2).get();
+        CategoryDto.SaveRequest cat3 = createCategoryDto("temp3", category2);
+        Long id3 = categoryService.createCategory(cat3);
+        Category category3 = categoryRepository.findById(id3).get();
+
+        // when
+        CategoryDto.SaveRequest cat4 = createCategoryDto("temp4", category3);
+
+
+        // then
+        assertThrows(MaxDepthException.class, () -> categoryService.createCategory(cat4));
     }
 
     @Test
