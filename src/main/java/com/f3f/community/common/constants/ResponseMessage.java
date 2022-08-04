@@ -1,4 +1,4 @@
-package com.f3f.community.constants;
+package com.f3f.community.common.constants;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
