@@ -28,7 +28,7 @@ import static javax.persistence.FetchType.*;
 public class Post extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "post_id")
     private Long id;
 
