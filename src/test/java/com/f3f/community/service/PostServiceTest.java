@@ -183,7 +183,7 @@ public class PostServiceTest {
     @Test
     @Rollback
     @DisplayName("Service : savePost 예외 발생 테스트 - content 없음  ")
-    //필수값 title 없음 : 실패
+    //필수값 content 없음 : 실패
     public void savePostTestToFailByNullContent() throws Exception {
         //given
         Category root = createRoot();
@@ -248,7 +248,7 @@ public class PostServiceTest {
     @Rollback()
     @DisplayName("Service : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
     public void findPostByPostIdTestToFailByNullPostId() throws Exception{
-
+    //TODO: 저장하고 지운것을 테스트 해보기
         assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
 
     }

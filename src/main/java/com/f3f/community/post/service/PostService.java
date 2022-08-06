@@ -35,18 +35,19 @@ public class PostService {
      */
     @Transactional
     public Long SavePost(PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
-        if(SaveRequest.getAuthor() ==null)
-            throw new NotFoundPostAuthorException();
-        if(SaveRequest.getTitle()==null)
-            throw new NotFoundPostTitleException();
-        if(SaveRequest.getContent()==null)
-            throw new NotFoundPostContentException();
-        if(SaveRequest.getCategory()==null)
-            throw new NotFoundPostCategoryException();
+//        if(SaveRequest.getAuthor() ==null)
+//            throw new NotFoundPostAuthorException();
+//        if(SaveRequest.getTitle()==null) //TODO: notnull로 했으니까 이거 지우기
+//            throw new NotFoundPostTitleException();
+//        if(SaveRequest.getContent()==null) //TODO: notnull로 했으니까 이거 지우기
+//            throw new NotFoundPostContentException();
+//        if(SaveRequest.getCategory()==null) //TODO: category는 없어도 된다 .
+//            throw new NotFoundPostCategoryException();
 
         Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
-        User author = post.getAuthor();
         postRepository.save(post); //postRepository에 저장
+
+        User author = post.getAuthor();
         author.getPosts().add(post); //author의 postList에도 저장
         post.getCategory().getPostList().add(post);
 //        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
@@ -81,6 +82,14 @@ public class PostService {
         } else {
             throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
         }
+
+        //TODO: 이런 로직으로 짜기
+//        if(!postRepository.existsById(postId))
+//        {
+//            throw new NotFoundPostByPostIdException()
+//        }
+//        Optional<Post> post = postRepository.findById(postId);//postRepository에 postId가 있을때
+//        return post;
     }
 
     // Read b-1) author로 postList 찾기
@@ -92,6 +101,7 @@ public class PostService {
         } else {
             throw new NotFoundPostListByAuthor(); //postRepository에 author가 작성한 게시글이 없으면 예외처리
         }
+
     }
 
     //Read b-2) title로 postList 찾기
@@ -137,11 +147,13 @@ public class PostService {
         {
             throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 수정할 수 없습니다");
         }
+        //TODO: 이런 것들은 dto에서 위로 처리하기
         if(updateRequest.getTitle() == null || updateRequest.getTitle().length()<1)
             throw new NotFoundPostTitleException("수정시 Title은 한글자 이상이어야 합니다.");
         if(updateRequest.getContent() == null || updateRequest.getContent().length()<1)
             throw new NotFoundPostContentException("수정시 Content는 한글자 이상이어야 합니다.");
-        post.updatePost(updateRequest.getTitle(), updateRequest.getContent(),updateRequest.getMedia());
+//      post.updatePost(updateRequest.getTitle(), updateRequest.getContent(),updateRequest.getMedia());
+        post.updatePost(updateRequest);
 
         postRepository.save(post); //postRepository에 저장
 //        System.out.println("author = " + author);
@@ -166,12 +178,12 @@ public class PostService {
     @Transactional
     public String deletePost(Long postId, Long userId){
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
-        List<Post> author_posts = author.getPosts();
-        if(!author_posts.contains(post))
-        {
-            throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 삭제할 수 없습니다");
-        }
+//        User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
+//        List<Post> author_posts = author.getPosts();
+//        if(!author_posts.contains(post))
+//        {
+//            throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 삭제할 수 없습니다");
+//        } TODO: 프론트에서 해주면 되기때문에 이렇게 할필요 없음
         postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을
         return "Delete OK";
     }

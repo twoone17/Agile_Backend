@@ -12,6 +12,7 @@ import com.f3f.community.user.domain.User;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +28,15 @@ public class PostDto {
     @Builder
     public static class SaveRequest {
         private Long id;
-        private User author = new User();
         @NotNull
+        private User author;
+        @NotNull
+        @Size(min=1, max = 20, message = "title은 1~ 20자 이여야 합니다.")
         private String title;
 
         //필수값
         @NotNull
+        @Size(min=1, message = "content는 1자 이상이어야 합니다.")
         private String content;
 
         private List<Media> media;

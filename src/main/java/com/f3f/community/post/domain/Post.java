@@ -5,6 +5,7 @@ import com.f3f.community.category.domain.Category;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
+import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
@@ -77,12 +78,14 @@ public class Post {
     }
 
     //업데이트를 위한 메소드, title, content, media만 수정 가능
-    public void updatePost(String title, String content, List<Media> media)
+    public void updatePost(PostDto.UpdateRequest updateRequest)
     {
-        this.title = title;
-        this.content = content;
-        this.media = media;
+        this.title = updateRequest.getTitle(); //TODO:
+        this.content = updateRequest.getContent();
+        this.media = updateRequest.getMedia();
     }
+
+
 
 
     public SaveRequest toDto(){
