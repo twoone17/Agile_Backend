@@ -38,7 +38,6 @@ public class UserDto {
         @NotBlank
         private String nickname;
         private String address;
-        private boolean isBanned;
 
 
         public User toEntity() {
@@ -49,7 +48,6 @@ public class UserDto {
                     .userGrade(this.userGrade)
                     .phone(this.phone)
                     .address(this.address)
-//                    .isBanned(this.isBanned)
                     .scraps(new ArrayList<>())
                     .likes(new ArrayList<>())
                     .posts(new ArrayList<>())

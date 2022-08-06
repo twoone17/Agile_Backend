@@ -34,7 +34,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUser() {
-        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -43,19 +43,19 @@ class UserServiceTest {
         SaveRequest userInfo;
         switch (key) {
             case "email" :
-                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
                 break;
             case "password" :
-                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, "james", "changwon");
                 break;
             case "phone" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, "james", "changwon");
                 break;
             case "nickname" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon");
                 break;
             default:
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
                 break;
         }
 //        User user = userInfo.toEntity();
@@ -63,7 +63,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUserWithUniqueCount(int i) {
-        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu", false);
+        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -80,15 +80,15 @@ class UserServiceTest {
         assertThat(byId.get().getId()).isEqualTo(joinId);
     }
 
-//    @Test
-//    @DisplayName("회원가입 실패 - 유효하지 않은 이메일")
-//    public void MissingEmailInRegisterToFail() {
-//        //given
-//        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here", false);
-//
-//        //when & then
-//        assertThrows(InvalidEmailException.class, () -> userService.saveUser(saveRequest));
-//    }
+    @Test
+    @DisplayName("회원가입 실패 - 유효하지 않은 이메일")
+    public void MissingEmailInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here");
+
+        //when & then
+        assertThrows(InvalidEmailException.class, () -> userService.saveUser(saveRequest));
+    }
 //
 //    @Test
 //    @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")

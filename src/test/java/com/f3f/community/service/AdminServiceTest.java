@@ -32,7 +32,7 @@ class AdminServiceTest {
     private final String resultString = "OK";
 
     private UserDto.SaveRequest createUser() {
-        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
