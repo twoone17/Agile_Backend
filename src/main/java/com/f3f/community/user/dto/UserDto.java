@@ -5,6 +5,8 @@ import com.f3f.community.user.domain.UserGrade;
 import lombok.*;
 import org.aspectj.lang.annotation.Before;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -22,6 +24,7 @@ public class UserDto {
     @Builder
     public static class SaveRequest {
         @NotBlank
+        @Email
         private String email;
 
         @NotBlank
@@ -60,18 +63,22 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     public static class ChangePasswordRequest {
+        @Email
         private String email;
 
         @NotBlank
         @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String AfterPassword;
+
+        @NotBlank
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String BeforePassword;
 
         @Builder
         public ChangePasswordRequest(String email,
-                                     @NotBlank
-                                     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+                                     @NotBlank @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
                                      String ChangedPassword,
+                                     @NotBlank @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
                                      String BeforePassword) {
             this.email = email;
             this.BeforePassword = BeforePassword;
@@ -81,8 +88,25 @@ public class UserDto {
 
     @Getter
     @NoArgsConstructor
-    public static class ChangeNicknameRequest {
+    @AllArgsConstructor
+    @Builder
+    public  static class ChangePasswordWithoutSignInRequest {
 
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+        private String AfterPassword;
+    }
+
+
+    @Getter
+    @NoArgsConstructor
+    public static class ChangeNicknameRequest {
+        @NotBlank
+        @Email
         private String email;
         @NotBlank
         @Pattern(regexp = "^([a-zA-Z0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣]).{1,10}$")
@@ -106,10 +130,14 @@ public class UserDto {
     @AllArgsConstructor
     @Builder
     public static class UserRequest {
+        @NotBlank
+        @Email
         private String email;
+
+        @NotBlank
+        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String password;
     }
 
-    // 유저 정보 조회용 DTO 만들기
 
 }
