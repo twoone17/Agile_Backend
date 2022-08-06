@@ -311,10 +311,10 @@ class UserServiceTest {
        //given
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
-
+        Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.getEmail(), user.getPassword());
+        UserRequest userRequest = new UserRequest(user.get().getEmail(), user.get().getPassword());
         String result = userService.delete(userRequest);
 
         //then
@@ -336,11 +336,12 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 존재하지 않는 패스워드")
     public void deleteInvalidPasswordUserToFail() {
         //given
-        User user = createUser();
-        userService.saveUser(user);
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.getEmail(), "tempPW12@");
+        UserRequest userRequest = new UserRequest(user.get().getEmail(), "tempPW12@");
 
         //then
         assertThrows(NotFoundPasswordException.class, () -> userService.delete(userRequest));
@@ -350,15 +351,18 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 다른 유저의 패스워드")
     public void deleteOtherUserToFail() throws Exception {
         //given
-        User user1 = createUser();
-        User user2 = createUserWithUniqueCount(1);
-        userService.saveUser(user1);
+        SaveRequest user1DTO = createUser();
+        SaveRequest user2DTO = createUserWithUniqueCount(1);
+        Long aLong1 = userService.saveUser(user1DTO);
         // user2의 패스워드는 ppadb1231 이다.
-        userService.saveUser(user2);
+        Long aLong2 = userService.saveUser(user2DTO);
+
+        Optional<User> user1 = userRepository.findById(aLong1);
+        Optional<User> user2 = userRepository.findById(aLong2);
 
         //when
         // user1의 이메일, user2의 패스워드 모두 db에 존재하지만, 서로 매핑되지 않는 값이다.
-        UserRequest userRequest = new UserRequest(user1.getEmail(), user2.getPassword());
+        UserRequest userRequest = new UserRequest(user1.get().getEmail(), user2.get().getPassword());
 
         //then
         assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
@@ -368,15 +372,16 @@ class UserServiceTest {
     @DisplayName("로그인 없이 비밀번호 변경 테스트")
     public void changePasswordWithoutSignInTest() {
         //given
-        User user = createUser();
-        userService.saveUser(user);
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
 
         //when
-        ChangePasswordWithoutSignInRequest cpws = new ChangePasswordWithoutSignInRequest(user.getEmail(), "newPW123@");
+        ChangePasswordWithoutSignInRequest cpws = new ChangePasswordWithoutSignInRequest(user.get().getEmail(), "newPW123@");
         String result = userService.changePasswordWithoutSignIn(cpws);
 
         //then
-        assertThat(cpws.getAfterPassword()).isEqualTo(user.getPassword());
+        assertThat(cpws.getAfterPassword()).isEqualTo(user.get().getPassword());
         assertThat(result).isEqualTo(resultString);
     }
 
@@ -384,13 +389,14 @@ class UserServiceTest {
     @DisplayName("비밀번호 찾기")
     public void findPasswordTest() {
         //given
-        User user = createUser();
-        userService.saveUser(user);
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
 
         //when
-        SearchedPassword password = userService.findPassword(user.getEmail());
+        SearchedPassword password = userService.findPassword(user.get().getEmail());
 
         //then
-        assertThat(password.getPassword()).isEqualTo(user.getPassword());
+        assertThat(password.getPassword()).isEqualTo(user.get().getPassword());
     }
 }
