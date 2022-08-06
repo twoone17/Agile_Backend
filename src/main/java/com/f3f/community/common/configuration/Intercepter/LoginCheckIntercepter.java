@@ -1,19 +1,17 @@
 package com.f3f.community.common.configuration.Intercepter;
 
-import com.f3f.community.user.service.SessionLoginService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class LoginCheckIntercepter implements HandlerInterceptor {
 
-    private final SessionLoginService sessionLoginService;
+    //private final SessionLoginService sessionLoginService;
 
     private Environment environment;
 

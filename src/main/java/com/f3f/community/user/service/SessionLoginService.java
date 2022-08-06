@@ -9,14 +9,13 @@ import com.f3f.community.user.domain.User;
 import com.f3f.community.user.dto.LoginRequestDto;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpSession;
 
 import static com.f3f.community.common.constants.UserConstants.USER_ID;
 
-@Service
+//@Service
 @RequiredArgsConstructor
 public class SessionLoginService {
 
