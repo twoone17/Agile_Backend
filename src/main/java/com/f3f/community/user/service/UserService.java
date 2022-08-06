@@ -18,10 +18,10 @@ public class UserService {
 
     @Transactional
     public Long saveUser(User user) {
-        if(userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateEmailException();
         }
-        if(userRepository.existsByNickname(user.getNickname())) {
+        if (userRepository.existsByNickname(user.getNickname())) {
             throw new DuplicateNicknameException();
         }
         User saveUser = userRepository.save(user);
@@ -37,11 +37,11 @@ public class UserService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
 
 
-        if(userRepository.existsByNickname(afterNickname)) {
+        if (userRepository.existsByNickname(afterNickname)) {
             throw new DuplicateNicknameException();
         }
 
-        if(beforeNickname.equals(afterNickname)) {
+        if (beforeNickname.equals(afterNickname)) {
             throw new DuplicateNicknameException();
         }
 
@@ -57,7 +57,7 @@ public class UserService {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
 
-        if(beforePassword.equals(afterPassword)) {
+        if (beforePassword.equals(afterPassword)) {
             throw new DuplicateInChangePasswordException();
         }
 
@@ -77,24 +77,26 @@ public class UserService {
 
         User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(() -> new NotFoundUserException());
 
-        if(!userRepository.existsByPassword(userRequest.getPassword())) {
-            throw new InvalidPasswordException();
+       // if (!userRepository.existsByPassword(userRequest.getPassword())) {
+            if (!userRepository.existsByPassword(userRequest.getPassword())) {
+                throw new InvalidPasswordException();
+            }
+
+            // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
+            // 요청으로 들어온 패스워드와 DB에서 이메일로 받아온 유저 객체의 패스워드를 비교한다.
+            if (!user.getPassword().equals(userRequest.getPassword())) {
+                throw new NotMatchPasswordInDeleteUserException();
+            }
+
+            userRepository.deleteByEmail(userRequest.getEmail());
+            return "OK";
         }
 
-        // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
-        // 요청으로 들어온 패스워드와 DB에서 이메일로 받아온 유저 객체의 패스워드를 비교한다.
-        if(!user.getPassword().equals(userRequest.getPassword())) {
-            throw new NotMatchPasswordInDeleteUserException();
-        }
+        //  유저 조회
+        //  repository에서 제공하긴 하지만 에러 처리,
 
-        userRepository.deleteByEmail(userRequest.getEmail());
-        return "OK";
+
+        //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
+
     }
 
-    //  유저 조회
-    //  repository에서 제공하긴 하지만 에러 처리,
-
-
-    //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
-
-}

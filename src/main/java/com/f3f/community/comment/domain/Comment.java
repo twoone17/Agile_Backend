@@ -2,9 +2,11 @@ package com.f3f.community.comment.domain;
 
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,15 +20,13 @@ import static javax.persistence.FetchType.LAZY;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Comment extends BaseTimeEntity {
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "comment_id")
     private Long id;
-
-
 
     private String content;
 
@@ -46,5 +46,15 @@ public class Comment {
 
     @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
     private List<Media> mediaList;
+
+    @Builder
+    public Comment(Long id,String content, Post post, User author, Comment parentComment, List<Comment> childComment, List<Media> mediaList){
+        this.content = content;
+        this.post = post;
+        this.author = author;
+        this.parentComment = parentComment;
+        this.childComment = childComment;
+        this.mediaList = mediaList;
+    }
 }
 

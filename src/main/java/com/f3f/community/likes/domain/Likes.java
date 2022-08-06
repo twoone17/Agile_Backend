@@ -5,6 +5,7 @@ import com.f3f.community.post.domain.Post;
 import com.f3f.community.user.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,5 +29,12 @@ public class Likes {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Builder
+    public Likes(Long id, User user, Post post){
+        this.id= id;
+        this.user = user;
+        this.post = post;
+    }
 
 }
