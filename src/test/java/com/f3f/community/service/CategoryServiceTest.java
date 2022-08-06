@@ -6,7 +6,6 @@ import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.*;
 import com.f3f.community.post.domain.Post;
-import com.f3f.community.post.domain.PostTag;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.*;
@@ -165,54 +163,6 @@ public class CategoryServiceTest {
         assertThrows(DuplicateCategoryNameException.class, () -> categoryService.createCategory(cat2));
     }
 
-//    @Test
-//    @DisplayName("null name으로 카테고리 생성 실패 테스트")
-//    public void createCategoryTestToFailByNullName() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = createCategoryDto(null, root);
-//        // then
-//        assertThrows(NotFoundCategoryNameException.class, () -> categoryService.createCategory(cat1));
-//    }
-
-//    @Test
-//    @DisplayName("empty name으로 카테고리 생성 실패 테스트")
-//    public void createCategoryTestToFailByEmptyName() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = createCategoryDto("", root);
-//
-//        // then
-//        assertThrows(NotFoundCategoryNameException.class, () -> categoryService.createCategory(cat1));
-//    }
-
-//    @Test
-//    @DisplayName("postList == null 로 인한 카테고리 생성 실패 테스트")
-//    public void createCategoryTestToFailByEmptyPostList() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = CategoryDto.SaveRequest.builder()
-//                .categoryName("temp")
-//                .parents(root)
-//                .childCategory(new ArrayList<>()).build();
-//
-//        // then
-//        assertThrows(NotFoundCategoryPostListException.class, () -> categoryService.createCategory(cat1));
-//    }
-
-//    @Test
-//    @DisplayName("child category list == null 로 인한 카테고리 생성 실패 테스트")
-//    public void createCategoryTestToFailByEmptyChildCategory() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = CategoryDto.SaveRequest.builder()
-//                .categoryName("temp")
-//                .parents(root)
-//                .postList(new ArrayList<>()).build();
-//
-//        // then
-//        assertThrows(NotFoundChildCategoryListException.class, () -> categoryService.createCategory(cat1));
-//    }
 
     @Test
     @DisplayName("부모 카테고리가 Null 로 인한 카테고리 생성 실패 테스트")
@@ -296,143 +246,6 @@ public class CategoryServiceTest {
 
     }
 
-    // getPosts 리팩터링 전에는 리턴되는 포스트 수로 판단하는 메소드였는데, 리팩터링 후 리턴되는 포스트 수로 판단하는 것보다
-    // 깊이 마다 제대로 받아왔는지 확인할 수 있어서 이렇게 변경하였습니당. 피드백 후에 방식 정해지면 메소드명이랑 displayName 수정할게다
-//    @Test
-//    @DisplayName("자녀의 포스트까지 가져오는지 확인하는 테스트 - 리턴되는 포스트의 수로 판단")
-//    public void getPostsTestCheckBySize() throws Exception {
-//        //given
-//        List<User> users = createUsers();
-//        List<Category> cats = createCategories(100);
-//        List<Post> posts = createPosts(users, cats, 200);
-//
-//        // when
-////        List<Post> result = categoryService.getPosts(cats.get(0).getId());
-//        Map<Long, List<Post>> result = categoryService.getPosts(cats.get(0).getId());
-//        List<Category> next = new ArrayList<>();
-//        next.add(categoryRepository.findById(cats.get(0).getId()).get());
-//        // then
-//        while (!next.isEmpty()) {
-//            List<Category> temp = new ArrayList<>();
-//            for (Category category : next) {
-//                temp.addAll(category.getChildCategory());
-//                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
-//            }
-//            next = temp;
-//        }
-////        assertThat(200).isEqualTo(posts.size());
-//    }
-
-    /*
-    이 위아래 테스트는 같은 것을 테스트합니다. 아래 스타일은 카테고리 구조를 제가 명시해준 부분 대로 테스트할 수 있는 반면에, 위 스타일은
-    카테고리 구조가 랜덤하게 짜여집니다. 카테고리 구조는 오류가 날 수 없는 구조로 짜여지긴하는데, 이렇게 카테고리 구조를 자동으로 생성되게 해서
-    테스트를 진행해도 될까요? 아래 테스트처럼 정해진 구조로만 테스트를 돌리면, 혹시 모르는 예외 상황을 알 수 없을 것 같은데, 위와 같은 방식으로 테스트를
-    여러번 루프 돌리면 혹시모르는 상황에 대해서도 검증이 가능할 것 같은데, 어떤게 나을지 궁금합니당.
-
-    그리고 가독성 측면에서는 위 코드가 더 나은 것 같은데, 위 테스트를 이해하려면 내부 로직을 봐야되서 어떤게 더 나은지 잘 모르겠습니당
-     */
-
-//    @Test
-//    @DisplayName("자녀의 자녀 포스트까지 가져오는지 확인하는 테스트 - 리턴되는 포스트리스트 안에 포스트 수로 확인")
-//    public void getPostTestMaxDepth() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = createCategoryDto("temp", root);
-//        Long id1 = categoryService.createCategory(cat1);
-//        CategoryDto.SaveRequest cat2 = createCategoryDto("temp2", categoryRepository.findById(id1).get());
-//        Long id2 = categoryService.createCategory(cat2);
-//        CategoryDto.SaveRequest cat3 = createCategoryDto("temp3", categoryRepository.findById(id2).get());
-//        Long id3 = categoryService.createCategory(cat3);
-//        CategoryDto.SaveRequest cat4 = createCategoryDto("temp4", categoryRepository.findById(id2).get());
-//        Long id4 = categoryService.createCategory(cat4);
-//        User user = createUserDto("djkim").toEntity();
-//        userService.saveUser(user);
-//        PostDto.SaveRequest post1 = createPostDto("title1", user, categoryRepository.findById(id1).get());
-//        PostDto.SaveRequest post2 = createPostDto("title2", user, categoryRepository.findById(id1).get());
-//        PostDto.SaveRequest post3 = createPostDto("title3", user, categoryRepository.findById(id2).get());
-//        PostDto.SaveRequest post4 = createPostDto("title4", user, categoryRepository.findById(id3).get());
-//        PostDto.SaveRequest post5 = createPostDto("title5", user, categoryRepository.findById(id4).get());
-//        PostDto.SaveRequest post6 = createPostDto("title6", user, categoryRepository.findById(id4).get());
-//        postService.SavePost(post1);
-//        postService.SavePost(post2);
-//        postService.SavePost(post3);
-//        postService.SavePost(post4);
-//        postService.SavePost(post5);
-//        postService.SavePost(post6);
-//
-//        // when
-////        List<Post> posts = categoryService.getPosts(id1);
-//        Map<Long, List<Post>> result = categoryService.getPosts(id1);
-//        List<Category> next = new ArrayList<>();
-//        next.add(categoryRepository.findById(id1).get());
-//        // then
-//        while (!next.isEmpty()) {
-//            List<Category> temp = new ArrayList<>();
-//            for (Category category : next) {
-//                temp.addAll(category.getChildCategory());
-//                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
-//            }
-//            next = temp;
-//        }
-////        assertThat(6).isEqualTo(posts.size());
-////        for (Post post : posts) {
-////            System.out.println(post.getTitle());
-////        }
-//    }
-
-    // 밑 테스트 코드도 수동으로 카테고리 구조 설정한 것은 주석 처리하였고, 자동화한 부분만 남겨두었습니다.
-//    @Test
-//    @DisplayName("포스트를 제대로 가져오는지 확인하는 테스트 - 리턴 되는 포스트리스트 안에 들어있어야할 모든 포스트가 들어있는지 확인")
-//    public void getPostTestCheckByPosts() throws Exception {
-////        Category root = createRoot();
-////        CategoryDto.SaveRequest cat1 = createCategoryDto("temp", root);
-////        Long id1 = categoryService.createCategory(cat1);
-////        CategoryDto.SaveRequest cat2 = createCategoryDto("temp2", categoryRepository.findById(id1).get());
-////        Long id2 = categoryService.createCategory(cat2);
-////        CategoryDto.SaveRequest cat3 = createCategoryDto("temp3", categoryRepository.findById(id2).get());
-////        Long id3 = categoryService.createCategory(cat3);
-////        CategoryDto.SaveRequest cat4 = createCategoryDto("temp4", categoryRepository.findById(id2).get());
-////        Long id4 = categoryService.createCategory(cat4);
-////        User user = createUserDto("djkim").toEntity();
-////        userService.saveUser(user);
-////        PostDto.SaveRequest post1 = createPostDto("title1", user, categoryRepository.findById(id1).get());
-////        PostDto.SaveRequest post2 = createPostDto("title2", user, categoryRepository.findById(id1).get());
-////        PostDto.SaveRequest post3 = createPostDto("title3", user, categoryRepository.findById(id2).get());
-////        PostDto.SaveRequest post4 = createPostDto("title4", user, categoryRepository.findById(id3).get());
-////        PostDto.SaveRequest post5 = createPostDto("title5", user, categoryRepository.findById(id4).get());
-////        PostDto.SaveRequest post6 = createPostDto("title6", user, categoryRepository.findById(id4).get());
-////        Long pid1 = postService.SavePost(post1);
-////        Long pid2 = postService.SavePost(post2);
-////        Long pid3 = postService.SavePost(post3);
-////        Long pid4 = postService.SavePost(post4);
-////        Long pid5 = postService.SavePost(post5);
-////        Long pid6 = postService.SavePost(post6);
-//        List<User> users = createUsers();
-//        List<Category> cats = createCategories(150);
-//        List<Post> posts = createPosts(users, cats, 150);
-//
-//        // when
-////        List<Post> result = categoryService.getPosts(cats.get(0).getId());
-//        Map<Long, List<Post>> result = categoryService.getPosts(cats.get(0).getId());
-//        List<Category> next = new ArrayList<>();
-//        next.add(categoryRepository.findById(cats.get(0).getId()).get());
-//        // then
-////        for (Post post : posts) {
-////            assertThat(result).contains(post);
-////        }
-//        while (!next.isEmpty()) {
-//            List<Category> temp = new ArrayList<>();
-//            for (Category category : next) {
-//                temp.addAll(category.getChildCategory());
-//                assertThat(result.get(category.getDepth())).containsAll(category.getPostList());
-//            }
-//            next = temp;
-//        }
-//        for (Post post : posts) {
-//            System.out.println(post.getTitle());
-//        }
-//    }
-
     @Test
     @DisplayName("최고 깊이 도달하여 카테고리 생성안되는 테스트")
     public void createCategoryTestToFailByMaxDepth() throws Exception {
@@ -490,49 +303,5 @@ public class CategoryServiceTest {
     }
 
 
-    // 삭제 테스트 추가해야함
 
-
-
-
-//    @Test
-//    @DisplayName("삭제 테스트 - 자녀까지 지워지는지")
-//    public void deleteTestOneChildOneDepth() throws Exception {
-//        //given
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest cat1 = createCategoryDto("temp", root);
-//        Long id1 = categoryService.createCategory(cat1);
-//        CategoryDto.SaveRequest cat2 = createCategoryDto("temp2", categoryRepository.findById(id1).get());
-//        Long id2 = categoryService.createCategory(cat2);
-//
-//        // when
-//        categoryService.deleteCategory(id1);
-//        // then
-//        assertThat(false).isEqualTo(categoryRepository.existsById(id2));
-//    }
-
-    // 여기도 자동화 부분만 남겨두었습니다.
-//    @Test
-//    @DisplayName("삭제 테스트 - 다수의 자녀도 지워지는지")
-//    public void deleteTestMaxDepth() throws Exception {
-//        //given
-////        Category root = createRoot();
-////        CategoryDto.SaveRequest cat1 = createCategoryDto("temp", root);
-////        Long id1 = categoryService.createCategory(cat1);
-////        CategoryDto.SaveRequest cat2 = createCategoryDto("temp2", categoryRepository.findById(id1).get());
-////        Long id2 = categoryService.createCategory(cat2);
-////        CategoryDto.SaveRequest cat3 = createCategoryDto("temp3", categoryRepository.findById(id2).get());
-////        Long id3 = categoryService.createCategory(cat3);
-////        CategoryDto.SaveRequest cat4 = createCategoryDto("temp4", categoryRepository.findById(id2).get());
-////        Long id4 = categoryService.createCategory(cat4);
-//        List<Category> cats = createCategories(7);
-//
-//
-//        // when
-//        categoryService.deleteCategory(cats.get(0).getId());
-//        // then
-//        for (Category cat : cats) {
-//            assertThrows(NotFoundCategoryByIdException.class, () -> categoryRepository.findById(cat.getId()).orElseThrow(NotFoundCategoryByIdException::new));
-//        }
-//    }
 }
