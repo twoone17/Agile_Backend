@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
+//@Validated
 @RequiredArgsConstructor
 public class UserService {
 
@@ -18,6 +19,11 @@ public class UserService {
 
     @Transactional
     public Long saveUser(User user) {
+
+        IsValidEmail(user.getEmail());
+        IsValidPassword(user.getPassword());
+        IsValidNickname(user.getNickname());
+
         if(userRepository.existsByEmail(user.getEmail())) {
             throw new DuplicateEmailException();
         }
@@ -34,7 +40,9 @@ public class UserService {
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        IsValidNickname(afterNickname);
+
+        User user = FindUserByEmail(email);
 
 
         if(userRepository.existsByNickname(afterNickname)) {
@@ -55,7 +63,9 @@ public class UserService {
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        IsValidPassword(beforePassword);
+
+        User user = FindUserByEmail(email);
 
         if(beforePassword.equals(afterPassword)) {
             throw new DuplicateInChangePasswordException();
@@ -66,7 +76,32 @@ public class UserService {
         return "OK";
     }
 
-    // findPassword, findEmail
+    //TODO 비밀번호 분실 시, 기존 비밀번호를 다시 알려줄지 초기화로 다시 설정하게 할지 고민하다
+    //  두 기능 모두 구현해둠.
+
+    public String changePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
+        String email = request.getEmail();
+        String AfterPassword = request.getAfterPassword();
+        IsValidPassword(AfterPassword);
+
+        User user = FindUserByEmail(email);
+
+        // TODO 이메일 인증
+        CertificateEmail(user.getEmail());
+        user.updatePassword(AfterPassword);
+        return "OK";
+    }
+
+    public String findPassword(String email) {
+        User user = FindUserByEmail(email);
+        // TODO 이메일 인증
+        CertificateEmail(user.getEmail());
+
+        // TODO 암호화?
+        String EncryptPW = user.getPassword();
+        return EncryptPW;
+    }
+
 
 
     @Transactional
@@ -75,14 +110,12 @@ public class UserService {
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
 
-        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(() -> new NotFoundUserException());
+        User user = FindUserByEmail(userRequest.getEmail());
 
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
-            throw new InvalidPasswordException();
+            throw new NotFoundPasswordException();
         }
 
-        // 요청을 보낸 유저의 이메일과 패스워드가 데이터베이스 상에서도 서로 매핑이 되는지 확인한다.
-        // 요청으로 들어온 패스워드와 DB에서 이메일로 받아온 유저 객체의 패스워드를 비교한다.
         if(!user.getPassword().equals(userRequest.getPassword())) {
             throw new NotMatchPasswordInDeleteUserException();
         }
@@ -91,10 +124,56 @@ public class UserService {
         return "OK";
     }
 
-    //  유저 조회
-    //  repository에서 제공하긴 하지만 에러 처리,
 
+    public User FindUserByUserRequest(UserRequest userRequest) {
+        if(!userRepository.existsByPassword(userRequest.getPassword())) {
+            throw new NotFoundPasswordException();
+        }
+        User user = FindUserByEmail(userRequest.getEmail());
+        return user;
+    }
 
-    //  외부로 나갈 기능들만 생각 x, 대부분의 기능은 내부에서 동작한다.
+    public User FindUsersByNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname).orElseThrow(() -> new NotFoundNicknameException());
+        return user;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // 공통화
+    private User FindUserByEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        return user;
+    }
+
+    private boolean IsValidEmail(String email) {
+        if(email.length() <= 0) {
+            throw new InvalidEmailException();
+        }
+        return true;
+    }
+
+    private boolean IsValidPassword(String password) {
+        if(password.length() <= 0) {
+            throw new InvalidPasswordException();
+        }
+        return true;
+    }
+
+    private boolean IsValidNickname(String Nickname) {
+        if(Nickname.length() <= 0) {
+            throw new InvalidNicknameException();
+        }
+        return true;
+    }
+
+    private boolean CertificateEmail(String email) {
+        // TODO 임시 조건.
+        if(true) {
+
+        } else {
+            throw new CertificateEmailException();
+        }
+        return true;
+    }
 
 }
