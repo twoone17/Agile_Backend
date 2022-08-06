@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Before;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 
 @Getter
 @Builder
@@ -49,6 +50,10 @@ public class UserDto {
                     .phone(this.phone)
                     .address(this.address)
                     .isBanned(this.isBanned)
+                    .scraps(new ArrayList<>())
+                    .likes(new ArrayList<>())
+                    .posts(new ArrayList<>())
+                    .comments(new ArrayList<>())
                     .build();
         }
     }
@@ -100,10 +105,11 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class LoginRequest {
+    public static class UserRequest {
         private String email;
         private String password;
     }
 
+    // 유저 정보 조회용 DTO 만들기
 
 }

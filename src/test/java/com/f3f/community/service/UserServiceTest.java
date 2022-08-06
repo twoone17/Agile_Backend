@@ -1,6 +1,6 @@
 package com.f3f.community.service;
 
-import com.f3f.community.exception.userException.NoEmailAndPasswordException;
+import com.f3f.community.exception.userException.*;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.repository.UserRepository;
@@ -26,7 +26,36 @@ class UserServiceTest {
     UserService userService;
 
     private User createUser() {
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
+        User user = userInfo.toEntity();
+        return user;
+    }
+    // 전달받은 매개변수를 유니크한 값으로 바꾼 user 엔티티를 저장한 뒤 반환한다.
+    private User createUserWithParams(String key) {
+        SaveRequest userInfo;
+        switch (key) {
+            case "email" :
+                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                break;
+            case "password" :
+                userInfo = new SaveRequest("temp@temp.com", "UniquePassword", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                break;
+            case "phone" :
+                userInfo = new SaveRequest("temp@temp.com", "123456", "uniquePhone", UserGrade.BRONZE, "james", "changwon", false);
+                break;
+            case "nickname" :
+                userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon", false);
+                break;
+            default:
+                userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
+                break;
+        }
+        User user = userInfo.toEntity();
+        return user;
+    }
+
+    private User createUserWithUniqueCount(int i) {
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com" + i, "ppadb123" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu", false);
         User user = userInfo.toEntity();
         return user;
     }
@@ -44,163 +73,188 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Id로 유저 검색 테스트")
-    public void findUserByIdTest() {
-        // given
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon", false);
-        User user = userInfo.toEntity();
-
-        // when
-        Long joinId = userService.saveUser(user);
-        Optional<User> byId = userRepository.findById(joinId);
-
-        // then
-        assertThat(byId.get().getId()).isEqualTo(joinId);
-    }
-    
-
-    @Test
     @DisplayName("이메일 중복 검사 테스트")
     public void EmailDuplicationToFailTest() {
         // given
         // 이메일 중복 시나리오
-        SaveRequest saveRequest1 = new SaveRequest("temp1@temp.com",
-                "12345", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
-        SaveRequest saveRequest2 = new SaveRequest("temp1@temp.com",
-                "1234567", "01012345678", UserGrade.BRONZE, "jack", "yatap", false);
-
-        User EmailTester1 = saveRequest1.toEntity();
-        User EmailTester2 = saveRequest2.toEntity();
+        User user1 = createUserWithParams("nickname");
+        User user2 = createUserWithParams("phone");
 
         //when
-        userService.saveUser(EmailTester1);
+        userService.saveUser(user1);
 
         //then
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.saveUser(EmailTester2));
+        assertThrows(DuplicateEmailException.class, () -> userService.saveUser(user2));
     }
 
     @Test
     @DisplayName("닉네임 중복 검사 테스트")
     public void NicknameDuplicationTestToFail() {
         //given
-        SaveRequest saveRequest1 = new SaveRequest("temp33@temp.com", "12345", "01012345678",
-                UserGrade.BRONZE, "cheolwoong", "changwon", false);
-        SaveRequest saveRequest2 = new SaveRequest("temp312@temp.com", "1234567", "01012345678",
-                UserGrade.BRONZE, "cheolwoong", "yatap", false);
-
-        User NicknameTester1 = saveRequest1.toEntity();
-        User NicknameTester2 = saveRequest2.toEntity();
+        User user1 = createUserWithParams("email");
+        User user2 = createUserWithParams("phone");
         //when
-        userService.saveUser(NicknameTester1);
+        userService.saveUser(user1);
 
         //then
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.saveUser(NicknameTester2));
+        assertThrows(DuplicateNicknameException.class, () -> userService.saveUser(user2));
     }
 
+
+    @Test
+    @DisplayName("비밀번호 변경 성공")
+    public void ChangePasswordTest() {
+        //given
+        String newPW = "changed";
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(user.getEmail(), newPW, user.getPassword());
+        String result = userService.updatePassword(changePasswordRequest);
+
+        //then
+        assertThat(result).isEqualTo("OK");
+        assertThat(user.getPassword()).isEqualTo(newPW);
+    }
 
     @Test
     @DisplayName("비밀번호 변경 - 변경 전 비밀번호와 일치")
     public void ChangePassword_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
-        SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
-                UserGrade.BRONZE, "CheolWoong", "changwon", false);
-        User user = saveRequest1.toEntity();
+        User user = createUser();
         userService.saveUser(user);
 
         // given - 그 후 위에서 생성한 유저의 이메일로 비밀번호 변경을 요청하겠다.
         ChangePasswordRequest changePasswordRequest =
-                new ChangePasswordRequest("oldstyle4@naver.com", "12345678a@", "12345678a@");
+                new ChangePasswordRequest(user.getEmail(), user.getPassword(), user.getPassword());
 
-        // when
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> userService.updatePassword(changePasswordRequest));
-
-        // then
-        assertThat(e.getMessage()).isEqualTo("기존 비밀번호와 변경 비밀번호가 일치합니다.");
+        // when & then
+        IllegalArgumentException e = assertThrows(DuplicateInChangePasswordException.class, () -> userService.updatePassword(changePasswordRequest));
     }
 
     @Test
     @DisplayName("비밀번호 변경 - 이메일 누락")
     public void ChangePassword_MissingEmail() {
         //given
-        ChangePasswordRequest changePasswordRequest =
-                new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("12345789", "12345678abc@", "12345678a@");
+
+        //when & then
+        IllegalArgumentException e = assertThrows(NotFoundUserException.class, () -> userService.updatePassword(changePasswordRequest));
+
+    }
+
+    @Test
+    @DisplayName("닉네임 변경 성공")
+    public void ChangeNicknameTest() {
+        //given
+        String newNickname = "changed";
+        User user = createUser();
+        userService.saveUser(user);
 
         //when
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> userService.updatePassword(changePasswordRequest));
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user.getEmail(), newNickname, user.getNickname());
+        String result = userService.updateNickname(changeNicknameRequest);
 
         //then
-        assertThat(e.getMessage()).isEqualTo("비밀번호를 변경할 사용자가 존재하지 않습니다.");
+        assertThat(result).isEqualTo("OK");
+        assertThat(user.getNickname()).isEqualTo(newNickname);
     }
 
     @Test
     @DisplayName("닉네임 변경 - 변경 전 닉네임과 일치")
     public void ChangeNickname_DuplicationToFail()  {
         // given - 이메일이 일치하는 유저가 있어야 하므로 먼저 유저를 생성.
-        SaveRequest saveRequest1 = new SaveRequest("oldstyle4@naver.com", "123456789asd", "01012345678",
-                UserGrade.BRONZE, "CheolWoong", "changwon", false);
-        User user = saveRequest1.toEntity();
+        User user = createUser();
         userService.saveUser(user);
 
         // given - 그 후 위에서 생성한 유저의 이메일로 닉네임 변경을 요청하겠다.
-        ChangeNicknameRequest changeNicknameRequest =
-                new ChangeNicknameRequest("oldstyle4@naver.com", "CheolWoong", "CheolWoong");
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user.getEmail(), user.getNickname(), user.getNickname());
 
-        // when
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> userService.updateNickname(changeNicknameRequest));
-
-        // then
-        assertThat(e.getMessage()).isEqualTo("기존 닉네임과 변경 닉네임이 일치합니다.");
+        // when & then
+        IllegalArgumentException e = assertThrows(DuplicateNicknameException.class, () -> userService.updateNickname(changeNicknameRequest));
     }
 
     @Test
-    @DisplayName("닉네임 변경 - 이메일 누락")
+    @DisplayName("닉네임 변경 - 존재하지 않는 이메일")
     public void ChangeNickname_MissingEmail() {
         //given
-        ChangeNicknameRequest changeNicknameRequest =
-                new ChangeNicknameRequest("emptyEmail", "james", "michael");
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest("emptyEmail", "james", "michael");
 
-        //when
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> userService.updateNickname(changeNicknameRequest));
-
-        //then
-        assertThat(e.getMessage()).isEqualTo("닉네임을 변경할 사용자가 존재하지 않습니다.");
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> userService.updateNickname(changeNicknameRequest));
     }
 
+    @Test
+    @DisplayName("닉네임 변경 - 이미 존재하는 닉네임")
+    public void ChangeNicknameToAlreadyExists() {
+        //given
+        User user1 = createUserWithParams("email");
+        User user2 = createUser();
+        userService.saveUser(user1);
+        userService.saveUser(user2);
+
+        //when
+        ChangeNicknameRequest changeNicknameRequest = new ChangeNicknameRequest(user1.getEmail(), user2.getNickname(), user1.getNickname());
+
+        //then
+        assertThrows(DuplicateNicknameException.class, () -> userService.updateNickname(changeNicknameRequest));
+    }
 
 
     @Test
     @DisplayName("회원탈퇴 성공 테스트")
     public void deleteUserTest() {
-        //given
+       //given
         User user = createUser();
+        userService.saveUser(user);
 
         //when
-        userService.saveUser(user);
-        String msg = userService.delete(user.getEmail(), user.getPassword());
+        UserRequest userRequest = new UserRequest(user.getEmail(), user.getPassword());
+        String result = userService.delete(userRequest);
 
         //then
-        assertThat(msg).isEqualTo("OK");
+        assertThat(result).isEqualTo("OK");
+        assertThat(userRepository.existsByEmail(userRequest.getEmail())).isEqualTo(false);
     }
 
     @Test
-    @DisplayName("회원탈퇴 실패 테스트 - 이메일 비밀번호 불일치")
-    public void delete() {
+    @DisplayName("회원탈퇴 실패 - 존재하지 않는 유저 이메일")
+    public void deleteInvalidEmailUserToFail() {
         //given
-        User user = createUser();
+        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> userService.delete(userRequest));
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 실패 - 존재하지 않는 패스워드")
+    public void deleteInvalidPasswordUserToFail() {
+        //given
+        UserRequest userRequest = new UserRequest("invalidEmail", "tempPW");
+
+        //when & then
+        assertThrows(InvalidPasswordException.class, () -> userService.delete(userRequest));
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 실패 - 다른 유저의 패스워드")
+    public void deleteOtherUserToFail() throws Exception {
+        //given
+        User user1 = createUser();
+        User user2 = createUserWithUniqueCount(1);
+        userService.saveUser(user1);
+        // user2의 패스워드는 ppadb1231 이다.
+        userService.saveUser(user2);
 
         //when
-        userService.saveUser(user);
-        NoEmailAndPasswordException e = assertThrows(NoEmailAndPasswordException.class,
-                () -> userService.delete("oldstyle4@naver.com", "123456789a"));
+        // user1의 이메일, user2의 패스워드 모두 db에 존재하지만, 서로 매핑되지 않는 값이다.
+        UserRequest userRequest = new UserRequest(user1.getEmail(), user2.getPassword());
+
         //then
-        assertThat(e.getMessage()).isEqualTo("이메일이나 비밀번호가 일치하지 않습니다.");
+        assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
     }
+
 
 }
