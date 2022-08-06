@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
 
+import javax.validation.Valid;
+
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
@@ -19,7 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long saveUser(SaveRequest saveRequest) {
+    public Long saveUser(@Valid SaveRequest saveRequest) {
 
 
         if(userRepository.existsByEmail(saveRequest.getEmail())) {

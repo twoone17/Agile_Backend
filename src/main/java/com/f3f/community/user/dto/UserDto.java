@@ -26,21 +26,16 @@ public class UserDto {
     @Builder
     public static class SaveRequest {
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank
-        // 최소 8자, 최소 하나의 문자, 하나의 숫자 및 하나의 특수 문자
-//        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String password;
 
-//        @Pattern(regexp = "\\d{3}-\\d{3,4}-\\d{4}")
         private String phone;
         private UserGrade userGrade;
 
         // User
         @NotBlank
-        @Size(min = 4, max = 10)
         private String nickname;
         private String address;
         private boolean isBanned;
@@ -54,7 +49,7 @@ public class UserDto {
                     .userGrade(this.userGrade)
                     .phone(this.phone)
                     .address(this.address)
-                    .isBanned(this.isBanned)
+//                    .isBanned(this.isBanned)
                     .scraps(new ArrayList<>())
                     .likes(new ArrayList<>())
                     .posts(new ArrayList<>())
@@ -69,18 +64,16 @@ public class UserDto {
         private String email;
 
         @NotBlank
-//        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String AfterPassword;
 
         @NotBlank
-//        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String BeforePassword;
 
         @Builder
         public ChangePasswordRequest(String email,
-                                     @NotBlank @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+                                     @NotBlank
                                      String ChangedPassword,
-                                     @NotBlank @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
+                                     @NotBlank
                                      String BeforePassword) {
             this.email = email;
             this.BeforePassword = BeforePassword;
@@ -99,7 +92,6 @@ public class UserDto {
         private String email;
 
         @NotBlank
-//        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String AfterPassword;
     }
 
@@ -111,14 +103,12 @@ public class UserDto {
         @Email
         private String email;
         @NotBlank
-//        @Pattern(regexp = "^([a-zA-Z0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣]).{1,10}$")
         private String AfterNickname;
         private String BeforeNickname;
 
         @Builder
         public ChangeNicknameRequest(String email,
                                      @NotBlank
-//                                     @Pattern(regexp = "^([a-zA-Z0-9ㄱ-ㅎ|ㅏ-ㅣ|가-힣]).{1,10}$")
                                      String AfterNickname,
                                      String BeforeNickname) {
             this.email = email;
@@ -137,7 +127,6 @@ public class UserDto {
         private String email;
 
         @NotBlank
-//        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$")
         private String password;
     }
 
