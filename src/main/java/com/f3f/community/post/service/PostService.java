@@ -1,5 +1,7 @@
 package com.f3f.community.post.service;
 
+import com.f3f.community.category.domain.Category;
+import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.exception.postException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
@@ -25,6 +27,8 @@ public class PostService {
 
     private final UserRepository userRepository;
 
+    private final CategoryRepository categoryRepository;
+
     /**
      * 게시글 작성(Create)
      * 예외처리 )
@@ -39,11 +43,12 @@ public class PostService {
         Post post = SaveRequest.toEntity();
         postRepository.save(post);
 
-        User author = post.getAuthor();
+        User author = userRepository.findById(post.getAuthor().getId()).get();
         //author의 postList에도 저장
         author.getPosts().add(post);
         //category의 postlist에 저장
-        post.getCategory().getPostList().add(post);
+        Category category = categoryRepository.findById(post.getCategory().getId()).get();
+        category.getPostList().add(post);
 
         return post.getId();
     }

@@ -32,18 +32,11 @@ public class ScrapService {
     // 스크랩 컬렉션 생성
     @Transactional
     public Long createScrap(SaveRequest saveRequest) throws Exception{
-        if (saveRequest.getName() == null || saveRequest.getName().length() == 0) {
-            throw new NotFoundScrapNameException();
-        }
-        if (saveRequest.getUser() == null) {
-            throw new NotFoundScrapUserException();
-        }
-        if (saveRequest.getPostList() == null) {
-            throw new NotFoundScrapPostListException();
-        }
+
         Scrap newScrap = saveRequest.toEntity();
-        User user = newScrap.getUser();
-        List<Scrap> scraps = scrapRepository.findScrapsByUser(newScrap.getUser());
+//        User user = newScrap.getUser();
+        User user = userRepository.findById(newScrap.getUser().getId()).get();
+        List<Scrap> scraps = scrapRepository.findScrapsByUser(user);
         for (Scrap userScrap : scraps) {
             if (userScrap.getName().equals(newScrap.getName())) {
                 throw new DuplicateScrapNameException();
@@ -85,7 +78,8 @@ public class ScrapService {
     public String updateCollectionName(Long scrapId, Long userId, String newName) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         User user = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
-        List<Scrap> scraps = user.getScraps();
+//        List<Scrap> scraps = user.getScraps();
+        List<Scrap> scraps = scrapRepository.findScrapsByUser(user);
         for (Scrap userScrap : scraps) {
             if (userScrap.getName().equals(newName)) {
                 throw new DuplicateScrapNameException();
