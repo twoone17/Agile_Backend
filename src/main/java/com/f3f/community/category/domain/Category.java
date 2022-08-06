@@ -26,7 +26,7 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     private Category parents;
 
-    @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY)
     private List<Category> childCategory = new ArrayList<>();
 
     private Long depth;
@@ -48,6 +48,9 @@ public class Category {
     }
 
 
+    public void updateName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 
 
 }

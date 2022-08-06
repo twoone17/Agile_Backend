@@ -1,5 +1,9 @@
 package com.f3f.community.service;
 
+import com.f3f.community.category.domain.Category;
+import com.f3f.community.category.dto.CategoryDto;
+import com.f3f.community.category.repository.CategoryRepository;
+import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.postException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
@@ -46,6 +50,12 @@ public class PostServiceTest {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    CategoryService categoryService;
+
+    @Autowired
+    CategoryRepository categoryRepository;
+
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
                 UserGrade.BRONZE, "james", "changwon", false);
@@ -57,7 +67,7 @@ public class PostServiceTest {
     }
 
     //Dto create TODO: 주석 처리 한것은 왜 빌드가 안되는지 ?
-    private PostDto.SaveRequest createPostDto1(User user) {
+    private PostDto.SaveRequest createPostDto1(User user, Category cat) {
         return SaveRequest.builder()
                 .author(user)
                 .title("title1")
@@ -68,7 +78,22 @@ public class PostServiceTest {
 //                .comments((List<Comment>) new Comment())
 //                .likesList((List<Likes>) new Likes())
 //                .tagList((List<PostTag>) new PostTag())
+                .category(cat)
                 .build();
+    }
+
+    private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
+        return CategoryDto.SaveRequest.builder()
+                .categoryName(name)
+                .childCategory(new ArrayList<>())
+                .parents(parent)
+                .postList(new ArrayList<>()).build();
+    }
+
+    private Category createRoot() throws Exception{
+        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+        Long rid = categoryService.createCategory(cat);
+        return categoryRepository.findById(rid).get();
     }
 
     @AfterEach
@@ -89,10 +114,15 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User user = userDto1.toEntity();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(user)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 //        PostDto.SaveRequest postDto1 = createPostDto1(user);
 
@@ -112,10 +142,15 @@ public class PostServiceTest {
     //필수값 author 없음 : 실패
     public void savePostTestToFailByNullAuthor() throws Exception {
         //given
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
 //                .author(new User())
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
@@ -129,10 +164,15 @@ public class PostServiceTest {
     //필수값 title 없음 : 실패
     public void savePostTestToFailByNullTitle() throws Exception {
         //given
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
                 .author(new User())
 //                .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
@@ -146,10 +186,15 @@ public class PostServiceTest {
     //필수값 title 없음 : 실패
     public void savePostTestToFailByNullContent() throws Exception {
         //given
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
                 .author(new User())
                 .title("title1")
 //                .content("content1")
+                .category(cat)
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
@@ -171,12 +216,16 @@ public class PostServiceTest {
         User user = userDto1.toEntity();
 //        SaveRequest postDto1 = createPostDto1(user);
 //        Post post = postDto1.toEntity();
-
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
 
         PostDto.SaveRequest SaveRequest = PostDto.SaveRequest.builder()
                 .author(user)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
         Post post = SaveRequest.toEntity();
 
@@ -210,10 +259,15 @@ public class PostServiceTest {
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
     //when
         Long uid = userService.saveUser(author);
@@ -233,6 +287,11 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         UserDto.SaveRequest userDto2 = createUserDto2();
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         User author1 = userDto1.toEntity();
         User author2 = userDto2.toEntity();
 
@@ -240,18 +299,21 @@ public class PostServiceTest {
                 .author(author1)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author1)
                 .title("title2")
                 .content("content2")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto3 = PostDto.SaveRequest.builder()
                 .author(author1)
                 .title("title3")
                 .content("content3")
+                .category(cat)
                 .build();
 
         //다른 유저가 저장
@@ -259,6 +321,7 @@ public class PostServiceTest {
                 .author(author2)
                 .title("title4")
                 .content("content4")
+                .category(cat)
                 .build();
         //when
         Long uid1 = userService.saveUser(author1);
@@ -287,12 +350,18 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         UserDto.SaveRequest userDto2 = createUserDto2();
         User author2 = userDto2.toEntity();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
         //when
         Long uid1 = userService.saveUser(author);
@@ -315,10 +384,17 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
         //when
         Long uid = userService.saveUser(author);
@@ -338,6 +414,11 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         UserDto.SaveRequest userDto2 = createUserDto2();
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         User author1 = userDto1.toEntity();
         User author2 = userDto2.toEntity();
 
@@ -345,18 +426,21 @@ public class PostServiceTest {
                 .author(author1)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author1)
                 .title("title2")
                 .content("content2")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto3 = PostDto.SaveRequest.builder()
                 .author(author1)
                 .title("title3")
                 .content("content3")
+                .category(cat)
                 .build();
 
         //다른 유저가 저장
@@ -364,6 +448,7 @@ public class PostServiceTest {
                 .author(author2)
                 .title("title1")
                 .content("content4")
+                .category(cat)
                 .build();
         //when
         Long uid1 = userService.saveUser(author1);
@@ -388,10 +473,17 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
         //when
         Long uid = userService.saveUser(author);
@@ -416,16 +508,24 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
         Long user1Id = userService.saveUser(author);
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title3")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
@@ -459,16 +559,24 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
         Long user1Id = userService.saveUser(author);
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title3")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
@@ -495,6 +603,11 @@ public class PostServiceTest {
         User author = userDto1.toEntity();
         Long user1Id = userService.saveUser(author);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         UserDto.SaveRequest userDto2 = createUserDto2();
         User author2 = userDto2.toEntity();
         Long user2Id = userService.saveUser(author2);
@@ -502,12 +615,14 @@ public class PostServiceTest {
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title3")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
@@ -534,17 +649,24 @@ public class PostServiceTest {
         User author = userDto1.toEntity();
         Long user1Id = userService.saveUser(author);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         UserDto.SaveRequest userDto2 = createUserDto2();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title3")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
@@ -578,17 +700,24 @@ public class PostServiceTest {
         User author = userDto1.toEntity();
         Long user1Id = userService.saveUser(author);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         UserDto.SaveRequest userDto2 = createUserDto2();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title3")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
@@ -633,16 +762,23 @@ public class PostServiceTest {
         Long userId1 = userService.saveUser(author);
         Long userId2 = userService.saveUser(author2);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         PostDto.SaveRequest postDto2 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
                 .content("content2")
+                .category(cat)
                 .build();
 
 
@@ -650,6 +786,7 @@ public class PostServiceTest {
                 .author(author2)
                 .title("title3")
                 .content("content3")
+                .category(cat)
                 .build();
 
         //when
@@ -680,10 +817,16 @@ public class PostServiceTest {
 
         Long userId1 = userService.saveUser(author);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         //when
@@ -706,10 +849,16 @@ public class PostServiceTest {
         User author = userDto1.toEntity();
         Long userId1 = userService.saveUser(author);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         //when
@@ -734,10 +883,16 @@ public class PostServiceTest {
         User author2 = userDto2.toEntity();
         Long userId2 = userService.saveUser(author2);
 
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title1")
                 .content("content1")
+                .category(cat)
                 .build();
 
         //when

@@ -41,8 +41,8 @@ public class PostService {
             throw new NotFoundPostTitleException();
         if(SaveRequest.getContent()==null)
             throw new NotFoundPostContentException();
-//        if(SaveRequest.getCategory()==null)
-//            throw new NotFoundPostCategoryException();
+        if(SaveRequest.getCategory()==null)
+            throw new NotFoundPostCategoryException();
 
         Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
         User author = post.getAuthor();

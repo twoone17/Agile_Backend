@@ -10,6 +10,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 
 // 패스워드 정규식은 프론트관할, 일단은 길이 체크만
 
@@ -54,6 +55,10 @@ public class UserDto {
                     .phone(this.phone)
                     .address(this.address)
                     .isBanned(this.isBanned)
+                    .scraps(new ArrayList<>())
+                    .likes(new ArrayList<>())
+                    .posts(new ArrayList<>())
+                    .comments(new ArrayList<>())
                     .build();
         }
     }
