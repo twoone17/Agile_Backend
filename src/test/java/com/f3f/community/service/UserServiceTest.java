@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +25,8 @@ class UserServiceTest {
     UserRepository userRepository;
     @Autowired
     UserService userService;
+
+    private final String resultString = "OK";
 
     private User createUser() {
         SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
@@ -214,7 +215,7 @@ class UserServiceTest {
         String result = userService.updatePassword(changePasswordRequest);
 
         //then
-        assertThat(result).isEqualTo("OK");
+        assertThat(result).isEqualTo(resultString);
         assertThat(user.getPassword()).isEqualTo(newPW);
     }
 
@@ -258,7 +259,7 @@ class UserServiceTest {
         String result = userService.updateNickname(changeNicknameRequest);
 
         //then
-        assertThat(result).isEqualTo("OK");
+        assertThat(result).isEqualTo(resultString);
         assertThat(user.getNickname()).isEqualTo(newNickname);
     }
 
@@ -315,7 +316,7 @@ class UserServiceTest {
         String result = userService.delete(userRequest);
 
         //then
-        assertThat(result).isEqualTo("OK");
+        assertThat(result).isEqualTo(resultString);
         assertThat(userRepository.existsByEmail(userRequest.getEmail())).isEqualTo(false);
     }
 
@@ -361,4 +362,33 @@ class UserServiceTest {
         assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
     }
 
+    @Test
+    @DisplayName("로그인 없이 비밀번호 변경 테스트")
+    public void changePasswordWithoutSignInTest() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        ChangePasswordWithoutSignInRequest cpws = new ChangePasswordWithoutSignInRequest(user.getEmail(), "newPW123@");
+        String result = userService.changePasswordWithoutSignIn(cpws);
+
+        //then
+        assertThat(cpws.getAfterPassword()).isEqualTo(user.getPassword());
+        assertThat(result).isEqualTo(resultString);
+    }
+
+    @Test
+    @DisplayName("비밀번호 찾기")
+    public void findPasswordTest() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        SearchedPassword password = userService.findPassword(user.getEmail());
+
+        //then
+        assertThat(password.getPassword()).isEqualTo(user.getPassword());
+    }
 }
