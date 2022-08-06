@@ -14,7 +14,7 @@ import javax.persistence.*;
 public class UserBase extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "user_id")
     protected Long id;
 
