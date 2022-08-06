@@ -10,16 +10,17 @@ import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
+@Validated
 @RequiredArgsConstructor
 public class PostService {
 
-    //final이나 @NonNull인 필드 값만 파라미터로 받는 생성자 만듦
     private final PostRepository postRepository;
 
     private final UserRepository userRepository;
@@ -34,22 +35,16 @@ public class PostService {
      * 4.category
      */
     @Transactional
-    public Long SavePost(PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
-        if(SaveRequest.getAuthor() ==null)
-            throw new NotFoundPostAuthorException();
-        if(SaveRequest.getTitle()==null)
-            throw new NotFoundPostTitleException();
-        if(SaveRequest.getContent()==null)
-            throw new NotFoundPostContentException();
-        if(SaveRequest.getCategory()==null)
-            throw new NotFoundPostCategoryException();
+    public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
 
-        Post post = SaveRequest.toEntity(); //SaveDto에서 entity로 바꿔준다
+        Post post = SaveRequest.toEntity();
+        postRepository.save(post);
+
         User author = post.getAuthor();
-        postRepository.save(post); //postRepository에 저장
-        author.getPosts().add(post); //author의 postList에도 저장
+        //author의 postList에도 저장
+        author.getPosts().add(post);
+        //category의 postlist에 저장
         post.getCategory().getPostList().add(post);
-//        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
 
         return post.getId();
     }
@@ -75,34 +70,44 @@ public class PostService {
 //    Read a-1) post_id로 post 찾기
     @Transactional(readOnly = true)
     public Optional<Post> findPostByPostId(Long postId) throws Exception {
-        if (postRepository.existsById(postId)) {
-            Optional<Post> post = postRepository.findById(postId);//postRepository에 postId가 있을때
-            return post;
-        } else {
-            throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다"); //postRepository에 postId로 저장된 게시글이 없으면 예외처리
+        //postRepository에 postid와 일치하는 게시글이 없으면 예외처리
+        if(!postRepository.existsById(postId))
+        {
+            throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다");
         }
+        //postRepository에 postId가 있을때
+        Optional<Post> post = postRepository.findById(postId);
+        return post;
+
     }
 
     // Read b-1) author로 postList 찾기
     @Transactional(readOnly = true)
     public List<Post> findPostListByAuthor(User author) throws Exception {
-        if (postRepository.existsByAuthor(author)) {
-            List<Post> postList =  postRepository.findByAuthor(author); //postRepository에 author가 있을때
-            return postList; //author가 작성한 postlist를 반환
-        } else {
-            throw new NotFoundPostListByAuthor(); //postRepository에 author가 작성한 게시글이 없으면 예외처리
+        //postRepository에 author와 일치하는 게시글이 없으면 예외처리
+        if(!postRepository.existsByAuthor(author))
+        {
+            throw new NotFoundPostListByAuthor();
         }
+        //postRepository에 author가 있을때
+        List<Post> postList =  postRepository.findByAuthor(author);
+        //author가 작성한 postlist를 반환
+        return postList;
+
     }
 
     //Read b-2) title로 postList 찾기
     @Transactional(readOnly = true)
     public List<Post> findPostListByTitle(String title) throws Exception{
-        if (postRepository.existsByTitle(title)) {
-            List<Post> postList =  postRepository.findByTitle(title); //postRepository에 title 있을때
-            return postList; //title에 해당하는 postlist를 반환
-        } else {
-            throw new NotFoundPostListByTitle(); //postRepository에 title과 일치하는 게시글이 없으면 예외처리
+        //postRepository에 title과 일치하는 게시글이 없으면 예외처리
+        if(!postRepository.existsByTitle(title))
+        {
+            throw new NotFoundPostListByTitle();
         }
+        //postRepository에 title 있을때
+        List<Post> postList =  postRepository.findByTitle(title);
+        //title에 해당하는 postlist를 반환
+        return postList;
     }
 
 //    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
@@ -128,26 +133,17 @@ public class PostService {
      * 3.content
      */
     @Transactional
-    public String updatePost(Long postId,Long userId, PostDto.UpdateRequest updateRequest) throws Exception{ //UpdateDto 활용
+    public String updatePost(@Valid Long postId,Long userId, PostDto.UpdateRequest updateRequest) throws Exception{
 
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
         User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
-        List<Post> author_posts = author.getPosts();
-        if(!author_posts.contains(post))
-        {
-            throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 수정할 수 없습니다");
-        }
-        if(updateRequest.getTitle() == null || updateRequest.getTitle().length()<1)
-            throw new NotFoundPostTitleException("수정시 Title은 한글자 이상이어야 합니다.");
-        if(updateRequest.getContent() == null || updateRequest.getContent().length()<1)
-            throw new NotFoundPostContentException("수정시 Content는 한글자 이상이어야 합니다.");
-        post.updatePost(updateRequest.getTitle(), updateRequest.getContent(),updateRequest.getMedia());
 
-        postRepository.save(post); //postRepository에 저장
-//        System.out.println("author = " + author);
-//        System.out.println("author.getPosts() = " + author.getPosts());
-//        author.getPosts().add(post); //author의 postList에도 저장 , author의 postlist에는 update할때 추가로 저장 안해도 되나?
-//        userRepository.save(author); //userRepository에 postlist가 추가된 author 저장
+        //post 업데이트
+        post.updatePost(updateRequest);
+        //postRepository에 업데이트 된 post 저장
+        postRepository.save(post);
+        //author의 postList에도 저장
+        author.getPosts().add(post);
 
         return "OK";
     }
@@ -166,12 +162,6 @@ public class PostService {
     @Transactional
     public String deletePost(Long postId, Long userId){
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
-        List<Post> author_posts = author.getPosts();
-        if(!author_posts.contains(post))
-        {
-            throw new NotFoundPostInAuthorException("본인 게시물이 아닌 다른 사람의 게시물을 삭제할 수 없습니다");
-        }
         postRepository.deleteById(postId); //postRepository에 있는 postId의 게시글을
         return "Delete OK";
     }

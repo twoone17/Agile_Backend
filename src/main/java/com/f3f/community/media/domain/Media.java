@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.rmi.activation.ActivationGroupDesc;
 
 
 @Entity
@@ -17,7 +16,7 @@ import java.rmi.activation.ActivationGroupDesc;
 public class Media {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "media_id")
     private Long id;
 

@@ -6,30 +6,30 @@ import com.f3f.community.exception.userException.*;
 import org.springframework.stereotype.Service;
 import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
-//@Validated
+@Validated
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
     @Transactional
-    public Long saveUser(User user) {
+    public Long saveUser(SaveRequest saveRequest) {
 
-        IsValidEmail(user.getEmail());
-        IsValidPassword(user.getPassword());
-        IsValidNickname(user.getNickname());
 
-        if(userRepository.existsByEmail(user.getEmail())) {
+        if(userRepository.existsByEmail(saveRequest.getEmail())) {
             throw new DuplicateEmailException();
         }
-        if(userRepository.existsByNickname(user.getNickname())) {
+        if(userRepository.existsByNickname(saveRequest.getNickname())) {
             throw new DuplicateNicknameException();
         }
+
+        User user = saveRequest.toEntity();
         User saveUser = userRepository.save(user);
         return saveUser.getId();
     }
@@ -40,7 +40,7 @@ public class UserService {
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-        IsValidNickname(afterNickname);
+//        IsValidNickname(afterNickname);
 
         User user = FindUserByEmail(email);
 
@@ -63,7 +63,7 @@ public class UserService {
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-        IsValidPassword(beforePassword);
+//        IsValidPassword(beforePassword);
 
         User user = FindUserByEmail(email);
 
@@ -79,10 +79,11 @@ public class UserService {
     //TODO 비밀번호 분실 시, 기존 비밀번호를 다시 알려줄지 초기화로 다시 설정하게 할지 고민하다
     //  두 기능 모두 구현해둠.
 
+    @Transactional
     public String changePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
         String email = request.getEmail();
         String AfterPassword = request.getAfterPassword();
-        IsValidPassword(AfterPassword);
+//        IsValidPassword(AfterPassword);
 
         User user = FindUserByEmail(email);
 
@@ -92,6 +93,7 @@ public class UserService {
         return "OK";
     }
 
+    @Transactional
     public SearchedPassword findPassword(String email) {
         User user = FindUserByEmail(email);
         // TODO 이메일 인증
@@ -139,6 +141,12 @@ public class UserService {
         return user;
     }
 
+
+    // id조회, 이메일 조회, 내부용
+    // 유저 조회했을때 post를 다 보여줄거냐, 10개로 끊어서 보여줄지,
+    // scrap도 마찬가지, user는 정보를 다 가지고 있어서 이걸 어떻게 뿌릴지 고민해야한다.
+
+    // 지금이랑 반대로 예외를 서비스 로직 내에서 터뜨리기
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // 공통화
     private User FindUserByEmail(String email) {
@@ -146,26 +154,6 @@ public class UserService {
         return user;
     }
 
-    private boolean IsValidEmail(String email) {
-        if(email.length() <= 0) {
-            throw new InvalidEmailException();
-        }
-        return true;
-    }
-
-    private boolean IsValidPassword(String password) {
-        if(password.length() <= 0) {
-            throw new InvalidPasswordException();
-        }
-        return true;
-    }
-
-    private boolean IsValidNickname(String Nickname) {
-        if(Nickname.length() <= 0) {
-            throw new InvalidNicknameException();
-        }
-        return true;
-    }
 
     private boolean CertificateEmail(String email) {
         // TODO 임시 조건.

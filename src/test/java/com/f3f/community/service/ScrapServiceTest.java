@@ -193,12 +193,12 @@ class ScrapServiceTest {
     @DisplayName("서비스 createScrap 성공 테스트 ")
     public void createScrapTest() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrapDto = createScrapDto1(user);
-        
-        
-        // when
+        UserDto.SaveRequest user = createUserDto1();
         Long userId = userService.saveUser(user);
+        ScrapDto.SaveRequest scrapDto = createScrapDto1(userRepository.findById(userId).get());
+
+
+        // when
         Long scrapId = scrapService.createScrap(scrapDto);
         // then
         scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
@@ -213,16 +213,16 @@ class ScrapServiceTest {
     @DisplayName("해당 유저의 전체 스크랩 가져오는 테스트") // 코드 추가해야함, 중복에 대한 테스트도 해야함
     public void findScrapsByUserTest() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
+        UserDto.SaveRequest user = createUserDto1();
 
+        Long userId = userService.saveUser(user);
 
-        SaveRequest saveRequest1 = createScrapDto1(user);
-        SaveRequest saveRequest2 = createScrapDto2(user);
+        SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(userId).get());
+        SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(userId).get());
 
 
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
@@ -237,17 +237,17 @@ class ScrapServiceTest {
     @DisplayName("saveCollection 실패 테스트 - 스크랩 아이디 확인 불가")
     public void saveCollectionTestToFailByScrapId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
@@ -258,17 +258,17 @@ class ScrapServiceTest {
     @DisplayName("saveCollection 실패 테스트 - 포스트 아이디 확인 불가")
     public void saveCollectionTestToFailByPostId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
@@ -279,17 +279,17 @@ class ScrapServiceTest {
     @DisplayName("saveCollection 실패 테스트 - 중복된 포스트 저장 요청")
     public void saveCollectionTestToFailByDuplicateScrapPost() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         scrapService.saveCollection(sid, pid);
 
@@ -301,19 +301,19 @@ class ScrapServiceTest {
     @DisplayName("saveCollection 성공 테스트 - 스크랩 안에 포스트 들어간 포스트 수 확인")
     public void saveCollectionTestByPostsNum() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post1 = createPostDto1(user, cat);
-        PostDto.SaveRequest post2 = createPostDto2(user, cat);
+        PostDto.SaveRequest post1 = createPostDto1(userRepository.findById(uid).get(), cat);
+        PostDto.SaveRequest post2 = createPostDto2(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid1 = postService.SavePost(post1);
-        Long pid2 = postService.SavePost(post2);
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
         Long sid = scrapService.createScrap(scrap);
         scrapService.saveCollection(sid, pid1);
         scrapService.saveCollection(sid, pid2);
@@ -325,18 +325,18 @@ class ScrapServiceTest {
     @DisplayName("saveCollection 성공 테스트 - 스크랩 포스트에 스크랩과 포스트를 저장한 스크랩 일치 확인")
     public void saveCollectionTestByScrapPost() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -349,15 +349,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 스크랩 존재 x")
     public void updateNameTestToFailByScrapId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, userId, "test3"));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, uid, "test3"));
 
     }
 
@@ -365,15 +365,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 유저 존재 x")
     public void updateNameTestToFailByUserId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , userId+1, "test3"));
+        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , uid+1, "test3"));
 
     }
 
@@ -381,15 +381,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 이름 중복")
     public void updateNameTestToFailByDuplicateName() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, "test2"));
+        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, "test2"));
 
     }
 
@@ -397,15 +397,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - null 이름")
     public void updateNameTestToFailByNullName() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, null));
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, null));
 
     }
 
@@ -413,15 +413,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 실패 테스트 - 빈 이름")
     public void updateNameTestToFailByEmptyName() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, ""));
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, ""));
 
     }
 
@@ -429,15 +429,15 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트 - 같은 유저에서 다른 이름으로 변경")
     public void updateNameTestSameUser() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        scrapService.updateCollectionName(scrap1, userId, "test3");
+        scrapService.updateCollectionName(scrap1, uid, "test3");
         assertThat("test3").isEqualTo(scrapRepository.findById(scrap1).get().getName());
     }
 
@@ -445,18 +445,18 @@ class ScrapServiceTest {
     @DisplayName("스크랩 컬렉션 이름 변경 성공 테스트 - 다른 유저에서 같은 이름으로 변경")
     public void updateNameTestDifferentUser() throws Exception{
         //given
-        User user1 = createUserDto1().toEntity();
-        User user2 = createUserDto2().toEntity();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user1);
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user2);
+        UserDto.SaveRequest user1 = createUserDto1();
+        UserDto.SaveRequest user2 = createUserDto2();
+        Long uid1 = userService.saveUser(user1);
+        Long uid2 = userService.saveUser(user2);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid1).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid2).get());
 
         // when
-        Long user1Id = userService.saveUser(user1);
-        Long user2Id = userService.saveUser(user2);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        scrapService.updateCollectionName(scrap1, user1Id, "test2");
+        scrapService.updateCollectionName(scrap1, uid1, "test2");
         assertThat("test2").isEqualTo(scrapRepository.findById(scrap1).get().getName());
     }
     // updateCollectionName 테스트 종료
@@ -467,11 +467,11 @@ class ScrapServiceTest {
     @DisplayName("스크랩 리포지토리에서 스크랩 삭제 실패 테스트 - 아이디 없어서 삭제 실패")
     public void deleteCollectionTestToFail() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        SaveRequest saveRequest = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        SaveRequest saveRequest = createScrapDto1(userRepository.findById(uid).get());
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap = scrapService.createScrap(saveRequest);
         // then
         assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1));
@@ -482,11 +482,11 @@ class ScrapServiceTest {
     @DisplayName("스크랩 리포지토리에서 스크랩 삭제 성공 테스트")
     public void deleteCollectionTest() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        SaveRequest saveRequest = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        SaveRequest saveRequest = createScrapDto1(userRepository.findById(uid).get());
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap = scrapService.createScrap(saveRequest);
 
         // then
@@ -501,18 +501,18 @@ class ScrapServiceTest {
     @DisplayName("deleteCollectionItem 실패 테스트 - 스크랩 아이디 존재 x")
     public void deleteCollectionItemTestToFailByScrapId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -523,18 +523,18 @@ class ScrapServiceTest {
     @DisplayName("deleteCollectionItem 실패 테스트 - 포스트 아이디 존재 x")
     public void deleteCollectionItemTestToFailByPostId() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -545,19 +545,19 @@ class ScrapServiceTest {
     @DisplayName("deleteCollectionItem 실패 테스트 - 스크랩 포스트 객체 존재 x")
     public void deleteCollectionItemTestToFailByScrapPost() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap1 = createScrapDto1(user);
-        ScrapDto.SaveRequest scrap2 = createScrapDto2(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest scrap2 = createScrapDto2(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid1 = scrapService.createScrap(scrap1);
         Long sid2 = scrapService.createScrap(scrap2);
         Long spid = scrapService.saveCollection(sid1, pid);
@@ -569,18 +569,18 @@ class ScrapServiceTest {
     @DisplayName("deleteCollectionItem 성공 테스트 - 스크랩 포스트 리스트에 존재 x")
     public void deleteCollectionItemTestByPostList() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -593,18 +593,18 @@ class ScrapServiceTest {
     @DisplayName("deleteCollectionItem 성공 테스트 - 포스트 스크랩 리스트에 존재 x")
     public void deleteCollectionItemTestByScrapList() throws Exception{
         //given
-        User user = createUserDto1().toEntity();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        UserDto.SaveRequest user = createUserDto1();
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user, cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then

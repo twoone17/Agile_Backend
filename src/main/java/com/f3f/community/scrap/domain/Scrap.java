@@ -22,7 +22,7 @@ import static javax.persistence.FetchType.*;
 public class Scrap {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "scrap_id")
     private Long id;
 
