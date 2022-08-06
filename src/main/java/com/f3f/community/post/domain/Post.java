@@ -8,6 +8,7 @@ import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.scrap.domain.Scrap;
+import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import static javax.persistence.FetchType.*;
 @NoArgsConstructor
 //@AllArgsConstructor 모든 필드 값을 파라미터로 받는 생성자를 만듦
 //Builder 패턴을 사용, 빌더 메서드에만 @Builder 적용
-public class Post {
+public class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -34,7 +35,7 @@ public class Post {
     //필수값
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
-    private User author;
+    private User author = new User();
 
     //필수값
     private String title;

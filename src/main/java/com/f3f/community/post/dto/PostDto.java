@@ -28,10 +28,11 @@ public class PostDto {
     @Builder
     public static class SaveRequest {
         private Long id;
+
         @NotNull
         private User author;
         @NotNull
-        @Size(min=1, max = 20, message = "title은 1~ 20자 이여야 합니다.")
+        @Size(min=2, max = 20, message = "title은 1~ 20자 이여야 합니다.")
         private String title;
 
         //필수값
@@ -78,8 +79,13 @@ public class PostDto {
     @AllArgsConstructor
     @Builder
     public static class UpdateRequest {
+
+        @Size(min=2, message = "수정시 Title은 한글자 이상이어야 합니다.")
         private String title;
+
+        @Size(min=2, message = "수정시 Content는 한글자 이상이어야 합니다.")
         private String content;
+
         private List<Media> media;
 
         public Post toEntity() {

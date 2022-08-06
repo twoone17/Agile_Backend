@@ -107,20 +107,21 @@ public class PostServiceTest {
      **************************************************************************************/
     //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
-    @Rollback()
+    @Rollback(false)
     @DisplayName("Service : savePost 성공 테스트")
     //필수값이 다 들어감 : 통과
     public void savePostTestToOk() throws Exception {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User user = userDto1.toEntity();
+        userRepository.save(user);
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(user)
-                .title("title1")
+                .title("t")
                 .content("content1")
                 .category(cat)
                 .build();
@@ -154,12 +155,12 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        assertThrows(NotFoundPostAuthorException.class, ()-> postService.SavePost(SaveRequest));
+        postService.SavePost(SaveRequest);
 
     }
 
     @Test
-    @Rollback
+    @Rollback(false)
     @DisplayName("Service : savePost 예외 발생 테스트 - title 없음  ")
     //필수값 title 없음 : 실패
     public void savePostTestToFailByNullTitle() throws Exception {
