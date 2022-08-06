@@ -154,6 +154,7 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
 
+
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
         assertThrows(ConstraintViolationException.class, ()->   postService.savePost(SaveRequest));
 
@@ -176,7 +177,7 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
 
-        //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
+        //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인 TODO: Global Exception
         assertThrows(NotFoundPostTitleException.class, ()-> postService.savePost(SaveRequest));
 
     }
@@ -198,7 +199,7 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
 
-        //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
+        //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인 TODO: Global Exception
           assertThrows(NotFoundPostContentException.class, ()-> postService.savePost(SaveRequest));
 
     }
@@ -270,8 +271,9 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
     //when
-        Long uid = userService.saveUser(author);
+        Long uid = userService.saveUser(userDto1);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        userRepository.save(author);
 
     //then
         List<Post> postListByAuthor = postService.findPostListByAuthor(author); //author에 해당하는 postList 찾기
@@ -330,7 +332,8 @@ public class PostServiceTest {
         Long postid2 = postService.savePost(postDto2); //author1 게시글 저장
         Long postid3 = postService.savePost(postDto3); //author1 게시글 저장
         Long postid4 = postService.savePost(postDto4); //author2 게시글 저장 ( 위 3개와 다른 유저)
-
+        userRepository.save(author1);
+        userRepository.save(author2);
 
         //then
         List<Post> postListByAuthor = postService.findPostListByAuthor(author1); //author1에 해당하는 postList 찾기
@@ -364,11 +367,11 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
         //when
-        Long uid1 = userService.saveUser(author);
-        Long uid2 = userService.saveUser(author2);
+        Long uid1 = userService.saveUser(userDto1);
+        Long uid2 = userService.saveUser(userDto2);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
         userRepository.save(author2); //TODO: 이부분 추가해서 일단 에러 안남
-        //then
+        //then TODO: Global Exception 예외
         assertThrows(NotFoundPostListByAuthor.class, ()-> postService.findPostListByAuthor(author2));
 
     }
@@ -393,8 +396,9 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
         //when
-        Long uid = userService.saveUser(author);
+        Long uid = userService.saveUser(userDto1);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        userRepository.save(author);
 
         //then
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//title에 해당하는 postList 찾기
@@ -447,12 +451,15 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
         //when
-        Long uid1 = userService.saveUser(author1);
-        Long uid2 = userService.saveUser(author2);
+        Long uid1 = userService.saveUser(userDto1);
+        Long uid2 = userService.saveUser(userDto2);
         Long postid1 = postService.savePost(postDto1); //title1 게시글 저장
         Long postid2 = postService.savePost(postDto2); //title2 게시글 저장
         Long postid3 = postService.savePost(postDto3); //title3 게시글 저장
         Long postid4 = postService.savePost(postDto4); //title1 게시글 저장 ( 위 3개와 다른 유저)
+
+        userRepository.save(author1);
+        userRepository.save(author2);
 
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//author1에 해당하는 postList 찾기
         assertThat(postListBytitle).contains(postRepository.findById(postid1).get(), //title1 포함
@@ -482,10 +489,11 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
         //when
-        Long uid = userService.saveUser(author);
+        Long uid = userService.saveUser(userDto1);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
         //then
+        userRepository.save(author);
         List<Post> postListBytitle = postService.findPostListByTitle("title2");//title에 해당하는 postList 찾기
         System.out.println("postListBytitle = " + postListBytitle);
         assertThrows(NotFoundPostListByTitle.class, ()-> postService.findPostListByTitle("title1")); //title1에 해당하는 title은 없으므로 exception 터트림
@@ -503,8 +511,8 @@ public class PostServiceTest {
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long user1Id = userService.saveUser(author);
-
+        Long user1Id = userService.saveUser(userDto1);
+        userRepository.save(author);
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
@@ -554,7 +562,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long user1Id = userService.saveUser(author);
+        Long user1Id = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -597,7 +605,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long user1Id = userService.saveUser(author);
+        Long user1Id = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -606,7 +614,7 @@ public class PostServiceTest {
 
         UserDto.SaveRequest userDto2 = createUserDto2();
         User author2 = userDto2.toEntity();
-        Long user2Id = userService.saveUser(author2);
+        Long user2Id = userService.saveUser(userDto2);
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(author)
                 .title("title2")
@@ -632,7 +640,7 @@ public class PostServiceTest {
         Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
-        //수정하려는 post가 자신의 게시글이 아닐때 예외처리
+        //수정하려는 post가 자신의 게시글이 아닐때 예외처리 TODO: Global Exception
         assertThrows(NotFoundPostInAuthorException.class, ()-> postService.updatePost(postid,user2Id,updateRequest));
     }
 
@@ -643,7 +651,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long user1Id = userService.saveUser(author);
+        Long user1Id = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -682,7 +690,7 @@ public class PostServiceTest {
         Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
-        //수정시 title이 안들어감
+        //수정시 title이 안들어감 TODO: Global Exeption
         assertThrows(NotFoundPostTitleException.class, ()-> postService.updatePost(postid,user1Id,updateRequest));
         assertThrows(NotFoundPostTitleException.class, ()-> postService.updatePost(postid,user1Id,updateRequest2));
     }
@@ -694,7 +702,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long user1Id = userService.saveUser(author);
+        Long user1Id = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -733,7 +741,7 @@ public class PostServiceTest {
         Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
-        //수정시에 내용이 안들어감
+        //수정시에 내용이 안들어감  TODO: Global Exception
         System.out.println("updateRequest 내용 = " + updateRequest.getContent());
         System.out.println("updateRequest 내용 길이 = " + updateRequest.getContent().length());
         assertThrows(NotFoundPostContentException.class, ()-> postService.updatePost(postid,user1Id,updateRequest));
@@ -755,8 +763,12 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto2 = createUserDto2();
         User author2 = userDto2.toEntity();
 
-        Long userId1 = userService.saveUser(author);
-        Long userId2 = userService.saveUser(author2);
+
+        Long userId1 = userService.saveUser(userDto1);
+        Long userId2 = userService.saveUser(userDto2);
+
+        userRepository.save(author);
+        userRepository.save(author2);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -811,7 +823,7 @@ public class PostServiceTest {
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
 
-        Long userId1 = userService.saveUser(author);
+        Long userId1 = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -843,7 +855,7 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long userId1 = userService.saveUser(author);
+        Long userId1 = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -861,7 +873,7 @@ public class PostServiceTest {
         Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
 
-        //then
+        //then TODO: Global Exception
         assertThrows(NotFoundUserException.class, ()-> postService.deletePost(postid1,44L));
 
     }
@@ -873,11 +885,11 @@ public class PostServiceTest {
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
-        Long userId1 = userService.saveUser(author);
+        Long userId1 = userService.saveUser(userDto1);
 
         UserDto.SaveRequest userDto2 = createUserDto2();
         User author2 = userDto2.toEntity();
-        Long userId2 = userService.saveUser(author2);
+        Long userId2 = userService.saveUser(userDto2);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -895,7 +907,7 @@ public class PostServiceTest {
         Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
 
-        //then
+        //then  TODO: Global Exception
         assertThrows(NotFoundPostInAuthorException.class, ()-> postService.deletePost(postid1,userId2));
 
     }
