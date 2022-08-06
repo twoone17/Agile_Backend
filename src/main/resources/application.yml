@@ -3,7 +3,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost/f3f?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
     username: root
-    password: 12345
+    password: 1234
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect

@@ -247,7 +247,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
@@ -268,7 +268,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
@@ -289,7 +289,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         scrapService.saveCollection(sid, pid);
 
@@ -312,8 +312,8 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid1 = postService.SavePost(post1);
-        Long pid2 = postService.SavePost(post2);
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
         Long sid = scrapService.createScrap(scrap);
         scrapService.saveCollection(sid, pid1);
         scrapService.saveCollection(sid, pid2);
@@ -336,7 +336,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -512,7 +512,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -534,7 +534,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -557,7 +557,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid1 = scrapService.createScrap(scrap1);
         Long sid2 = scrapService.createScrap(scrap2);
         Long spid = scrapService.saveCollection(sid1, pid);
@@ -580,7 +580,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
@@ -604,7 +604,7 @@ class ScrapServiceTest {
 
         // when
         Long uid = userService.saveUser(user);
-        Long pid = postService.SavePost(post);
+        Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, pid);
         // then
