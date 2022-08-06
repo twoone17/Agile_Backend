@@ -28,10 +28,10 @@ class UserServiceTest {
 
     private final String resultString = "OK";
 
-    private User createUser() {
+    private SaveRequest createUser() {
         SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu", false);
-        User user = userInfo.toEntity();
-        return user;
+//        User user = userInfo.toEntity();
+        return userInfo;
     }
     // 전달받은 매개변수를 유니크한 값으로 바꾼 user 엔티티를 저장한 뒤 반환한다.
     private User createUserWithParams(String key) {
@@ -67,9 +67,9 @@ class UserServiceTest {
     @DisplayName("유저서비스 가입 테스트")
     public void UserSaveTest() {
         // given
-        User user = createUser();
+        SaveRequest userDTO = createUser();
         // when
-        Long joinId = userService.saveUser(user);
+        Long joinId = userService.saveUser(userDTO);
         Optional<User> byId = userRepository.findById(joinId);
         // then
         assertThat(byId.get().getId()).isEqualTo(joinId);
@@ -81,11 +81,8 @@ class UserServiceTest {
         //given
         SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here", false);
 
-        //when
-        User user = saveRequest.toEntity();
-
-        //then
-        assertThrows(InvalidEmailException.class, () -> userService.saveUser(user));
+        //when & then
+        assertThrows(InvalidEmailException.class, () -> userService.saveUser(saveRequest));
     }
 
     @Test
