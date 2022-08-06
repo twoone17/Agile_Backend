@@ -80,7 +80,7 @@ public class Post extends BaseTimeEntity {
     //업데이트를 위한 메소드, title, content, media만 수정 가능
     public void updatePost(PostDto.UpdateRequest updateRequest)
     {
-        this.title = updateRequest.getTitle(); //TODO:
+        this.title = updateRequest.getTitle();
         this.content = updateRequest.getContent();
         this.media = updateRequest.getMedia();
     }

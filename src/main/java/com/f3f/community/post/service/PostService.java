@@ -36,7 +36,6 @@ public class PostService {
      */
     @Transactional
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
-
         Post post = SaveRequest.toEntity();
         postRepository.save(post);
 
@@ -71,8 +70,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Optional<Post> findPostByPostId(Long postId) throws Exception {
         //postRepository에 postid와 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsById(postId))
-        {
+        if(!postRepository.existsById(postId)) {
             throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다");
         }
         //postRepository에 postId가 있을때
@@ -85,8 +83,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> findPostListByAuthor(User author) throws Exception {
         //postRepository에 author와 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsByAuthor(author))
-        {
+        if(!postRepository.existsByAuthor(author)) {
             throw new NotFoundPostListByAuthor();
         }
         //postRepository에 author가 있을때
@@ -100,8 +97,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> findPostListByTitle(String title) throws Exception{
         //postRepository에 title과 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsByTitle(title))
-        {
+        if(!postRepository.existsByTitle(title)) {
             throw new NotFoundPostListByTitle();
         }
         //postRepository에 title 있을때
@@ -111,15 +107,16 @@ public class PostService {
     }
 
 //    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
-//    @Transactional(readOnly = true)
-//    public List<Post> findPostListByUserId(Long userId) throws Exception {
-//        if (postRepository.existsById(userId)) {
-//            List<Post> postList =  postRepository.findPostListByUserId(userId); //postRepository에 userId가 있을때
-//            return postList;
-//        } else {
-//            throw new NoPostByIdException("UserId와 일치하는 게시글리스트가 없습니다"); //postRepository에 userid로 저장된 게시글이 없으면 예외처리
-//        }
-//    }
+    @Transactional(readOnly = true)
+    public List<Post> findPostListByUserId(Long userId) throws Exception {
+        if (!postRepository.existsById(userId)) {
+            //postRepository에 userid로 저장된 게시글이 없으면 예외처리
+            throw new NotFoundPostByUserIdException("UserId와 일치하는 게시글리스트가 없습니다");
+        }
+
+        List<Post> postList = postRepository.findByAuthorId(userId);//postRepository에 userId가 있을때
+        return postList;
+    }
 
     /**
      * 게시글 수정 (Update)

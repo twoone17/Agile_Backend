@@ -21,3 +21,4 @@ public class SHA256Encryptor implements EncryptionService {
         }
     }
 }
+

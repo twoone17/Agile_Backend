@@ -14,19 +14,19 @@ public class AdminService {
     private final UserRepository userRepository;
 
     // 이메일로 수정하기
-    public String banUser(String email) {
-        // 거의 모든 Service logic에서 이메일을 체크하는데 공통으로 빼는게 맞을까?
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        user.banUser();
-        return "OK";
-    }
-
-
-    public String unbanUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        user.unBanUser();
-        return "OK";
-    }
+//    public String banUser(String email) {
+//        // 거의 모든 Service logic에서 이메일을 체크하는데 공통으로 빼는게 맞을까?
+//        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
+//        user.banUser();
+//        return "OK";
+//    }
+//
+//
+//    public String unbanUser(String email) {
+//        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
+//        user.unBanUser();
+//        return "OK";
+//    }
 
     // 수동으로 + 조건을 충족하면 자동으로 등업되는 로직도 생각해보기
 
