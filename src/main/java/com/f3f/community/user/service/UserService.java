@@ -92,14 +92,15 @@ public class UserService {
         return "OK";
     }
 
-    public String findPassword(String email) {
+    public SearchedPassword findPassword(String email) {
         User user = FindUserByEmail(email);
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
 
         // TODO 암호화?
         String EncryptPW = user.getPassword();
-        return EncryptPW;
+        SearchedPassword searchedPassword = new SearchedPassword(EncryptPW);
+        return searchedPassword;
     }
 
 

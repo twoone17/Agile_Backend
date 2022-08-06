@@ -139,5 +139,13 @@ public class UserDto {
         private String password;
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SearchedPassword {
+        // TODO 암호화?
+        private String password;
+    }
 
 }

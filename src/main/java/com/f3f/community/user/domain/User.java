@@ -58,9 +58,22 @@ public class User extends UserBase {
         this.isBanned = false;
     }
 
-//    public void updateUserGrade() {
-//
-//    }
+    public void updateUserGrade(String key) {
+        switch (key.toLowerCase()) {
+            case "bronze" :
+                this.userGrade = UserGrade.BRONZE;
+                break;
+            case "silver" :
+                this.userGrade = UserGrade.SILVER;
+                break;
+            case "gold" :
+                this.userGrade = UserGrade.GOLD;
+                break;
+            case "expert" :
+                this.userGrade = UserGrade.EXPERT;
+                break;
+        }
+    }
 
 
 

@@ -1,6 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
+import com.f3f.community.exception.adminException.InvalidGradeException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
@@ -28,6 +29,8 @@ class AdminServiceTest {
     @Autowired
     UserService userService;
 
+    private final String resultString = "OK";
+
     private User createUser() {
         UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
         User user = userInfo.toEntity();
@@ -39,11 +42,10 @@ class AdminServiceTest {
     public void banUserTest() {
         //given
         User user = createUser();
-        Long savedId = userService.saveUser(user);
+        userService.saveUser(user);
 
         //when
-         Long bannedUserId = adminService.banUser(savedId);
-        Optional<User> bannedUser = userRepository.findById(bannedUserId);
+        Optional<User> bannedUser = userRepository.findByEmail(user.getEmail());
 
         //then
         assertThat(bannedUser.get().isBanned()).isEqualTo(true);
@@ -54,13 +56,13 @@ class AdminServiceTest {
     public void unbanUserTest() {
         //given
         User user = createUser();
-        Long savedId = userService.saveUser(user);
-        Long bannedUserId = adminService.banUser(savedId);
-        Optional<User> bannedUser = userRepository.findById(bannedUserId);
+        userService.saveUser(user);
+        adminService.banUser(user.getEmail());
+        Optional<User> bannedUser = userRepository.findByEmail(user.getEmail());
 
         //when
-        Long unbannedUserId = adminService.unbanUser(bannedUser.get().getId());
-        Optional<User> unbannedUser = userRepository.findById(unbannedUserId);
+        adminService.unbanUser(bannedUser.get().getEmail());
+        Optional<User> unbannedUser = userRepository.findByEmail(user.getEmail());
 
         //then
         assertThat(unbannedUser.get().isBanned()).isEqualTo(false);
@@ -73,12 +75,40 @@ class AdminServiceTest {
         User user = createUser();
 
         //when
-        Long EmptyId = userService.saveUser(user);
+        userService.saveUser(user);
 
         //then
         assertThrows(NotFoundUserException.class,
-                () -> adminService.banUser(1234L));
+                () -> adminService.banUser("notFoundUser@temp.com"));
         assertThrows(NotFoundUserException.class,
-                () -> adminService.unbanUser(1234L));
+                () -> adminService.unbanUser("notFoundUser2@temp.com"));
+    }
+
+    @Test
+    @DisplayName("유저 등업 테스트")
+    public void UpdateUserGradeTest() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+
+        //when
+        adminService.UpdateUserGrade(user.getEmail(), "expert");
+
+        //then
+        assertThat(user.getUserGrade()).isEqualTo(UserGrade.EXPERT);
+    }
+
+    @Test
+    @DisplayName("유저 등업 실패 - 없는 유저, 없는 등급")
+    public void UpdateNotFoundUserGradeToFail() {
+        //given
+        User user = createUser();
+        userService.saveUser(user);
+        String notFoundEmail = "notFoundUser@user.com";
+        String notFoundGrade = "notFoundGrade";
+
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> adminService.UpdateUserGrade(notFoundEmail, "BRONZE"));
+        assertThrows(InvalidGradeException.class, () -> adminService.UpdateUserGrade(user.getEmail(), notFoundGrade));
     }
 }
