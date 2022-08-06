@@ -73,7 +73,7 @@ public class CategoryServiceTest {
         ArrayList<User> users = new ArrayList<>();
         for (String name : names) {
             UserDto.SaveRequest userDto = createUserDto(name);
-            Long uid = userService.saveUser(userDto.toEntity());
+            Long uid = userService.saveUser(userDto);
             users.add(userRepository.findById(uid).get());
         }
         return users;
@@ -104,7 +104,7 @@ public class CategoryServiceTest {
         Random random = new Random();
         for (int i = 0; i < n; i++) {
             PostDto.SaveRequest postDto = createPostDto("title"+i, users.get(random.nextInt(users.size())), cats.get(random.nextInt(cats.size())));
-            Long pid = postService.SavePost(postDto);
+            Long pid = postService.savePost(postDto);
             posts.add(postRepository.findById(pid).get());
         }
 

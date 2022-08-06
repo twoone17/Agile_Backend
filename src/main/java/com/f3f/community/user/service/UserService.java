@@ -19,15 +19,17 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long saveUser(User user) {
+    public Long saveUser(SaveRequest saveRequest) {
 
 
-        if(userRepository.existsByEmail(user.getEmail())) {
+        if(userRepository.existsByEmail(saveRequest.getEmail())) {
             throw new DuplicateEmailException();
         }
-        if(userRepository.existsByNickname(user.getNickname())) {
+        if(userRepository.existsByNickname(saveRequest.getNickname())) {
             throw new DuplicateNicknameException();
         }
+
+        User user = saveRequest.toEntity();
         User saveUser = userRepository.save(user);
         return saveUser.getId();
     }
