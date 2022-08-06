@@ -26,7 +26,7 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     private Category parents;
 
-    @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY)
     private List<Category> childCategory = new ArrayList<>();
 
     private Long depth;

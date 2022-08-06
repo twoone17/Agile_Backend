@@ -90,7 +90,7 @@ public class MockitoScrapServiceTest {
 
 
         // then
-        Assertions.assertThrows(DuplicateEmailException.class, () -> userService.saveUser(userDto.toEntity()));
+        Assertions.assertThrows(DuplicateEmailException.class, () -> userService.saveUser(userDto));
         verify(userRepository, atLeastOnce()).existsByEmail("temp@temp.com");
     }
 }

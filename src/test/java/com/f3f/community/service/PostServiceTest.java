@@ -324,8 +324,8 @@ public class PostServiceTest {
                 .category(cat)
                 .build();
         //when
-        Long uid1 = userService.saveUser(author1);
-        Long uid2 = userService.saveUser(author2);
+        Long uid1 = userService.saveUser(userDto1);
+        Long uid2 = userService.saveUser(userDto2);
         Long postid1 = postService.savePost(postDto1); //author1 게시글 저장
         Long postid2 = postService.savePost(postDto2); //author1 게시글 저장
         Long postid3 = postService.savePost(postDto3); //author1 게시글 저장
