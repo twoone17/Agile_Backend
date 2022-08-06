@@ -27,6 +27,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class PostServiceTest {
                 UserGrade.BRONZE, "euisung", "seoul", false);
     }
 
-    //Dto create TODO: 주석 처리 한것은 왜 빌드가 안되는지 ?
+    //Dto create
     private PostDto.SaveRequest createPostDto1(User user, Category cat) {
         return SaveRequest.builder()
                 .author(user)
@@ -105,7 +106,6 @@ public class PostServiceTest {
     /*************************************************************************************
      * 게시글 작성 테스트 (Create)
      **************************************************************************************/
-    //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
     @Rollback()
     @DisplayName("Service : savePost 성공 테스트")
@@ -155,7 +155,7 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        postService.savePost(SaveRequest);
+        assertThrows(ConstraintViolationException.class, ()->   postService.savePost(SaveRequest));
 
     }
 
@@ -212,7 +212,6 @@ public class PostServiceTest {
     @DisplayName("Service : findPostByPostId 성공 테스트")
     public void findPostByPostIdTestOk() throws Exception{
         //given
-        //TODO : 이렇게 진행을 하면 post와 연관되어있는 user의 FK를 찾을수 없어 문제가 발생한다, 이때 CASCADE TYPE 을 ALL로 바꿔주면 되는것같은데, 이렇게 해도 되는건지
         UserDto.SaveRequest userDto1 = createUserDto1();
         User user = userDto1.toEntity();
 //        SaveRequest postDto1 = createPostDto1(user);
@@ -233,7 +232,7 @@ public class PostServiceTest {
 
         //when
         postRepository.save(post);
-        userRepository.save(user); //TODO: 왜 이부분을 안넣으면 에러가 나는걸까 ?
+        userRepository.save(user);
 //        Long postid = postService.SavePost(SaveRequest); // 아니면 이부분 왜 이부분을 안넣으면 에러가 나는걸까 ?
 //        System.out.println("post = " + post);
 //        System.out.println("post.getId() = " + post.getId());
@@ -371,10 +370,6 @@ public class PostServiceTest {
         userRepository.save(author2); //TODO: 이부분 추가해서 일단 에러 안남
         //then
         assertThrows(NotFoundPostListByAuthor.class, ()-> postService.findPostListByAuthor(author2));
-        //TODO: author2를 넣었으니 예외가 발생하는 그림을 원했는데
-        // <org.springframework.dao.InvalidDataAccessApiUsageException>
-        // save the transient instance before flushing: com.f3f.community.user.domain.User
-        // 이렇게 뜬다, CASCADE ALL을 해서 고쳐야 하나요? 어떻게 해결할지 모르겠습니당 ..
 
     }
 

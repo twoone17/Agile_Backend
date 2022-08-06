@@ -36,7 +36,6 @@ public class PostService {
      */
     @Transactional
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
-
         Post post = SaveRequest.toEntity();
         postRepository.save(post);
 
@@ -71,8 +70,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Optional<Post> findPostByPostId(Long postId) throws Exception {
         //postRepository에 postid와 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsById(postId))
-        {
+        if(!postRepository.existsById(postId)) {
             throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다");
         }
         //postRepository에 postId가 있을때
@@ -85,8 +83,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> findPostListByAuthor(User author) throws Exception {
         //postRepository에 author와 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsByAuthor(author))
-        {
+        if(!postRepository.existsByAuthor(author)) {
             throw new NotFoundPostListByAuthor();
         }
         //postRepository에 author가 있을때
@@ -100,8 +97,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> findPostListByTitle(String title) throws Exception{
         //postRepository에 title과 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsByTitle(title))
-        {
+        if(!postRepository.existsByTitle(title)) {
             throw new NotFoundPostListByTitle();
         }
         //postRepository에 title 있을때
