@@ -1,5 +1,6 @@
 package com.f3f.community.post.repository;
 
+import com.f3f.community.category.domain.Category;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     boolean existsByAuthor(User author);
 
     boolean existsByTitle(String title);
+
+    List<Post> findPostsByCategory(Category category);
 
 }
