@@ -31,21 +31,22 @@ class AdminServiceTest {
 
     private final String resultString = "OK";
 
-    private User createUser() {
+    private UserDto.SaveRequest createUser() {
         UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon", false);
-        User user = userInfo.toEntity();
-        return user;
+//        User user = userInfo.toEntity();
+        return userInfo;
     }
 
     @Test
     @DisplayName("유저 차단 테스트")
     public void banUserTest() {
         //given
-        User user = createUser();
-        userService.saveUser(user);
+        UserDto.SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
 
         //when
-        Optional<User> bannedUser = userRepository.findByEmail(user.getEmail());
+        Optional<User> bannedUser = userRepository.findByEmail(byId.get().getEmail());
 
         //then
         assertThat(bannedUser.get().isBanned()).isEqualTo(true);
@@ -55,14 +56,15 @@ class AdminServiceTest {
     @DisplayName("유저 차단 해제 테스트")
     public void unbanUserTest() {
         //given
-        User user = createUser();
-        userService.saveUser(user);
-        adminService.banUser(user.getEmail());
-        Optional<User> bannedUser = userRepository.findByEmail(user.getEmail());
+        UserDto.SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        adminService.banUser(user.get().getEmail());
+        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
 
         //when
         adminService.unbanUser(bannedUser.get().getEmail());
-        Optional<User> unbannedUser = userRepository.findByEmail(user.getEmail());
+        Optional<User> unbannedUser = userRepository.findByEmail(user.get().getEmail());
 
         //then
         assertThat(unbannedUser.get().isBanned()).isEqualTo(false);
@@ -72,10 +74,11 @@ class AdminServiceTest {
     @DisplayName("존재하지 않는 유저 차단 - 차단 해제")
     public void NoUserToBanToFail() throws Exception {
         //given
-        User user = createUser();
+        UserDto.SaveRequest userDTO = createUser();
 
         //when
-        userService.saveUser(user);
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
 
         //then
         assertThrows(NotFoundUserException.class,
