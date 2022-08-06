@@ -17,4 +17,6 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
 
     boolean existsById(Long id);
 
+    Optional<Category> findByCategoryName(String name);
+
 }

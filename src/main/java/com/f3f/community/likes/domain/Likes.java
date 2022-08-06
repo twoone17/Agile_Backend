@@ -18,7 +18,7 @@ import javax.persistence.*;
 public class Likes {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "likes_id")
     private Long id;
 

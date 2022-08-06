@@ -37,7 +37,9 @@ public class User extends UserBase {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Scrap> scraps = new ArrayList<>();
 
-    private boolean isBanned;
+    private UserLevel userLevel;
+
+    private UserLogin userLogin;
 
 
     public void updatePassword(String password) {
@@ -50,16 +52,9 @@ public class User extends UserBase {
             this.nickname = nickname;
     }
 
-    public void banUser() {
-        this.isBanned = true;
-    }
 
-    public void unBanUser() {
-        this.isBanned = false;
-    }
-
-//    public void updateUserGrade() {
-//
+//    public void updateUserGrade(int key) {
+//        this.userGrade = userGrade.Upgrade(key);
 //    }
 
 
@@ -67,7 +62,7 @@ public class User extends UserBase {
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address, List<Post> posts, List<Comment> comments,
-                List<Likes> likes, List<Scrap> scraps, boolean isBanned) {
+                List<Likes> likes, List<Scrap> scraps, UserLevel userLevel, UserLogin userLogin) {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
@@ -75,6 +70,7 @@ public class User extends UserBase {
         this.comments = comments;
         this.likes = likes;
         this.scraps = scraps;
-        this.isBanned = isBanned;
+        this.userLevel = userLevel;
+        this.userLogin = userLogin;
     }
 }
