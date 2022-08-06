@@ -35,8 +35,7 @@ public class Post extends BaseTimeEntity {
     //필수값
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
-    private User author = new User();
-
+    private User author;
     //필수값
     private String title;
 

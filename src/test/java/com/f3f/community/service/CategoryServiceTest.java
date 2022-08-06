@@ -105,7 +105,7 @@ public class CategoryServiceTest {
         Random random = new Random();
         for (int i = 0; i < n; i++) {
             PostDto.SaveRequest postDto = createPostDto("title"+i, users.get(random.nextInt(users.size())), cats.get(random.nextInt(cats.size())));
-            Long pid = postService.SavePost(postDto);
+            Long pid = postService.savePost(postDto);
             posts.add(postRepository.findById(pid).get());
         }
 
@@ -273,12 +273,12 @@ public class CategoryServiceTest {
         PostDto.SaveRequest post4 = createPostDto("title4", user, categoryRepository.findById(id3).get());
         PostDto.SaveRequest post5 = createPostDto("title5", user, categoryRepository.findById(id4).get());
         PostDto.SaveRequest post6 = createPostDto("title6", user, categoryRepository.findById(id4).get());
-        postService.SavePost(post1);
-        postService.SavePost(post2);
-        postService.SavePost(post3);
-        postService.SavePost(post4);
-        postService.SavePost(post5);
-        postService.SavePost(post6);
+        postService.savePost(post1);
+        postService.savePost(post2);
+        postService.savePost(post3);
+        postService.savePost(post4);
+        postService.savePost(post5);
+        postService.savePost(post6);
 
         // when
 //        List<Post> posts = categoryService.getPosts(id1);

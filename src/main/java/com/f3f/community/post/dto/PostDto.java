@@ -11,6 +11,7 @@ import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.user.domain.User;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class PostDto {
 
         @NotNull
         private User author;
-        @NotNull
+        @NotBlank
         @Size(min=2, max = 20, message = "title은 1~ 20자 이여야 합니다.")
         private String title;
 
@@ -79,10 +80,11 @@ public class PostDto {
     @AllArgsConstructor
     @Builder
     public static class UpdateRequest {
-
+        @NotBlank
         @Size(min=2, message = "수정시 Title은 한글자 이상이어야 합니다.")
         private String title;
 
+        @NotBlank
         @Size(min=2, message = "수정시 Content는 한글자 이상이어야 합니다.")
         private String content;
 

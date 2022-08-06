@@ -107,7 +107,7 @@ public class PostServiceTest {
      **************************************************************************************/
     //TODO: test를 저장한 postid를 저장소에서 찾는것으로만 검증하면 될까? 더 좋은방식은 없을깡
     @Test
-    @Rollback(false)
+    @Rollback()
     @DisplayName("Service : savePost 성공 테스트")
     //필수값이 다 들어감 : 통과
     public void savePostTestToOk() throws Exception {
@@ -121,14 +121,14 @@ public class PostServiceTest {
         Category cat = categoryRepository.findById(cid).get();
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
                 .author(user)
-                .title("t")
+                .title("title")
                 .content("content1")
                 .category(cat)
                 .build();
 //        PostDto.SaveRequest postDto1 = createPostDto1(user);
 
         //when
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
         //then :  postRepository에 postid인 post가 저장되어있는지 확인, 없으면 exception
         postRepository.findById(postid).orElseThrow(NotFoundPostByIdException::new);
 //        System.out.println("postRepository.findByAuthor(user)" + postRepository.findByAuthor(user));
@@ -155,12 +155,12 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        postService.SavePost(SaveRequest);
+        postService.savePost(SaveRequest);
 
     }
 
     @Test
-    @Rollback(false)
+    @Rollback()
     @DisplayName("Service : savePost 예외 발생 테스트 - title 없음  ")
     //필수값 title 없음 : 실패
     public void savePostTestToFailByNullTitle() throws Exception {
@@ -177,7 +177,7 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        assertThrows(NotFoundPostTitleException.class, ()-> postService.SavePost(SaveRequest));
+        assertThrows(NotFoundPostTitleException.class, ()-> postService.savePost(SaveRequest));
 
     }
 
@@ -199,7 +199,7 @@ public class PostServiceTest {
                 .build();
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-          assertThrows(NotFoundPostContentException.class, ()-> postService.SavePost(SaveRequest));
+          assertThrows(NotFoundPostContentException.class, ()-> postService.savePost(SaveRequest));
 
     }
 
@@ -272,7 +272,7 @@ public class PostServiceTest {
                 .build();
     //when
         Long uid = userService.saveUser(author);
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
     //then
         List<Post> postListByAuthor = postService.findPostListByAuthor(author); //author에 해당하는 postList 찾기
@@ -327,10 +327,10 @@ public class PostServiceTest {
         //when
         Long uid1 = userService.saveUser(author1);
         Long uid2 = userService.saveUser(author2);
-        Long postid1 = postService.SavePost(postDto1); //author1 게시글 저장
-        Long postid2 = postService.SavePost(postDto2); //author1 게시글 저장
-        Long postid3 = postService.SavePost(postDto3); //author1 게시글 저장
-        Long postid4 = postService.SavePost(postDto4); //author2 게시글 저장 ( 위 3개와 다른 유저)
+        Long postid1 = postService.savePost(postDto1); //author1 게시글 저장
+        Long postid2 = postService.savePost(postDto2); //author1 게시글 저장
+        Long postid3 = postService.savePost(postDto3); //author1 게시글 저장
+        Long postid4 = postService.savePost(postDto4); //author2 게시글 저장 ( 위 3개와 다른 유저)
 
 
         //then
@@ -367,7 +367,7 @@ public class PostServiceTest {
         //when
         Long uid1 = userService.saveUser(author);
         Long uid2 = userService.saveUser(author2);
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
         userRepository.save(author2); //TODO: 이부분 추가해서 일단 에러 안남
         //then
         assertThrows(NotFoundPostListByAuthor.class, ()-> postService.findPostListByAuthor(author2));
@@ -399,7 +399,7 @@ public class PostServiceTest {
                 .build();
         //when
         Long uid = userService.saveUser(author);
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
         //then
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//title에 해당하는 postList 찾기
@@ -454,10 +454,10 @@ public class PostServiceTest {
         //when
         Long uid1 = userService.saveUser(author1);
         Long uid2 = userService.saveUser(author2);
-        Long postid1 = postService.SavePost(postDto1); //title1 게시글 저장
-        Long postid2 = postService.SavePost(postDto2); //title2 게시글 저장
-        Long postid3 = postService.SavePost(postDto3); //title3 게시글 저장
-        Long postid4 = postService.SavePost(postDto4); //title1 게시글 저장 ( 위 3개와 다른 유저)
+        Long postid1 = postService.savePost(postDto1); //title1 게시글 저장
+        Long postid2 = postService.savePost(postDto2); //title2 게시글 저장
+        Long postid3 = postService.savePost(postDto3); //title3 게시글 저장
+        Long postid4 = postService.savePost(postDto4); //title1 게시글 저장 ( 위 3개와 다른 유저)
 
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//author1에 해당하는 postList 찾기
         assertThat(postListBytitle).contains(postRepository.findById(postid1).get(), //title1 포함
@@ -488,7 +488,7 @@ public class PostServiceTest {
                 .build();
         //when
         Long uid = userService.saveUser(author);
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
         //then
         List<Post> postListBytitle = postService.findPostListByTitle("title2");//title에 해당하는 postList 찾기
@@ -536,8 +536,8 @@ public class PostServiceTest {
                 .build();
         //when
 
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
         List<Post> postListByAuthor = postService.findPostListByAuthor(author);
         //then
         postService.updatePost(postid,user1Id,updateRequest);
@@ -587,8 +587,8 @@ public class PostServiceTest {
                 .build();
         //when
 
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
         //존재하지 않는 postid를 수정하려고 했을떄 예외처리
@@ -633,8 +633,8 @@ public class PostServiceTest {
                 .build();
         //when
 
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
         //수정하려는 post가 자신의 게시글이 아닐때 예외처리
@@ -683,8 +683,8 @@ public class PostServiceTest {
                 .build();
         //when
 
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
         //수정시 title이 안들어감
@@ -734,8 +734,8 @@ public class PostServiceTest {
 //                .media(Media)
                 .build();
 
-        Long postid = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
 
         //then
         //수정시에 내용이 안들어감
@@ -791,9 +791,9 @@ public class PostServiceTest {
                 .build();
 
         //when
-        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
-        Long postid2 = postService.SavePost(postDto2); //SavePost한 후 postid를 반환
-        Long postid3 = postService.SavePost(postDto3);
+        Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid2 = postService.savePost(postDto2); //SavePost한 후 postid를 반환
+        Long postid3 = postService.savePost(postDto3);
 
         //then
         //삭제 성공
@@ -831,7 +831,7 @@ public class PostServiceTest {
                 .build();
 
         //when
-        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
 
         //then
@@ -863,7 +863,7 @@ public class PostServiceTest {
                 .build();
 
         //when
-        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
 
         //then
@@ -897,7 +897,7 @@ public class PostServiceTest {
                 .build();
 
         //when
-        Long postid1 = postService.SavePost(postDto1); //SavePost한 후 postid를 반환
+        Long postid1 = postService.savePost(postDto1); //SavePost한 후 postid를 반환
 
 
         //then
