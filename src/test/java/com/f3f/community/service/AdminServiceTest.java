@@ -5,7 +5,6 @@ import com.f3f.community.exception.adminException.InvalidGradeException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
-import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.f3f.community.user.dto.UserDto.*;
 
 @SpringBootTest
 @Transactional
@@ -31,8 +31,8 @@ class AdminServiceTest {
 
     private final String resultString = "OK";
 
-    private UserDto.SaveRequest createUser() {
-        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
+    private SaveRequest createUser() {
+        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -87,31 +87,43 @@ class AdminServiceTest {
 //                () -> adminService.unbanUser("notFoundUser2@temp.com"));
 //    }
 
-//    @Test
-//    @DisplayName("유저 등업 테스트")
-//    public void UpdateUserGradeTest() {
-//        //given
-//        User user = createUser();
-//        userService.saveUser(user);
-//
-//        //when
-//        adminService.UpdateUserGrade(user.getEmail(), 4);
-//
-//        //then
-//        assertThat(user.getUserGrade()).isEqualTo(UserGrade.EXPERT);
-//    }
-//
-//    @Test
-//    @DisplayName("유저 등업 실패 - 없는 유저, 없는 등급")
-//    public void UpdateNotFoundUserGradeToFail() {
-//        //given
-//        User user = createUser();
-//        userService.saveUser(user);
-//        String notFoundEmail = "notFoundUser@user.com";
-//        String notFoundGrade = "notFoundGrade";
-//
-//        //when & then
-//        assertThrows(NotFoundUserException.class, () -> adminService.UpdateUserGrade(notFoundEmail, 2));
-//        assertThrows(InvalidGradeException.class, () -> adminService.UpdateUserGrade(user.getEmail(), 37));
-//    }
+    @Test
+    @DisplayName("유저 등업 테스트")
+    public void UpdateUserGradeTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+
+
+        //when
+        adminService.UpdateUserGrade(user.get().getEmail(), 3);
+
+        //then
+        assertThat(user.get().getUserGrade()).isEqualTo(UserGrade.PLATINUM);
+    }
+
+    @Test
+    @DisplayName("유저 등업 실패 - 없는 유저")
+    public void UpdateNotFoundUserToFail() {
+        //given
+        String notFoundEmail = "notFoundUser@user.com";
+
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> adminService.UpdateUserGrade(notFoundEmail, 2));
+    }
+
+    @Test
+    @DisplayName("유저 등업 실패 - 유효하지 않은 등급")
+    public void UpdateNotFoundUserGradeToFail() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+
+        int notFoundKey = 37;
+
+        //when & then
+        assertThrows(InvalidGradeException.class, () -> adminService.UpdateUserGrade(user.get().getEmail(), notFoundKey));
+    }
 }

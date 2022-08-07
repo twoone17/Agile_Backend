@@ -130,7 +130,7 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public User FindUserByUserRequest(UserRequest userRequest) {
+    public User findUserByUserRequest(UserRequest userRequest) {
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
         }
@@ -140,19 +140,19 @@ public class UserService {
 
     @Transactional(readOnly = true)
 
-    public User FindUsersByNickname(String nickname) {
+    public User findUserByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundNicknameException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
-    public User FindUserById(Long id) {
+    public User findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(NotFoundUserException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
-    public User FindUserByUserEmail(String email) {
+    public User findUserByEmail(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         return user;
     }

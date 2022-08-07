@@ -33,13 +33,13 @@ public class AdminService {
 
     // enum의 key를 활용하자. 굳이 문자열로 넘기지 말고
     // 유저 등급이 올라가면 db 업데이트 체크
-//    public String UpdateUserGrade(String email, int key) {
-//        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-//        if(key < 0 || key >= 5) {
-//            throw new InvalidGradeException();
-//        }
-//        user.updateUserGrade(key + 1);
-//        return "OK";
-//    }
+    public String UpdateUserGrade(String email, int key) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
+        if(key < 0 || key >= 5) {
+            throw new InvalidGradeException();
+        }
+        user.updateUserGrade(key + 1);
+        return "OK";
+    }
 
 }
