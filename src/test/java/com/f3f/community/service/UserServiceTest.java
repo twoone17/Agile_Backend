@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,28 +88,28 @@ class UserServiceTest {
         SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here");
 
         //when & then
-        assertThrows(InvalidEmailException.class, () -> userService.saveUser(saveRequest));
+        assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
     }
-//
-//    @Test
-//    @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")
-//    public void MissingPasswordInRegisterToFail() {
-//        //given
-//        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, "james", "here", false);
-//
-//        //when & then
-//        assertThrows(InvalidPasswordException.class, () -> userService.saveUser(saveRequest));
-//    }
-//
-//    @Test
-//    @DisplayName("회원가입 실패 - 유효하지 않은 닉네임")
-//    public void MissingNicknameInRegisterToFail() {
-//        //given
-//        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, "", "here", false);
-//
-//        //when & then
-//        assertThrows(InvalidNicknameException.class, () -> userService.saveUser(saveRequest));
-//    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")
+    public void MissingPasswordInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, "james", "here");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 유효하지 않은 닉네임")
+    public void MissingNicknameInRegisterToFail() {
+        //given
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, "", "here");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
+    }
 
 
     @Test
