@@ -139,4 +139,34 @@ public class UserDto {
 
     // 자주 사용되지 않는 클래스는 static 말고 그냥 이너 클래스로 쓰면 더 좋다.
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class BanRequest {
+        @NotBlank
+        private String email;
+        private String content;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateGradeRequest {
+        @NotBlank
+        private String email;
+        @NotBlank
+        private int key;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateGradeToExpertRequest {
+        @NotBlank
+        private String email;
+        private String section;
+    }
 }

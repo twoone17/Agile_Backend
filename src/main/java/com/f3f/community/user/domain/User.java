@@ -57,9 +57,6 @@ public class User extends UserBase {
         this.userGrade = userGrade.getValueByKey(plusedKey);
     }
 
-    public void updateUserGradeToExpert() {
-        this.userGrade = UserGrade.EXPERT;
-    }
 
 
 
