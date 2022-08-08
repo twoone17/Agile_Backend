@@ -21,9 +21,9 @@ import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -166,8 +166,8 @@ public class ScrapServiceTestWithDB {
                 .category(cat).build();
     }
 
-    @BeforeEach
-    void deleteAll() {
+    @Before
+    public void deleteAll() {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
         postRepository.deleteAll();
@@ -196,20 +196,23 @@ public class ScrapServiceTestWithDB {
 //        assertThat(result).contains(postRepository.findById(pid).get());
         assertThat(result.get(0).getTitle()).isEqualTo(postRepository.findById(pid).get().getTitle());
 
+
     }
 
     @Test
     @DisplayName("객체들 자동 생성 테스트")
     public void createAutomationTest() throws Exception{
         //given
-        List<Long> users = createUsers(100);
-        List<Long> categories = createCategories(200);
-        List<Long> posts = createPosts(users, categories, 300);
-        List<Long> scraps = createScraps(users, posts, 100);
+        List<Long> users = createUsers(10);
+        List<Long> categories = createCategories(20);
+        List<Long> posts = createPosts(users, categories, 20);
+        List<Long> scraps = createScraps(users, posts, 10);
 
         // when
 
         // then
         
     }
+
+
 }
