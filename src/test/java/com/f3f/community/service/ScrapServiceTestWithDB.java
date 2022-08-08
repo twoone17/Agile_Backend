@@ -6,6 +6,7 @@ import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.scrapException.DuplicateScrapNameException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
@@ -214,5 +215,41 @@ public class ScrapServiceTestWithDB {
         
     }
 
+    @Test
+    @DisplayName("createScrap 실패 테스트 - 중복 되는 스크랩 이름")
+    public void createScrapTestToFailByDuplicateName() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid1 = scrapService.createScrap(scrapDto);
 
+        // when
+        ScrapDto.SaveRequest duplicate = createScrapDto(userRepository.findById(uid).get(), "temp");
+
+        // then
+        assertThrows(DuplicateScrapNameException.class, () -> scrapService.createScrap(duplicate));
+    }
+
+
+    @Test
+    @DisplayName("saveCollection 실패 테스트 - 중복 포스트")
+    public void saveCollectionTestToFailByDuplicatePost() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid = scrapService.createScrap(scrapDto);
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+        PostDto.SaveRequest postDto = createPostDto("title", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+
+        // when
+        scrapService.saveCollection(sid, pid);
+
+        // then
+        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid, pid));
+    }
 }

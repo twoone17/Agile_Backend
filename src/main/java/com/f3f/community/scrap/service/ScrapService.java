@@ -1,5 +1,6 @@
 package com.f3f.community.scrap.service;
 
+import com.f3f.community.common.constants.ResponseConstants;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.f3f.community.common.constants.ResponseConstants.OK;
 import static com.f3f.community.scrap.dto.ScrapDto.*;
 
 @Service
@@ -93,7 +95,7 @@ public class ScrapService {
         }
         scrap.updateScrap(newName);
 
-        return "ok";
+        return OK;
 
     }
 
@@ -103,7 +105,7 @@ public class ScrapService {
     public String deleteCollection(Long scrapId) throws Exception{
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         scrapRepository.delete(scrap);
-        return "ok";
+        return OK;
     }
 
     // 스크랩 컬렉션 아이템 삭제
@@ -116,7 +118,7 @@ public class ScrapService {
         scrap.getPostList().remove(scrapPost);
         post.getScrapList().remove(scrapPost);
         scrapPostRepository.delete(scrapPost);
-        return "ok";
+        return OK;
 
     }
 
