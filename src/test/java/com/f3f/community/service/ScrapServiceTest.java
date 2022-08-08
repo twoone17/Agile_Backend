@@ -128,66 +128,7 @@ class ScrapServiceTest {
 
 
     // createScrap 테스트 시작
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다")
-    public void createScrapTestToFailByNullUser() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
 
-
-        // then
-        assertThrows(NotFoundScrapUserException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 null 이어서 생성안된다")
-    public void createScrapTestToFailByNullName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 empty String 이어서 생성안된다")
-    public void createScrapTestToFailByEmptyName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .name("")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다")
-    public void createScrapTestToFailByNullPostList() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .user(new User())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapPostListException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
     
     @Test
     @DisplayName("서비스 createScrap 성공 테스트 ")

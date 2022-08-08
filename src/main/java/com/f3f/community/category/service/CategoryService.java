@@ -50,12 +50,6 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> getChildCategories(Long catId) {
-        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
-        return categoryRepository.findCategoriesByParents(category);
-    }
-
-    @Transactional(readOnly = true)
     public List<Post> getPostsOfChild(Long catId) {
         List<Post> result = new ArrayList<>();
         for (Category cat : getChildCategories(catId)) {
@@ -65,9 +59,9 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> getChildsOfRoot() {
-        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundCategoryByNameException::new);
-        return getChildCategories(root.getId());
+    public List<Category> getChildCategories(Long catId) {
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        return categoryRepository.findCategoriesByParents(category);
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +71,12 @@ public class CategoryService {
             result.addAll(cat.getPostList());
         }
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Category> getChildsOfRoot() {
+        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundCategoryByNameException::new);
+        return getChildCategories(root.getId());
     }
 
 
