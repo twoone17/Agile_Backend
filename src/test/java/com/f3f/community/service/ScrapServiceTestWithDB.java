@@ -8,6 +8,7 @@ import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.scrapException.DuplicateScrapNameException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.exception.scrapException.NotFoundNewScrapNameException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -194,8 +195,7 @@ public class ScrapServiceTestWithDB {
         scrapService.saveCollection(sid, pid);
         List<Post> result = scrapPostService.getPostsOfScrap(sid);
         // then
-//        assertThat(result).contains(postRepository.findById(pid).get());
-        assertThat(result.get(0).getTitle()).isEqualTo(postRepository.findById(pid).get().getTitle());
+        assertThat(result.get(0).getId()).isEqualTo(postRepository.findById(pid).get().getId());
 
 
     }
@@ -251,5 +251,68 @@ public class ScrapServiceTestWithDB {
 
         // then
         assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid, pid));
+    }
+    
+    @Test
+    @DisplayName("updateCollectionName 실패 테스트 - 이름 중복")
+    public void updateCollectionNameTestToFailByDuplicateName() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto1 = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid1 = scrapService.createScrap(scrapDto1);
+        ScrapDto.SaveRequest scrapDto2 = createScrapDto(userRepository.findById(uid).get(), "temp2");
+        Long sid2 = scrapService.createScrap(scrapDto2);
+
+        // then
+        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(sid2, uid, "temp"));
+    }
+
+    @Test
+    @DisplayName("updateCollectionName 실패 테스트 - null 이름")
+    public void updateCollectionNameTestToFailByNullNewName() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto1 = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid1 = scrapService.createScrap(scrapDto1);
+        ScrapDto.SaveRequest scrapDto2 = createScrapDto(userRepository.findById(uid).get(), "temp2");
+        Long sid2 = scrapService.createScrap(scrapDto2);
+
+        // then
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(sid2, uid, null));
+    }
+
+    @Test
+    @DisplayName("updateCollectionName 실패 테스트 - empty 이름")
+    public void updateCollectionNameTestToFailByEmptyName() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto1 = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid1 = scrapService.createScrap(scrapDto1);
+        ScrapDto.SaveRequest scrapDto2 = createScrapDto(userRepository.findById(uid).get(), "temp2");
+        Long sid2 = scrapService.createScrap(scrapDto2);
+
+        // then
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(sid1, uid, ""));
+    }
+
+    @Test
+    @DisplayName("updateCollectionName 성공 테스")
+    public void updateCollectionNameTest() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto1 = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid1 = scrapService.createScrap(scrapDto1);
+        ScrapDto.SaveRequest scrapDto2 = createScrapDto(userRepository.findById(uid).get(), "temp2");
+        Long sid2 = scrapService.createScrap(scrapDto2);
+
+
+        // when
+        scrapService.updateCollectionName(sid1, uid, "temp3");
+        // then
+        assertThat("temp3").isEqualTo(scrapRepository.findById(sid1).get().getName());
     }
 }
