@@ -7,7 +7,6 @@ import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
-import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -37,7 +36,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-class ScrapServiceTest {
+class
+ScrapServiceTest {
 
     @Autowired
     ScrapService scrapService;
@@ -192,7 +192,7 @@ class ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1,uid, pid));
     }
 
     @Test
@@ -213,7 +213,7 @@ class ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, uid,pid+1));
     }
 
     @Test
@@ -232,10 +232,10 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid);
+        scrapService.saveCollection(sid,uid, pid);
 
         // then
-        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid, pid));
+        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid,uid, pid));
     }
 
     @Test
@@ -256,8 +256,8 @@ class ScrapServiceTest {
         Long pid1 = postService.savePost(post1);
         Long pid2 = postService.savePost(post2);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid1);
-        scrapService.saveCollection(sid, pid2);
+        scrapService.saveCollection(sid,uid, pid1);
+        scrapService.saveCollection(sid,uid, pid2);
         // then
         assertThat(2).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
     }
@@ -279,7 +279,7 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
         assertThat(scrapRepository.findById(sid).get()).isEqualTo(scrapPostRepository.findById(spid).get().getScrap());
     }
@@ -415,7 +415,7 @@ class ScrapServiceTest {
         // when
         Long scrap = scrapService.createScrap(saveRequest);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1, uid));
 
     }
 
@@ -431,8 +431,8 @@ class ScrapServiceTest {
         Long scrap = scrapService.createScrap(saveRequest);
 
         // then
-        String ok = scrapService.deleteCollection(scrap);
-        assertThat(ok).isEqualTo("ok");
+        String ok = scrapService.deleteCollection(scrap,uid);
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapRepository.findById(scrap).orElseThrow(NotFoundScrapByIdException::new));
     }
     // deleteCollection 테스트 종료
 
@@ -455,9 +455,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid, uid, pid);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1,uid, pid));
     }
 
     @Test
@@ -477,9 +477,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , uid, pid+1));
     }
 
     @Test
@@ -501,9 +501,9 @@ class ScrapServiceTest {
         Long pid = postService.savePost(post);
         Long sid1 = scrapService.createScrap(scrap1);
         Long sid2 = scrapService.createScrap(scrap2);
-        Long spid = scrapService.saveCollection(sid1, pid);
+        Long spid = scrapService.saveCollection(sid1,uid, pid);
         // then
-        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , pid));
+        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , uid, pid));
     }
 
     @Test
@@ -523,9 +523,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid,pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
 
 
@@ -547,9 +547,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(postRepository.findById(pid).get().getScrapList().size());
 
 

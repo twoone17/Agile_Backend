@@ -56,10 +56,12 @@ public class ScrapService {
 
     // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트, 수정해야함
     @Transactional
-    public Long saveCollection(Long scrapId, Long postId) throws Exception {
+    public Long saveCollection(Long scrapId, Long uid,Long postId) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-
+        if (!scrap.getUser().getId().equals(uid)) {
+            throw new NotFoundScrapByUserException();
+        }
         if (!scrapPostRepository.existsByPostAndScrap(post, scrap)) {
             ScrapPost scrapPost = ScrapPost.builder().post(post).scrap(scrap).build();
             scrapPostRepository.save(scrapPost);
@@ -102,23 +104,35 @@ public class ScrapService {
 
     // 스크랩 컬렉션 삭제
     @Transactional
-    public String deleteCollection(Long scrapId) throws Exception{
+    public String deleteCollection(Long scrapId, Long uid) throws Exception{
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
-        scrapRepository.delete(scrap);
-        return OK;
+        if (scrap.getUser().getId().equals(uid)) {
+            List<ScrapPost> remove = scrapPostRepository.findScrapPostsByScrap(scrap);
+            scrapPostRepository.deleteAll(remove);
+            scrapRepository.delete(scrap);
+            return OK;
+        } else {
+            throw new NotFoundScrapByUserException();
+        }
+
     }
 
     // 스크랩 컬렉션 아이템 삭제
     @Transactional
-    public String deleteCollectionItem(Long scrapId, Long postId) throws Exception{
+    public String deleteCollectionItem(Long scrapId, Long uid, Long postId) throws Exception{
 
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
-        Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
-        ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
-        scrap.getPostList().remove(scrapPost);
-        post.getScrapList().remove(scrapPost);
-        scrapPostRepository.delete(scrapPost);
-        return OK;
+        if (scrap.getUser().getId().equals(uid)) {
+            Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
+            ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
+            scrap.getPostList().remove(scrapPost);
+            post.getScrapList().remove(scrapPost);
+            scrapPostRepository.delete(scrapPost);
+            return OK;
+        } else {
+            throw new NotFoundScrapByUserException();
+        }
+
 
     }
 
