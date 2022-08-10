@@ -44,9 +44,8 @@ public class UserService {
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-//        IsValidNickname(afterNickname);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(changeNicknameRequest.getEmail()).orElseThrow(NotFoundUserException::new);
 
 
         if(userRepository.existsByNickname(afterNickname)) {
@@ -67,9 +66,8 @@ public class UserService {
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-//        IsValidPassword(beforePassword);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(changePasswordRequest.getEmail()).orElseThrow(NotFoundUserException::new);
 
         if(beforePassword.equals(afterPassword)) {
             throw new DuplicateInChangePasswordException();
@@ -87,9 +85,8 @@ public class UserService {
     public String changePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
         String email = request.getEmail();
         String AfterPassword = request.getAfterPassword();
-//        IsValidPassword(AfterPassword);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(NotFoundUserException::new);
 
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
@@ -99,7 +96,7 @@ public class UserService {
 
     @Transactional
     public SearchedPassword findPassword(String email) {
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
 
@@ -117,7 +114,7 @@ public class UserService {
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
 
-        User user = FindUserByEmail(userRequest.getEmail());
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(NotFoundUserException::new);
 
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
@@ -133,43 +130,36 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public User FindUserByUserRequest(UserRequest userRequest) {
+    public User findUserByUserRequest(UserRequest userRequest) {
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
         }
-        User user = FindUserByEmail(userRequest.getEmail());
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(NotFoundUserException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
 
-    public User FindUsersByNickname(String nickname) {
+    public User findUserByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundNicknameException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
-    public User FindUserById(Long id) {
+    public User findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(NotFoundUserException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
-    public User FindUserByUserEmail(String email) {
-        return FindUserByEmail(email);
+    public User findUserByEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        return user;
     }
 
     // id조회, 이메일 조회, 내부용
     // 유저 조회했을때 post를 다 보여줄거냐, 10개로 끊어서 보여줄지,
     // scrap도 마찬가지, user는 정보를 다 가지고 있어서 이걸 어떻게 뿌릴지 고민해야한다.
-
-    // 지금이랑 반대로 예외를 서비스 로직 내에서 터뜨리기
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    // 공통화
-    private User FindUserByEmail(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
-        return user;
-    }
 
 
     private boolean CertificateEmail(String email) {
