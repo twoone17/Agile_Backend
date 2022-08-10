@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.f3f.community.common.constants.ResponseConstants.OK;
 
@@ -35,7 +33,8 @@ public class CategoryService {
         }
         Category category = saveRequest.toEntity();
         if (category.getParents() != null) {
-            Category parent = saveRequest.getParents();
+            Category parent = categoryRepository.findById(saveRequest.getParents().getId()).get();
+//            Category parent = saveRequest.getParents();
             if (parent.getDepth() == 3) {
                 throw new MaxDepthException();
             }
@@ -49,12 +48,6 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> getChildCategories(Long catId) {
-        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
-        return categoryRepository.findCategoriesByParents(category);
-    }
-
-    @Transactional(readOnly = true)
     public List<Post> getPostsOfChild(Long catId) {
         List<Post> result = new ArrayList<>();
         for (Category cat : getChildCategories(catId)) {
@@ -64,9 +57,9 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> getChildsOfRoot() {
-        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundCategoryByNameException::new);
-        return getChildCategories(root.getId());
+    public List<Category> getChildCategories(Long catId) {
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        return categoryRepository.findCategoriesByParents(category);
     }
 
     @Transactional(readOnly = true)
@@ -78,39 +71,13 @@ public class CategoryService {
         return result;
     }
 
-    // 기존에 짯던 포스트리스트만 리턴하는 getPost입니다
-//    @Transactional(readOnly = true)
-//    public List<Post> getPosts(Long catId) {
-//        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
-//        List<Post> post = new ArrayList<>(category.getPostList());
-//        for (Category child : category.getChildCategory()) {
-//            post.addAll(getPosts(child.getId()));
-//        }
-//
-//        return post;
-//    }
+    @Transactional(readOnly = true)
+    public List<Category> getChildsOfRoot() {
+        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundCategoryByNameException::new);
+        return getChildCategories(root.getId());
+    }
 
-    // 리팩터링해서 깊이를 키로 가지고, 해당 깊이에 포스트리스트를 밸류로 가지는 해쉬맵을 리턴하게 변경하였습니다
-//    @Transactional(readOnly = true)
-//    public Map<Long, List<Post>> getPosts(Long catId) {
-//        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
-//        List<Post> posts = new ArrayList<>(category.getPostList());
-//        Map<Long, List<Post>> result = new HashMap<>();
-//        result.put(category.getDepth(), posts);
-//
-//
-//        for (Category child : category.getChildCategory()) {
-//            Map<Long, List<Post>> temp = getPosts(child.getId());
-//            for (Long key : temp.keySet()) {
-//                if (!result.containsKey(key)) {
-//                    result.put(key, new ArrayList<>());
-//                }
-//                result.get(key).addAll(temp.get(key));
-//            }
-//        }
-//
-//        return result;
-//    }
+
 
     @Transactional
     public String updateCategoryName(Long catId, String newName) {
