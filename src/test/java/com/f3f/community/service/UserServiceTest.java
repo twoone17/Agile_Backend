@@ -3,6 +3,8 @@ package com.f3f.community.service;
 import com.f3f.community.exception.userException.*;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.hibernate.annotations.NotFound;
@@ -35,7 +37,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUser() {
-        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu");
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "brandy", "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -44,19 +46,19 @@ class UserServiceTest {
         SaveRequest userInfo;
         switch (key) {
             case "email" :
-                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "james", "changwon");
                 break;
             case "password" :
-                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
             case "phone" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
             case "nickname" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"UniqueNickname", "changwon");
                 break;
             default:
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
         }
 //        User user = userInfo.toEntity();
@@ -64,7 +66,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUserWithUniqueCount(int i) {
-        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu");
+        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "brandy" + i, "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -85,7 +87,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 이메일")
     public void missingEmailInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here");
+        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
@@ -95,7 +97,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")
     public void missingPasswordInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, "james", "here");
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
@@ -105,7 +107,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 닉네임")
     public void missingNicknameInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, "", "here");
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
