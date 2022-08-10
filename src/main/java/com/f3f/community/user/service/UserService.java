@@ -45,7 +45,7 @@ public class UserService {
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
 
-        User user = userRepository.findByEmail(changeNicknameRequest.getEmail()).orElseThrow(NotFoundUserException::new);
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
 
 
         if(userRepository.existsByNickname(afterNickname)) {
@@ -82,7 +82,7 @@ public class UserService {
     //  두 기능 모두 구현해둠.
 
     @Transactional
-    public String changePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
+    public String updatePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
         String email = request.getEmail();
         String AfterPassword = request.getAfterPassword();
 
@@ -109,7 +109,7 @@ public class UserService {
 
 
     @Transactional
-    public String delete(UserRequest userRequest) {
+    public String delete(UserDeleteRequest userRequest) {
 
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함

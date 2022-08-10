@@ -15,7 +15,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Optional;
@@ -53,10 +52,10 @@ class AdminServiceTest {
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
         Optional<User> user = userRepository.findById(aLong);
-        BanRequest banRequest = new BanRequest(user.get().getEmail(),2, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
 
         //when
-        adminService.banUser(banRequest);
+        adminService.updateUserLevel(updateUserLevelRequest);
         Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
 
         //then
@@ -68,10 +67,10 @@ class AdminServiceTest {
     public void banUnknownEmailUserToFail() {
         //given
         String unknownEmail = "unKnownEmail@email.com";
-        BanRequest banRequest = new BanRequest(unknownEmail, 1, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(unknownEmail, 1, "욕설");
 
         //when & then
-        assertThrows(NotFoundUserException.class, () -> adminService.banUser(banRequest));
+        assertThrows(NotFoundUserException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
     }
 
     @Test
@@ -82,37 +81,41 @@ class AdminServiceTest {
         Long aLong = userService.saveUser(userDTO);
         Optional<User> user = userRepository.findById(aLong);
         int invalidKey = 37;
-        BanRequest banRequest = new BanRequest(user.get().getEmail(),invalidKey, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),invalidKey, "욕설");
 
         //when & then
-        assertThrows(InvalidUserLevelException.class, () -> adminService.banUser(banRequest));
+        assertThrows(InvalidUserLevelException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
     }
 
     @Test
     @DisplayName("유저 차단 테스트 실패 - 올바르지 않은 이메일 형식")
     public void banUserWithInvalidEmailToFail() {
         //given
-        BanRequest banRequest = new BanRequest("", 2, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest("", 2, "욕설");
 
         //when & then
-        assertThrows(ConstraintViolationException.class, () -> adminService.banUser(banRequest));
+        assertThrows(ConstraintViolationException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
     }
 
-//    @Test
-//    @DisplayName("유저 차단 해제 테스트 성공")
-//    public void unbanUserTest() {
-//        //given
-//        SaveRequest userDTO = createUser();
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> user = userRepository.findById(aLong);
-//        BanRequest banRequest = new BanRequest(user.get().getEmail(),2, "욕설");
-//
-//        //when
-//        adminService.banUser(banRequest);
-//        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
-//
-//        //then
-//    }
+    @Test
+    @DisplayName("유저 차단 해제 테스트 성공")
+    public void unbanUserTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateUserLevelRequest banRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
+
+        //when
+        adminService.updateUserLevel(banRequest);
+        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
+        UpdateUserLevelRequest unbanRequest = new UpdateUserLevelRequest(bannedUser.get().getEmail(),1, "기간 만료");
+        adminService.updateUserLevel(unbanRequest);
+        Optional<User> unbannedUser = userRepository.findByEmail(bannedUser.get().getEmail());
+
+        //then
+        assertThat(unbannedUser.get().getUserLevel()).isEqualTo(UserLevel.UNBAN);
+    }
 
     @Test
     @DisplayName("유저 등업 테스트")

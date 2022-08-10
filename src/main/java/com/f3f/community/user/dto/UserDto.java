@@ -135,6 +135,23 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class UserDeleteRequest {
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        private String password;
+
+        private UserLogin userLogin;
+    }
+
+
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class SearchedPassword {
         // TODO 암호화?
         private String password;
@@ -146,7 +163,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class BanRequest {
+    public static class UpdateUserLevelRequest {
         @NotBlank
         private String email;
         private int key;

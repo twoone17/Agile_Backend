@@ -7,7 +7,6 @@ import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.hibernate.annotations.NotFound;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -377,7 +376,7 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.get().getEmail(), user.get().getPassword());
+        UserDeleteRequest userRequest = new UserDeleteRequest(user.get().getEmail(), user.get().getPassword(), user.get().getUserLogin());
         String result = userService.delete(userRequest);
 
         //then
@@ -389,7 +388,7 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 존재하지 않는 유저 이메일")
     public void deleteInvalidEmailUserToFail() {
         //given
-        UserRequest userRequest = new UserRequest("invalidEmail@Email.com", "tempPW123@");
+        UserDeleteRequest userRequest = new UserDeleteRequest("invalidEmail@Email.com", "tempPW123@",UserLogin.AUTH);
 
         //when & then
         assertThrows(NotFoundUserException.class, () -> userService.delete(userRequest));
@@ -404,7 +403,7 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.get().getEmail(), "tempPW12@");
+        UserDeleteRequest userRequest = new UserDeleteRequest(user.get().getEmail(), "tempPW12@", user.get().getUserLogin());
 
         //then
         assertThrows(NotFoundPasswordException.class, () -> userService.delete(userRequest));
@@ -425,7 +424,7 @@ class UserServiceTest {
 
         //when
         // user1의 이메일, user2의 패스워드 모두 db에 존재하지만, 서로 매핑되지 않는 값이다.
-        UserRequest userRequest = new UserRequest(user1.get().getEmail(), user2.get().getPassword());
+        UserDeleteRequest userRequest = new UserDeleteRequest(user1.get().getEmail(), user2.get().getPassword(), user1.get().getUserLogin());
 
         //then
         assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
@@ -441,7 +440,7 @@ class UserServiceTest {
 
         //when
         ChangePasswordWithoutSignInRequest cpws = new ChangePasswordWithoutSignInRequest(user.get().getEmail(), "newPW123@");
-        String result = userService.changePasswordWithoutSignIn(cpws);
+        String result = userService.updatePasswordWithoutSignIn(cpws);
         Optional<User> user2 = userRepository.findById(aLong);
 
         //then

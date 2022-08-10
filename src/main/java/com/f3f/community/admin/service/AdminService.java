@@ -4,6 +4,7 @@ import com.f3f.community.exception.adminException.InvalidGradeException;
 import com.f3f.community.exception.adminException.InvalidUserLevelException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
+import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,6 @@ public class AdminService {
     private final UserRepository userRepository;
     private final String resultString = "OK";
 
-//    public String banUser(@Valid  BanRequest banRequest) {
-//        User user = userRepository.findByEmail(banRequest.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-//        // save banRequest.getContent()
-//
-//    }
 
 
     // enum의 key를 활용하자. 굳이 문자열로 넘기지 말고
@@ -53,9 +49,9 @@ public class AdminService {
     }
 
     @Transactional
-    public String banUser(@Valid BanRequest banRequest) {
-        User user = userRepository.findByEmail(banRequest.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        int key = banRequest.getKey();
+    public String updateUserLevel(@Valid UpdateUserLevelRequest updateUserLevelRequest) {
+        User user = userRepository.findByEmail(updateUserLevelRequest.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
+        int key = updateUserLevelRequest.getKey();
         if(key < 0 || key >= 3) {
             throw new InvalidUserLevelException();
         }
