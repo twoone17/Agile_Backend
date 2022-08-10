@@ -98,14 +98,13 @@ class AdminServiceTest {
         //given
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
-        User user = userService.findUserById(aLong);
-
+        Optional<User> user = userRepository.findById(aLong);
 
         //when
-        adminService.updateUserGrade(user.getEmail(), 3);
-
+        adminService.updateUserGrade(user.get().getEmail(), 3);
+        Optional<User> user2 = userRepository.findByEmail(user.get().getEmail());
         //then
-        assertThat(user.getUserGrade()).isEqualTo(UserGrade.PLATINUM);
+        assertThat(user2.get().getUserGrade()).isEqualTo(UserGrade.PLATINUM);
     }
 
     @Test
@@ -124,12 +123,12 @@ class AdminServiceTest {
         //given
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
-        User user = userService.findUserById(aLong);
+        Optional<User> user = userRepository.findById(aLong);
 
         int notFoundKey = 37;
 
         //when & then
-        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(user.getEmail(), notFoundKey));
+        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(user.get().getEmail(), notFoundKey));
     }
 
     @Test
@@ -143,10 +142,11 @@ class AdminServiceTest {
 
         //when
         adminService.updateUserGradeToExpert(request);
-        User expertUser = userService.findUserByEmail(request.getEmail());
+        Long aLong = userService.findUserByEmail(request.getEmail());
+        Optional<User> expertUser = userRepository.findById(aLong);
 
         //then
-        assertThat(expertUser.getUserGrade()).isEqualTo(UserGrade.EXPERT);
-
+//        assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
+        assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
     }
 }

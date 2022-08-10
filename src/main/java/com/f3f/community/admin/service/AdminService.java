@@ -6,6 +6,7 @@ import com.f3f.community.user.domain.User;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -29,6 +30,7 @@ public class AdminService {
 
     // enum의 key를 활용하자. 굳이 문자열로 넘기지 말고
     // 유저 등급이 올라가면 db 업데이트 체크
+    @Transactional
     public String updateUserGrade(String email, int key) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
         // TODO 밴 여부 확인?
@@ -39,6 +41,7 @@ public class AdminService {
         return resultString;
     }
 
+    @Transactional
     public String updateUserGradeToExpert(@Valid  UpdateGradeToExpertRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
         // TODO 밴 여부 확인?

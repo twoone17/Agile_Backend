@@ -140,21 +140,21 @@ public class UserService {
 
     @Transactional(readOnly = true)
 
-    public User findUserByNickname(String nickname) {
+    public Long findUserByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundNicknameException::new);
-        return user;
+        return user.getId();
     }
 
     @Transactional(readOnly = true)
-    public User findUserById(Long id) {
+    public Long findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(NotFoundUserException::new);
-        return user;
+        return user.getId();
     }
 
     @Transactional(readOnly = true)
-    public User findUserByEmail(String email) {
+    public Long findUserByEmail(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
-        return user;
+        return user.getId();
     }
 
     // id조회, 이메일 조회, 내부용

@@ -196,10 +196,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User user1 = userService.findUserByNickname(user.get().getNickname());
+        Long aLong1 = userService.findUserByNickname(user.get().getNickname());
+        Optional<User> user1 = userRepository.findById(aLong1);
 
         //then
-        assertThat(user1.getEmail()).isEqualTo(user.get().getEmail());
+        assertThat(user1.get().getEmail()).isEqualTo(user.get().getEmail());
     }
 
     @Test
@@ -211,10 +212,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User userById = userService.findUserById(user.get().getId());
+        Long aLong1 = userService.findUserById(user.get().getId());
+        Optional<User> user1 = userRepository.findById(aLong1);
 
         //then
-        assertThat(userById.getId()).isEqualTo(user.get().getId());
+        assertThat(user1.get().getId()).isEqualTo(user.get().getId());
     }
 
     @Test
@@ -236,10 +238,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User userByEmail = userService.findUserByEmail(user.get().getEmail());
-
+//        User userByEmail = userService.findUserByEmail(user.get().getEmail());
+        Long aLong1 = userService.findUserByEmail(user.get().getEmail());
+        Optional<User> userByEmail = userRepository.findById(aLong1);
         //then
-        assertThat(userByEmail.getEmail()).isEqualTo(userDTO.getEmail());
+        assertThat(userByEmail.get().getEmail()).isEqualTo(userDTO.getEmail());
     }
 
     @Test
