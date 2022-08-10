@@ -3,9 +3,10 @@ package com.f3f.community.service;
 import com.f3f.community.exception.userException.*;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.hibernate.annotations.NotFound;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUser() {
-        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, "brandy", "pazu");
+        SaveRequest userInfo = new SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "brandy", "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -44,19 +45,19 @@ class UserServiceTest {
         SaveRequest userInfo;
         switch (key) {
             case "email" :
-                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("UniqueEmail@naver.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "james", "changwon");
                 break;
             case "password" :
-                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "unique123@", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
             case "phone" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "uniquePhone", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
             case "nickname" :
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "UniqueNickname", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"UniqueNickname", "changwon");
                 break;
             default:
-                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, "james", "changwon");
+                userInfo = new SaveRequest("temp@temp.com", "123456@qw", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
                 break;
         }
 //        User user = userInfo.toEntity();
@@ -64,7 +65,7 @@ class UserServiceTest {
     }
 
     private SaveRequest createUserWithUniqueCount(int i) {
-        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, "brandy" + i, "pazu");
+        SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "brandy" + i, "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -85,7 +86,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 이메일")
     public void missingEmailInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, "james", "here");
+        SaveRequest saveRequest = new SaveRequest("", "1231", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
@@ -95,7 +96,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 패스워드")
     public void missingPasswordInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, "james", "here");
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
@@ -105,7 +106,7 @@ class UserServiceTest {
     @DisplayName("회원가입 실패 - 유효하지 않은 닉네임")
     public void missingNicknameInRegisterToFail() {
         //given
-        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, "", "here");
+        SaveRequest saveRequest = new SaveRequest("temp@temp.com", "1231", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"", "here");
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.saveUser(saveRequest));
@@ -196,10 +197,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User user1 = userService.findUserByNickname(user.get().getNickname());
+        Long aLong1 = userService.findUserByNickname(user.get().getNickname());
+        Optional<User> user1 = userRepository.findById(aLong1);
 
         //then
-        assertThat(user1.getEmail()).isEqualTo(user.get().getEmail());
+        assertThat(user1.get().getEmail()).isEqualTo(user.get().getEmail());
     }
 
     @Test
@@ -211,10 +213,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User userById = userService.findUserById(user.get().getId());
+        Long aLong1 = userService.findUserById(user.get().getId());
+        Optional<User> user1 = userRepository.findById(aLong1);
 
         //then
-        assertThat(userById.getId()).isEqualTo(user.get().getId());
+        assertThat(user1.get().getId()).isEqualTo(user.get().getId());
     }
 
     @Test
@@ -236,10 +239,11 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        User userByEmail = userService.findUserByEmail(user.get().getEmail());
-
+//        User userByEmail = userService.findUserByEmail(user.get().getEmail());
+        Long aLong1 = userService.findUserByEmail(user.get().getEmail());
+        Optional<User> userByEmail = userRepository.findById(aLong1);
         //then
-        assertThat(userByEmail.getEmail()).isEqualTo(userDTO.getEmail());
+        assertThat(userByEmail.get().getEmail()).isEqualTo(userDTO.getEmail());
     }
 
     @Test
@@ -372,7 +376,7 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.get().getEmail(), user.get().getPassword());
+        UserDeleteRequest userRequest = new UserDeleteRequest(user.get().getEmail(), user.get().getPassword(), user.get().getUserLogin());
         String result = userService.delete(userRequest);
 
         //then
@@ -384,7 +388,7 @@ class UserServiceTest {
     @DisplayName("회원탈퇴 실패 - 존재하지 않는 유저 이메일")
     public void deleteInvalidEmailUserToFail() {
         //given
-        UserRequest userRequest = new UserRequest("invalidEmail@Email.com", "tempPW123@");
+        UserDeleteRequest userRequest = new UserDeleteRequest("invalidEmail@Email.com", "tempPW123@",UserLogin.AUTH);
 
         //when & then
         assertThrows(NotFoundUserException.class, () -> userService.delete(userRequest));
@@ -399,7 +403,7 @@ class UserServiceTest {
         Optional<User> user = userRepository.findById(aLong);
 
         //when
-        UserRequest userRequest = new UserRequest(user.get().getEmail(), "tempPW12@");
+        UserDeleteRequest userRequest = new UserDeleteRequest(user.get().getEmail(), "tempPW12@", user.get().getUserLogin());
 
         //then
         assertThrows(NotFoundPasswordException.class, () -> userService.delete(userRequest));
@@ -420,7 +424,7 @@ class UserServiceTest {
 
         //when
         // user1의 이메일, user2의 패스워드 모두 db에 존재하지만, 서로 매핑되지 않는 값이다.
-        UserRequest userRequest = new UserRequest(user1.get().getEmail(), user2.get().getPassword());
+        UserDeleteRequest userRequest = new UserDeleteRequest(user1.get().getEmail(), user2.get().getPassword(), user1.get().getUserLogin());
 
         //then
         assertThrows(NotMatchPasswordInDeleteUserException.class, () -> userService.delete(userRequest));
@@ -436,7 +440,7 @@ class UserServiceTest {
 
         //when
         ChangePasswordWithoutSignInRequest cpws = new ChangePasswordWithoutSignInRequest(user.get().getEmail(), "newPW123@");
-        String result = userService.changePasswordWithoutSignIn(cpws);
+        String result = userService.updatePasswordWithoutSignIn(cpws);
         Optional<User> user2 = userRepository.findById(aLong);
 
         //then

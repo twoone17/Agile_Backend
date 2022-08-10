@@ -2,9 +2,12 @@ package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
 import com.f3f.community.exception.adminException.InvalidGradeException;
+import com.f3f.community.exception.adminException.InvalidUserLevelException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
@@ -12,8 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,60 +40,82 @@ class AdminServiceTest {
     }
 
     private SaveRequest createUser() {
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, "james", "changwon");
+        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
 
-//    @Test
-//    @DisplayName("유저 차단 테스트")
-//    public void banUserTest() {
-//        //given
-//        UserDto.SaveRequest userDTO = createUser();
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> byId = userRepository.findById(aLong);
-//
-//        //when
-//        Optional<User> bannedUser = userRepository.findByEmail(byId.get().getEmail());
-//
-//        //then
-//        assertThat(bannedUser.get().isBanned()).isEqualTo(true);
-//    }
-//
-//    @Test
-//    @DisplayName("유저 차단 해제 테스트")
-//    public void unbanUserTest() {
-//        //given
-//        UserDto.SaveRequest userDTO = createUser();
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> user = userRepository.findById(aLong);
-//        adminService.banUser(user.get().getEmail());
-//        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
-//
-//        //when
-//        adminService.unbanUser(bannedUser.get().getEmail());
-//        Optional<User> unbannedUser = userRepository.findByEmail(user.get().getEmail());
-//
-//        //then
-//        assertThat(unbannedUser.get().isBanned()).isEqualTo(false);
-//    }
-//
-//    @Test
-//    @DisplayName("존재하지 않는 유저 차단 - 차단 해제")
-//    public void NoUserToBanToFail() throws Exception {
-//        //given
-//        UserDto.SaveRequest userDTO = createUser();
-//
-//        //when
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> user = userRepository.findById(aLong);
-//
-//        //then
-//        assertThrows(NotFoundUserException.class,
-//                () -> adminService.banUser("notFoundUser@temp.com"));
-//        assertThrows(NotFoundUserException.class,
-//                () -> adminService.unbanUser("notFoundUser2@temp.com"));
-//    }
+    @Test
+    @DisplayName("유저 차단 테스트 성공")
+    public void banUserTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
+
+        //when
+        adminService.updateUserLevel(updateUserLevelRequest);
+        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
+
+        //then
+        assertThat(bannedUser.get().getUserLevel()).isEqualTo(UserLevel.BAN);
+    }
+
+    @Test
+    @DisplayName("유저 차단 테스트 실패 - 존재하지 않는 이메일")
+    public void banUnknownEmailUserToFail() {
+        //given
+        String unknownEmail = "unKnownEmail@email.com";
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(unknownEmail, 1, "욕설");
+
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
+    }
+
+    @Test
+    @DisplayName("유저 차단 테스트 실패 - 존재하지 않는 UserLevel")
+    public void updateUserToInvalidUserLevelToFail() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        int invalidKey = 37;
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),invalidKey, "욕설");
+
+        //when & then
+        assertThrows(InvalidUserLevelException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
+    }
+
+    @Test
+    @DisplayName("유저 차단 테스트 실패 - 올바르지 않은 이메일 형식")
+    public void banUserWithInvalidEmailToFail() {
+        //given
+        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest("", 2, "욕설");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
+    }
+
+    @Test
+    @DisplayName("유저 차단 해제 테스트 성공")
+    public void unbanUserTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateUserLevelRequest banRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
+
+        //when
+        adminService.updateUserLevel(banRequest);
+        Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
+        UpdateUserLevelRequest unbanRequest = new UpdateUserLevelRequest(bannedUser.get().getEmail(),1, "기간 만료");
+        adminService.updateUserLevel(unbanRequest);
+        Optional<User> unbannedUser = userRepository.findByEmail(bannedUser.get().getEmail());
+
+        //then
+        assertThat(unbannedUser.get().getUserLevel()).isEqualTo(UserLevel.UNBAN);
+    }
 
     @Test
     @DisplayName("유저 등업 테스트")
@@ -98,14 +123,14 @@ class AdminServiceTest {
         //given
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
-        User user = userService.findUserById(aLong);
-
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(user.get().getEmail(), 3);
 
         //when
-        adminService.updateUserGrade(user.getEmail(), 3);
-
+        adminService.updateUserGrade(updateGradeRequest);
+        Optional<User> user2 = userRepository.findByEmail(user.get().getEmail());
         //then
-        assertThat(user.getUserGrade()).isEqualTo(UserGrade.PLATINUM);
+        assertThat(user2.get().getUserGrade()).isEqualTo(UserGrade.PLATINUM);
     }
 
     @Test
@@ -113,9 +138,9 @@ class AdminServiceTest {
     public void updateNotFoundUserToFail() {
         //given
         String notFoundEmail = "notFoundUser@user.com";
-
+        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(notFoundEmail, 3);
         //when & then
-        assertThrows(NotFoundUserException.class, () -> adminService.updateUserGrade(notFoundEmail, 2));
+        assertThrows(NotFoundUserException.class, () -> adminService.updateUserGrade(updateGradeRequest));
     }
 
     @Test
@@ -124,12 +149,12 @@ class AdminServiceTest {
         //given
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
-        User user = userService.findUserById(aLong);
-
+        Optional<User> user = userRepository.findById(aLong);
         int notFoundKey = 37;
+        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(user.get().getEmail(), notFoundKey);
 
         //when & then
-        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(user.getEmail(), notFoundKey));
+        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(updateGradeRequest));
     }
 
     @Test
@@ -143,10 +168,11 @@ class AdminServiceTest {
 
         //when
         adminService.updateUserGradeToExpert(request);
-        User expertUser = userService.findUserByEmail(request.getEmail());
+        Long aLong = userService.findUserByEmail(request.getEmail());
+        Optional<User> expertUser = userRepository.findById(aLong);
 
         //then
-        assertThat(expertUser.getUserGrade()).isEqualTo(UserGrade.EXPERT);
-
+//        assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
+        assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
     }
 }

@@ -17,7 +17,7 @@ public enum UserGrade {
         this.value = value;
     }
 
-    public UserGrade getValueByKey(int key) {
+    public UserGrade getUserGradeByKey(int key) {
         UserGrade returnObj;
         switch (key) {
             case 1 :

@@ -14,6 +14,8 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
@@ -59,12 +61,12 @@ public class PostServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp.com", "123456", "010123456782",
-                UserGrade.BRONZE, "euisung", "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"euisung", "seoul");
     }
 
     //Dto create

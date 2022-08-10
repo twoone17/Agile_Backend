@@ -54,10 +54,12 @@ public class User extends UserBase {
 
 
     public void updateUserGrade(int plusedKey) {
-        this.userGrade = userGrade.getValueByKey(plusedKey);
+        this.userGrade = userGrade.getUserGradeByKey(plusedKey);
     }
 
-
+    public void updateUserLevel(int key) {
+        this.userLevel = userLevel.getUserLevelByKey(key);
+    }
 
 
     @Builder
