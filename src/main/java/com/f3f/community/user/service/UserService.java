@@ -9,6 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
 
+import javax.validation.Valid;
+
+import java.util.Optional;
+
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
@@ -19,7 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long saveUser(SaveRequest saveRequest) {
+    public Long saveUser(@Valid SaveRequest saveRequest) {
 
 
         if(userRepository.existsByEmail(saveRequest.getEmail())) {
@@ -128,6 +132,7 @@ public class UserService {
     }
 
 
+    @Transactional(readOnly = true)
     public User FindUserByUserRequest(UserRequest userRequest) {
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
@@ -136,11 +141,23 @@ public class UserService {
         return user;
     }
 
+    @Transactional(readOnly = true)
+
     public User FindUsersByNickname(String nickname) {
-        User user = userRepository.findByNickname(nickname).orElseThrow(() -> new NotFoundNicknameException());
+        User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundNicknameException::new);
         return user;
     }
 
+    @Transactional(readOnly = true)
+    public User FindUserById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(NotFoundUserException::new);
+        return user;
+    }
+
+    @Transactional(readOnly = true)
+    public User FindUserByUserEmail(String email) {
+        return FindUserByEmail(email);
+    }
 
     // id조회, 이메일 조회, 내부용
     // 유저 조회했을때 post를 다 보여줄거냐, 10개로 끊어서 보여줄지,
@@ -150,7 +167,7 @@ public class UserService {
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // 공통화
     private User FindUserByEmail(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException());
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         return user;
     }
 
