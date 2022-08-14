@@ -78,21 +78,6 @@ public class PostService {
         return post;
 
     }
-//
-//    // Read b-1) author로 postList 찾기
-//    @Transactional(readOnly = true)
-//    public List<Post> findPostListByAuthor(User author) throws Exception {
-//        //postRepository에 author와 일치하는 게시글이 없으면 예외처리
-//        if(!postRepository.existsByAuthor(author)) {
-//            throw new NotFoundPostListByAuthor();
-//        }
-//        //postRepository에 author가 있을때
-//        List<Post> postList =  postRepository.findByAuthor(author);
-//        //author가 작성한 postlist를 반환
-//        return postList;
-//
-//    }
-
     //Read b-2) title로 postList 찾기
     @Transactional(readOnly = true)
     public List<Post> findPostListByTitle(String title) throws Exception{
