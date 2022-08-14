@@ -17,9 +17,8 @@ import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
+//import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +36,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Transactional
-public class PostServiceTest {
+@TestMethodOrder(value = MethodOrderer.DisplayName.class)
+class PostServiceTest {
 
     @Autowired
     PostRepository postRepository;
@@ -108,7 +108,7 @@ public class PostServiceTest {
      **************************************************************************************/
     @Test
     @Rollback()
-    @DisplayName("Service : savePost 성공 테스트")
+    @DisplayName("1 Save-1: savePost 성공 테스트")
     //필수값이 다 들어감 : 통과
     public void savePostTestToOk() throws Exception {
         //given
@@ -139,7 +139,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback
-    @DisplayName("Service : savePost 예외 발생 테스트 - author 없음  ")
+    @DisplayName("1 Save-2: savePost 예외 발생 테스트 - author 없음  ")
     //필수값 author 없음 : 실패
     public void savePostTestToFailByNullAuthor() throws Exception {
         //given
@@ -162,7 +162,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : savePost 예외 발생 테스트 - title 없음  ")
+    @DisplayName("1 Save-3: savePost 예외 발생 테스트 - title 없음  ")
     //필수값 title 없음 : 실패
     public void savePostTestToFailByNullTitle() throws Exception {
         //given
@@ -184,7 +184,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback
-    @DisplayName("Service : savePost 예외 발생 테스트 - content 없음  ")
+    @DisplayName("1 Save-4: savePost 예외 발생 테스트 - content 없음  ")
     //필수값 content 없음 : 실패
     public void savePostTestToFailByNullContent() throws Exception {
         //given
@@ -210,7 +210,7 @@ public class PostServiceTest {
     //Read a-1) post_id로 post 찾기
     @Test
     @Rollback()
-    @DisplayName("Service : findPostByPostId 성공 테스트")
+    @DisplayName("2 Read-1 : findPostByPostId 성공 테스트")
     public void findPostByPostIdTestOk() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -247,7 +247,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
+    @DisplayName("2 Read-2 : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
     public void findPostByPostIdTestToFailByNullPostId() throws Exception{
     //TODO: 저장하고 지운것을 테스트 해보기
         assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
@@ -255,7 +255,7 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Service : findPostListByAuthor 성공 테스트 (post 하나 저장)")
+    @DisplayName("2 Read-3 : findPostListByAuthor 성공 테스트 (post 하나 저장)")
     public void findPostListByAuthorTest_One_Ok() throws Exception{
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -283,7 +283,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : findPostListByAuthor 성공 테스트 (post 여러개 저장)")
+    @DisplayName("2 Read-4 : findPostListByAuthor 성공 테스트 (post 여러개 저장)")
     public void findPostListByAuthorTest_Multiple_Ok() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -347,7 +347,7 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Service : findPostListByAuthor 예외 발생 테스트 - author에 해당하는 postList 없음")
+    @DisplayName("2 Read-5 : findPostListByAuthor 예외 발생 테스트 - author에 해당하는 postList 없음")
     public void findPostListByAuthorTestToFailByNullPostList() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -378,7 +378,7 @@ public class PostServiceTest {
 
 
     @Test
-    @DisplayName("Service : findPostListByTitle 성공 테스트 (일치하는 title 하나) ")
+    @DisplayName("2 Read-6 : findPostListByTitle 성공 테스트 (일치하는 title 하나) ")
     public void findPostListByTitleTest_One_Ok() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -408,7 +408,7 @@ public class PostServiceTest {
 
 
     @Test
-    @DisplayName("Service : findPostListByTitle 성공 테스트 (일치하는 title 여러개) ")
+    @DisplayName("2 Read-7 : findPostListByTitle 성공 테스트 (일치하는 title 여러개) ")
     public void findPostListByTitleTest_Multiple_Ok() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -471,7 +471,7 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("Service : findPostListByTitle 예외 발생 테스트 - 일치하는 title 없음")
+    @DisplayName("2 Read-8 : findPostListByTitle 예외 발생 테스트 - 일치하는 title 없음")
     public void findPostListByTitleTestToFailByNullTitle() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -506,7 +506,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : UpdatePost 성공 테스트")
+    @DisplayName("3 Update-1 : UpdatePost 성공 테스트")
     public void updatePostTestToOk() throws Exception{
     //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -557,7 +557,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정하려는 post의 postid가 없음")
+    @DisplayName("3 Update-2 : UpdatePost 예외 발생 테스트 - 수정하려는 post의 postid가 없음")
     public void updatePostTestToFailByNullPostId() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -600,7 +600,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정하려는 post가 본인의 게시글이 아님")
+    @DisplayName("3 Update-3 : UpdatePost 예외 발생 테스트 - 수정하려는 post가 본인의 게시글이 아님")
     public void updatePostTestToFailByNullPostInAuthor() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -646,7 +646,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정시에 Title이 한글자 미만")
+    @DisplayName("3 Update-4 : UpdatePost 예외 발생 테스트 - 수정시에 Title이 한글자 미만")
     public void updatePostTestToFailByNullTitle() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -697,7 +697,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : UpdatePost 예외 발생 테스트 - 수정시에 content가 한글자 미만")
+    @DisplayName("3 Update-5 : UpdatePost 예외 발생 테스트 - 수정시에 content가 한글자 미만")
     public void updatePostTestToFailByNullContent() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -754,7 +754,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : DeletePost 성공 테스트")
+    @DisplayName("4 Delete-1 : DeletePost 성공 테스트")
     public void DeletePostTestToOK() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -817,7 +817,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : DeletePost 예외 발생 테스트 - postid 존재하지 않음 ")
+    @DisplayName("4 Delete-2 : DeletePost 예외 발생 테스트 - postid 존재하지 않음 ")
     public void DeletePostTestToFailByNullPostId() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -850,7 +850,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : DeletePost 예외 발생 테스트 - userid 존재하지 않음 ")
+    @DisplayName("4 Delete-3 : DeletePost 예외 발생 테스트 - userid 존재하지 않음 ")
     public void DeletePostTestToFailByNullAuthor() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
@@ -880,7 +880,7 @@ public class PostServiceTest {
 
     @Test
     @Rollback()
-    @DisplayName("Service : DeletePost 예외 발생 테스트 - 삭제하려는 post가 본인의 게시글이 아님 ")
+    @DisplayName("4 Delete-4 : DeletePost 예외 발생 테스트 - 삭제하려는 post가 본인의 게시글이 아님 ")
     public void DeletePostTestToFailByNullPostInAuthor() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
