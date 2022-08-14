@@ -179,9 +179,7 @@ public class UserService {
         if(!postRepository.existsByAuthor(user)) {
             throw new NotFoundPostListByAuthor();
         }
-        //postRepository에 author가 있을때
         List<Post> postList =  postRepository.findByAuthor(user);
-        //author가 작성한 postlist를 반환
         return postList;
     }
 
