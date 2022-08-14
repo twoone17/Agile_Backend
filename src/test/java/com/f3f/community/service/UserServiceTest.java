@@ -1,10 +1,21 @@
 package com.f3f.community.service;
 
+import com.f3f.community.category.domain.Category;
+import com.f3f.community.category.dto.CategoryDto;
+import com.f3f.community.category.repository.CategoryRepository;
+import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.post.dto.PostDto;
+import com.f3f.community.post.service.PostService;
+import com.f3f.community.scrap.domain.Scrap;
+import com.f3f.community.scrap.dto.ScrapDto;
+import com.f3f.community.scrap.repository.ScrapRepository;
+import com.f3f.community.scrap.service.ScrapService;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.domain.UserLogin;
+import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.validation.ConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,7 +39,17 @@ class UserServiceTest {
     @Autowired
     UserRepository userRepository;
     @Autowired
+    CategoryRepository categoryRepository;
+    @Autowired
+    ScrapRepository scrapRepository;
+    @Autowired
     UserService userService;
+    @Autowired
+    CategoryService categoryService;
+    @Autowired
+    PostService postService;
+    @Autowired
+    ScrapService scrapService;
 
     private final String resultString = "OK";
 
@@ -68,6 +91,49 @@ class UserServiceTest {
         SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, "brandy" + i, "pazu");
 //        User user = userInfo.toEntity();
         return userInfo;
+    }
+
+
+    private ScrapDto.SaveRequest createScrapDto1(User user) {
+        return ScrapDto.SaveRequest.builder()
+                .name("test")
+                .postList(new ArrayList<>())
+                .user(user)
+                .build();
+    }
+
+    private PostDto.SaveRequest createPostDto1(User user, Category cat) {
+        return PostDto.SaveRequest.builder()
+                .title("test title")
+                .content("test content for test")
+                .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
+    private PostDto.SaveRequest createPostDto2(User user, Category cat) {
+        return PostDto.SaveRequest.builder()
+                .title("test title2")
+                .content("test content for test2")
+                .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
+    private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
+        return CategoryDto.SaveRequest.builder()
+                .categoryName(name)
+                .childCategory(new ArrayList<>())
+                .parents(parent)
+                .postList(new ArrayList<>()).build();
+    }
+
+    private Category createRoot() throws Exception{
+        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+        Long rid = categoryService.createCategory(cat);
+        return categoryRepository.findById(rid).get();
     }
 
     @Test
@@ -461,5 +527,50 @@ class UserServiceTest {
 
         //then
         assertThat(password.getPassword()).isEqualTo(user.get().getPassword());
+    }
+
+    // 프록시 초기화 문제로 테스트 불가.
+//    @Test
+//    @DisplayName("스크랩 목록 조회 테스트")
+//    public void findScrapsOfUserTest() throws Exception {
+//        //given
+//        SaveRequest userDTO = createUser();
+//        Long aLong = userService.saveUser(userDTO);
+//        Optional<User> byId = userRepository.findById(aLong);
+//
+//        ScrapDto.SaveRequest scrap = createScrapDto1(byId.get());
+//        Category root = createRoot();
+//        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+//        Long cid = categoryService.createCategory(categoryDto);
+//        Category cat = categoryRepository.findById(cid).get();
+//        PostDto.SaveRequest post1 = createPostDto1(byId.get(), cat);
+//        PostDto.SaveRequest post2 = createPostDto2(byId.get(), cat);
+//
+//        //when
+//        Long pid1 = postService.savePost(post1);
+//        Long pid2 = postService.savePost(post2);
+//        Long sid = scrapService.createScrap(scrap);
+//        scrapService.saveCollection(sid,aLong, pid1);
+//        scrapService.saveCollection(sid,aLong, pid2);
+//        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(byId.get());
+//
+//        //then
+//        assertThat(scrapsByUser.size()).isEqualTo(1);
+//        assertThat(scrapsByUser.get(0).getPostList().size()).isEqualTo(2);
+//    }
+
+    @Test
+    @DisplayName("스크랩 목록 조회 테스트 - 비어있는 스크랩 목록")
+    public void findEmptyScrapsOfUserTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
+        List<Scrap> emptyList = new ArrayList<>();
+        //when
+        List<Scrap> userScrapsByEmail = userService.findUserScrapsByEmail(byId.get().getEmail());
+
+        //then
+        assertThat(userScrapsByEmail).isEqualTo(emptyList);
     }
 }

@@ -175,4 +175,18 @@ class AdminServiceTest {
 //        assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
         assertThat(expertUser.get().getUserGrade()).isEqualTo(UserGrade.EXPERT);
     }
+
+    @Test
+    @DisplayName("어드민 유저 생성 테스트")
+    public void createAdminTest() {
+        //given
+        SaveRequest userDTO = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.ADMIN, UserLogin.AUTH,"james", "changwon");
+        Long aLong = userService.saveUser(userDTO);
+
+        //when
+        Optional<User> byId = userRepository.findById(aLong);
+
+        //then
+        assertThat(byId.get().getUserLevel()).isEqualTo(UserLevel.ADMIN);
+    }
 }
