@@ -49,7 +49,7 @@ public class UserService {
     }
 
     @Transactional
-    public String updateNickname(ChangeNicknameRequest changeNicknameRequest) {
+    public String updateNickname(@Valid ChangeNicknameRequest changeNicknameRequest) {
         String email = changeNicknameRequest.getEmail();
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
@@ -71,7 +71,7 @@ public class UserService {
     }
 
     @Transactional
-    public String updatePassword(ChangePasswordRequest changePasswordRequest) {
+    public String updatePassword(@Valid ChangePasswordRequest changePasswordRequest) {
         String email = changePasswordRequest.getEmail();
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
@@ -92,7 +92,7 @@ public class UserService {
     //  두 기능 모두 구현해둠.
 
     @Transactional
-    public String updatePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
+    public String updatePasswordWithoutSignIn(@Valid ChangePasswordWithoutSignInRequest request) {
         String email = request.getEmail();
         String AfterPassword = request.getAfterPassword();
 
@@ -119,7 +119,7 @@ public class UserService {
 
 
     @Transactional
-    public String delete(UserDeleteRequest userRequest) {
+    public String delete(@Valid UserDeleteRequest userRequest) {
 
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
@@ -140,7 +140,7 @@ public class UserService {
 
 
     @Transactional(readOnly = true)
-    public User findUserByUserRequest(UserRequest userRequest) {
+    public User findUserByUserRequest(@Valid UserRequest userRequest) {
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
         }

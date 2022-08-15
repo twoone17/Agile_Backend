@@ -61,7 +61,7 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     public static class ChangePasswordRequest {
-        @Email
+        @NotBlank
         private String email;
 
         @NotBlank
@@ -89,7 +89,6 @@ public class UserDto {
     public  static class ChangePasswordWithoutSignInRequest {
 
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank
@@ -101,7 +100,6 @@ public class UserDto {
     @NoArgsConstructor
     public static class ChangeNicknameRequest {
         @NotBlank
-        @Email
         private String email;
         @NotBlank
         private String AfterNickname;
@@ -124,7 +122,6 @@ public class UserDto {
     @Builder
     public static class UserRequest {
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank
@@ -137,7 +134,6 @@ public class UserDto {
     @Builder
     public static class UserDeleteRequest {
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank

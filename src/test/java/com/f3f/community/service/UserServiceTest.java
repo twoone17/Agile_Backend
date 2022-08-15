@@ -23,8 +23,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @SpringBootTest
+// 유저 테스트는 @Transactional 애노테이션이 없어도 잘 동작하지만 Scrap, Post는 동작하지 않는다.
+@Transactional
 class UserServiceTest {
 
     @Autowired
@@ -101,47 +106,47 @@ class UserServiceTest {
     }
 
 
-//    private ScrapDto.SaveRequest createScrapDto1(User user) {
-//        return ScrapDto.SaveRequest.builder()
-//                .name("test")
-//                .postList(new ArrayList<>())
-//                .user(user)
-//                .build();
-//    }
-//
-//    private PostDto.SaveRequest createPostDto1(User user, Category cat) {
-//        return PostDto.SaveRequest.builder()
-//                .title("test title")
-//                .content("test content for test")
-//                .author(user)
-//                .scrapList(new ArrayList<>())
-//                .category(cat)
-//                .build();
-//    }
-//
-//    private PostDto.SaveRequest createPostDto2(User user, Category cat) {
-//        return PostDto.SaveRequest.builder()
-//                .title("test title2")
-//                .content("test content for test2")
-//                .author(user)
-//                .scrapList(new ArrayList<>())
-//                .category(cat)
-//                .build();
-//    }
-//
-//    private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
-//        return CategoryDto.SaveRequest.builder()
-//                .categoryName(name)
-//                .childCategory(new ArrayList<>())
-//                .parents(parent)
-//                .postList(new ArrayList<>()).build();
-//    }
-//
-//    private Category createRoot() throws Exception{
-//        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
-//        Long rid = categoryService.createCategory(cat);
-//        return categoryRepository.findById(rid).get();
-//    }
+    private ScrapDto.SaveRequest createScrapDto1(User user) {
+        return ScrapDto.SaveRequest.builder()
+                .name("test")
+                .postList(new ArrayList<>())
+                .user(user)
+                .build();
+    }
+
+    private PostDto.SaveRequest createPostDto1(User user, Category cat) {
+        return PostDto.SaveRequest.builder()
+                .title("test title")
+                .content("test content for test")
+                .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
+    private PostDto.SaveRequest createPostDto2(User user, Category cat) {
+        return PostDto.SaveRequest.builder()
+                .title("test title2")
+                .content("test content for test2")
+                .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
+    private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
+        return CategoryDto.SaveRequest.builder()
+                .categoryName(name)
+                .childCategory(new ArrayList<>())
+                .parents(parent)
+                .postList(new ArrayList<>()).build();
+    }
+
+    private Category createRoot() throws Exception{
+        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+        Long rid = categoryService.createCategory(cat);
+        return categoryRepository.findById(rid).get();
+    }
 
     @Test
     @DisplayName("회원가입 성공")
@@ -537,59 +542,59 @@ class UserServiceTest {
     }
 
     // 프록시 초기화 문제로 테스트 불가.
-//    @Test
-//    @DisplayName("스크랩 목록 조회 테스트")
-//    public void findScrapsOfUserTest() throws Exception {
-//        //given
-//        SaveRequest userDTO = createUser();
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> byId = userRepository.findById(aLong);
-//
-//        ScrapDto.SaveRequest scrap = createScrapDto1(byId.get());
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
-//        Long cid = categoryService.createCategory(categoryDto);
-//        Category cat = categoryRepository.findById(cid).get();
-//        PostDto.SaveRequest post1 = createPostDto1(byId.get(), cat);
-//        PostDto.SaveRequest post2 = createPostDto2(byId.get(), cat);
-//
-//        //when
-//        Long pid1 = postService.savePost(post1);
-//        Long pid2 = postService.savePost(post2);
-//        Long sid = scrapService.createScrap(scrap);
-//        scrapService.saveCollection(sid,aLong, pid1);
-//        scrapService.saveCollection(sid,aLong, pid2);
-//        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(byId.get());
-//
-//        //then
-//        assertThat(scrapsByUser.size()).isEqualTo(1);
-//        assertThat(scrapsByUser.get(0).getPostList().size()).isEqualTo(2);
-//    }
+    @Test
+    @DisplayName("스크랩 목록 조회 테스트")
+    public void findScrapsOfUserTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
 
-//    @Test
-//    @DisplayName("유저가 작성한 게시글 조회 테스트")
-//    public void findUserPostsByEmailTest() throws Exception {
-//        //given
-//        SaveRequest userDTO = createUser();
-//        Long aLong = userService.saveUser(userDTO);
-//        Optional<User> byId = userRepository.findById(aLong);
-//
-//        //when
-//        Category root = createRoot();
-//        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
-//        Long cid = categoryService.createCategory(categoryDto);
-//        Category cat = categoryRepository.findById(cid).get();
-//        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
-//                .author(byId.get())
-//                .title("title")
-//                .content("content1")
-//                .category(cat)
-//                .build();
-//        postService.savePost(postDto1);
-//
-//        //then
-//        assertThat(postRepository.existsByAuthor(byId.get())).isEqualTo(true);
-//    }
+        ScrapDto.SaveRequest scrap = createScrapDto1(byId.get());
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post1 = createPostDto1(byId.get(), cat);
+        PostDto.SaveRequest post2 = createPostDto2(byId.get(), cat);
+
+        //when
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
+        Long sid = scrapService.createScrap(scrap);
+        scrapService.saveCollection(sid,aLong, pid1);
+        scrapService.saveCollection(sid,aLong, pid2);
+        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(byId.get());
+
+        //then
+        assertThat(scrapsByUser.size()).isEqualTo(1);
+        assertThat(scrapsByUser.get(0).getPostList().size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("유저가 작성한 게시글 조회 테스트")
+    public void findUserPostsByEmailTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
+
+        //when
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
+                .author(byId.get())
+                .title("title")
+                .content("content1")
+                .category(cat)
+                .build();
+        postService.savePost(postDto1);
+
+        //then
+        assertThat(postRepository.existsByAuthor(byId.get())).isEqualTo(true);
+    }
 
     @Test
     @DisplayName("스크랩 목록 조회 테스트 - 비어있는 스크랩 목록")
