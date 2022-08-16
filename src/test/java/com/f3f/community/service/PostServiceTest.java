@@ -4,7 +4,9 @@ import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
+import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.postException.*;
+import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
@@ -12,12 +14,14 @@ import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
+import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 //import org.junit.Test;
+import org.junit.Before;
 import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -902,4 +907,5 @@ class PostServiceTest {
 //        assertThrows(NotFoundPostInAuthorException.class, ()-> postService.deletePost(postid1,userId2));
 //
 //    }
+
 }

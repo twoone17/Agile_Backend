@@ -6,6 +6,7 @@ import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -19,12 +20,14 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +35,8 @@ import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-class PostServiceTestWithDB {
+@Transactional
+public class PostServiceTestWithDB {
     @Autowired
     UserService userService;
 
@@ -70,7 +74,11 @@ class PostServiceTestWithDB {
 
         return uids;
     }
-
+    private Long createRoot() throws Exception {
+        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+        Long rid = categoryService.createCategory(cat);
+        return categoryRepository.findById(rid).get().getId();
+    }
     private List<Long> createCategories(int n) throws Exception {
         List<Long> cids = new ArrayList<>();
         cids.add(createRoot());
@@ -135,11 +143,11 @@ class PostServiceTestWithDB {
                 .build();
     }
 
-    private Long createRoot() throws Exception {
-        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
-        Long rid = categoryService.createCategory(cat);
-        return categoryRepository.findById(rid).get().getId();
-    }
+//    private Long createRoot() throws Exception {
+//        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
+//        Long rid = categoryService.createCategory(cat);
+//        return categoryRepository.findById(rid).get().getId();
+//    }
 
     private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
         return CategoryDto.SaveRequest.builder()
@@ -176,18 +184,18 @@ class PostServiceTestWithDB {
     }
 
     @Test
-    @DisplayName("테스트")
-    public void withoutTransactional() throws Exception{
-    //given
-        List<Long> users = createUsers(2);
+    @Rollback(value = false)
+    @DisplayName("객체들 자동 생성 테스트")
+    public void createAutomationTest() throws Exception{
+        //given
+        List<Long> users = createUsers(20);
         List<Long> categories = createCategories(3);
-        createPosts(users,categories,2);
+        List<Long> posts = createPosts(users, categories, 7);
+        List<Long> scraps = createScraps(users, posts, 5);
 
-//        PostDto.SaveRequest postDto = createPostDto("hi");
-//        postService.savePost(saveRequest);
-        //when
+        // when
 
-    //then
+        // then
 
     }
 
