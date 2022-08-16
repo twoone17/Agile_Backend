@@ -22,7 +22,7 @@ public class Comment {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "comment_id")
     private Long id;
 

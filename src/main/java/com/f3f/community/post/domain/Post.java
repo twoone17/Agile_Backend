@@ -28,7 +28,7 @@ import static javax.persistence.FetchType.*;
 public class Post extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "post_id")
     private Long id;
 
@@ -48,6 +48,7 @@ public class Post extends BaseTimeEntity {
     private int viewCount;
 
     @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "category_id")
     private Category category;
     @OneToMany(mappedBy = "post", fetch = LAZY)
     private List<ScrapPost> scrapList = new ArrayList<>();

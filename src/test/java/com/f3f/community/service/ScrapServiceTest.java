@@ -7,7 +7,6 @@ import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
-import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -37,7 +36,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-class ScrapServiceTest {
+class
+ScrapServiceTest {
 
     @Autowired
     ScrapService scrapService;
@@ -68,12 +68,12 @@ class ScrapServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon", false);
+                UserGrade.BRONZE, "james", "changwon");
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp2.com", "1234567", "01012341234",
-                UserGrade.BRONZE, "own", "seoul", false);
+                UserGrade.BRONZE, "own", "seoul");
     }
     private ScrapDto.SaveRequest createScrapDto1(User user) {
         return ScrapDto.SaveRequest.builder()
@@ -128,77 +128,18 @@ class ScrapServiceTest {
 
 
     // createScrap 테스트 시작
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다")
-    public void createScrapTestToFailByNullUser() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
 
-
-        // then
-        assertThrows(NotFoundScrapUserException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 null 이어서 생성안된다")
-    public void createScrapTestToFailByNullName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 empty String 이어서 생성안된다")
-    public void createScrapTestToFailByEmptyName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .name("")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다")
-    public void createScrapTestToFailByNullPostList() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .user(new User())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapPostListException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
     
     @Test
     @DisplayName("서비스 createScrap 성공 테스트 ")
     public void createScrapTest() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrapDto = createScrapDto1(user.toEntity());
-        
-        
-        // when
         Long userId = userService.saveUser(user);
+        ScrapDto.SaveRequest scrapDto = createScrapDto1(userRepository.findById(userId).get());
+
+
+        // when
         Long scrapId = scrapService.createScrap(scrapDto);
         // then
         scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
@@ -215,14 +156,14 @@ class ScrapServiceTest {
         //given
         UserDto.SaveRequest user = createUserDto1();
 
+        Long userId = userService.saveUser(user);
 
-        SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(userId).get());
+        SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(userId).get());
 
 
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
@@ -238,20 +179,20 @@ class ScrapServiceTest {
     public void saveCollectionTestToFailByScrapId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1,uid, pid));
     }
 
     @Test
@@ -259,20 +200,20 @@ class ScrapServiceTest {
     public void saveCollectionTestToFailByPostId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, uid,pid+1));
     }
 
     @Test
@@ -280,21 +221,21 @@ class ScrapServiceTest {
     public void saveCollectionTestToFailByDuplicateScrapPost() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid);
+        scrapService.saveCollection(sid,uid, pid);
 
         // then
-        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid, pid));
+        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid,uid, pid));
     }
 
     @Test
@@ -302,21 +243,21 @@ class ScrapServiceTest {
     public void saveCollectionTestByPostsNum() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post1 = createPostDto1(user.toEntity(), cat);
-        PostDto.SaveRequest post2 = createPostDto2(user.toEntity(), cat);
+        PostDto.SaveRequest post1 = createPostDto1(userRepository.findById(uid).get(), cat);
+        PostDto.SaveRequest post2 = createPostDto2(userRepository.findById(uid).get(), cat);
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid1 = postService.savePost(post1);
         Long pid2 = postService.savePost(post2);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid1);
-        scrapService.saveCollection(sid, pid2);
+        scrapService.saveCollection(sid,uid, pid1);
+        scrapService.saveCollection(sid,uid, pid2);
         // then
         assertThat(2).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
     }
@@ -326,19 +267,19 @@ class ScrapServiceTest {
     public void saveCollectionTestByScrapPost() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
         assertThat(scrapRepository.findById(sid).get()).isEqualTo(scrapPostRepository.findById(spid).get().getScrap());
     }
@@ -350,14 +291,14 @@ class ScrapServiceTest {
     public void updateNameTestToFailByScrapId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, userId, "test3"));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, uid, "test3"));
 
     }
 
@@ -366,14 +307,14 @@ class ScrapServiceTest {
     public void updateNameTestToFailByUserId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , userId+1, "test3"));
+        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , uid+1, "test3"));
 
     }
 
@@ -382,14 +323,14 @@ class ScrapServiceTest {
     public void updateNameTestToFailByDuplicateName() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, "test2"));
+        assertThrows(DuplicateScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, "test2"));
 
     }
 
@@ -398,14 +339,14 @@ class ScrapServiceTest {
     public void updateNameTestToFailByNullName() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, null));
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, null));
 
     }
 
@@ -414,14 +355,14 @@ class ScrapServiceTest {
     public void updateNameTestToFailByEmptyName() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, userId, ""));
+        assertThrows(NotFoundNewScrapNameException.class, () -> scrapService.updateCollectionName(scrap1, uid, ""));
 
     }
 
@@ -430,14 +371,14 @@ class ScrapServiceTest {
     public void updateNameTestSameUser() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid).get());
         // when
-        Long userId = userService.saveUser(user);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        scrapService.updateCollectionName(scrap1, userId, "test3");
+        scrapService.updateCollectionName(scrap1, uid, "test3");
         assertThat("test3").isEqualTo(scrapRepository.findById(scrap1).get().getName());
     }
 
@@ -447,16 +388,16 @@ class ScrapServiceTest {
         //given
         UserDto.SaveRequest user1 = createUserDto1();
         UserDto.SaveRequest user2 = createUserDto2();
-        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(user1.toEntity());
-        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(user2.toEntity());
+        Long uid1 = userService.saveUser(user1);
+        Long uid2 = userService.saveUser(user2);
+        ScrapDto.SaveRequest saveRequest1 = createScrapDto1(userRepository.findById(uid1).get());
+        ScrapDto.SaveRequest saveRequest2 = createScrapDto2(userRepository.findById(uid2).get());
 
         // when
-        Long user1Id = userService.saveUser(user1);
-        Long user2Id = userService.saveUser(user2);
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        scrapService.updateCollectionName(scrap1, user1Id, "test2");
+        scrapService.updateCollectionName(scrap1, uid1, "test2");
         assertThat("test2").isEqualTo(scrapRepository.findById(scrap1).get().getName());
     }
     // updateCollectionName 테스트 종료
@@ -468,13 +409,13 @@ class ScrapServiceTest {
     public void deleteCollectionTestToFail() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        SaveRequest saveRequest = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        SaveRequest saveRequest = createScrapDto1(userRepository.findById(uid).get());
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap = scrapService.createScrap(saveRequest);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1, uid));
 
     }
 
@@ -483,15 +424,15 @@ class ScrapServiceTest {
     public void deleteCollectionTest() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        SaveRequest saveRequest = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        SaveRequest saveRequest = createScrapDto1(userRepository.findById(uid).get());
 
         // when
-        Long userId = userService.saveUser(user);
         Long scrap = scrapService.createScrap(saveRequest);
 
         // then
-        String ok = scrapService.deleteCollection(scrap);
-        assertThat(ok).isEqualTo("ok");
+        String ok = scrapService.deleteCollection(scrap,uid);
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapRepository.findById(scrap).orElseThrow(NotFoundScrapByIdException::new));
     }
     // deleteCollection 테스트 종료
 
@@ -502,21 +443,21 @@ class ScrapServiceTest {
     public void deleteCollectionItemTestToFailByScrapId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid, uid, pid);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1,uid, pid));
     }
 
     @Test
@@ -524,21 +465,21 @@ class ScrapServiceTest {
     public void deleteCollectionItemTestToFailByPostId() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , uid, pid+1));
     }
 
     @Test
@@ -546,23 +487,23 @@ class ScrapServiceTest {
     public void deleteCollectionItemTestToFailByScrapPost() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap1 = createScrapDto1(user.toEntity());
-        ScrapDto.SaveRequest scrap2 = createScrapDto2(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap1 = createScrapDto1(userRepository.findById(uid).get());
+        ScrapDto.SaveRequest scrap2 = createScrapDto2(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid1 = scrapService.createScrap(scrap1);
         Long sid2 = scrapService.createScrap(scrap2);
-        Long spid = scrapService.saveCollection(sid1, pid);
+        Long spid = scrapService.saveCollection(sid1,uid, pid);
         // then
-        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , pid));
+        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , uid, pid));
     }
 
     @Test
@@ -570,21 +511,21 @@ class ScrapServiceTest {
     public void deleteCollectionItemTestByPostList() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid,pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
 
 
@@ -594,21 +535,21 @@ class ScrapServiceTest {
     public void deleteCollectionItemTestByScrapList() throws Exception{
         //given
         UserDto.SaveRequest user = createUserDto1();
-        ScrapDto.SaveRequest scrap = createScrapDto1(user.toEntity());
+        Long uid = userService.saveUser(user);
+        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(user.toEntity(), cat);
+        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
 
         // when
-        Long uid = userService.saveUser(user);
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(postRepository.findById(pid).get().getScrapList().size());
 
 
