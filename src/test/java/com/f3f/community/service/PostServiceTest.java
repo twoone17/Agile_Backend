@@ -374,6 +374,7 @@ class PostServiceTest {
                 .content("content1")
                 .category(cat)
                 .build();
+
         //when
         Long uid = userService.saveUser(userDto1);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환

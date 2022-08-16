@@ -18,6 +18,9 @@ import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
+import org.junit.Before;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +32,7 @@ import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PostServiceTestWithDB {
+class PostServiceTestWithDB {
     @Autowired
     UserService userService;
 
@@ -162,4 +165,30 @@ public class PostServiceTestWithDB {
                 .scrapList(new ArrayList<>())
                 .category(cat).build();
     }
+
+    @Before
+    public void deleteAll() {
+        scrapPostRepository.deleteAll();
+        scrapRepository.deleteAll();
+        postRepository.deleteAll();
+        categoryRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("테스트")
+    public void withoutTransactional() throws Exception{
+    //given
+        List<Long> users = createUsers(2);
+        List<Long> categories = createCategories(3);
+        createPosts(users,categories,2);
+
+//        PostDto.SaveRequest postDto = createPostDto("hi");
+//        postService.savePost(saveRequest);
+        //when
+
+    //then
+
+    }
+
 }
