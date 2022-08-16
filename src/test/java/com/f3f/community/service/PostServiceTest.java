@@ -173,7 +173,7 @@ class PostServiceTest {
 
 
         //then :  postService의 SavePost할때 일어나는 exception이 앞 인자의 exception class와 같은지 확인
-        assertThrows(ConstraintViolationException.class, ()->   postService.savePost(SaveRequest));
+        assertThrows(NotFoundPostByPostIdException.class, ()->   postService.savePost(SaveRequest));
 
     }
 
@@ -262,7 +262,7 @@ class PostServiceTest {
     @Rollback()
     @DisplayName("2 Read-2 : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
     public void findPostByPostIdTestToFailByNullPostId() throws Exception{
-    //TODO: 저장하고 지운것을 테스트 해보기
+        //TODO: 저장하고 지운것을 테스트 해보기
         assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(44L));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
 
     }
@@ -357,11 +357,12 @@ class PostServiceTest {
 
 
     @Test
+    @Rollback()
     @DisplayName("2 Read-6 : findPostListByTitle 성공 테스트 (일치하는 title 하나) ")
     public void findPostListByTitleTest_One_Ok() throws Exception{
         //given
         UserDto.SaveRequest userDto1 = createUserDto1();
-        User author = userDto1.toEntity();
+        Long uid = userService.saveUser(userDto1);
 
         Category root = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
@@ -369,16 +370,13 @@ class PostServiceTest {
         Category cat = categoryRepository.findById(cid).get();
 
         PostDto.SaveRequest postDto1 = PostDto.SaveRequest.builder()
-                .author(author)
+                .author(userRepository.findById(uid).get())
                 .title("title1")
                 .content("content1")
                 .category(cat)
                 .build();
-
         //when
-        Long uid = userService.saveUser(userDto1);
         Long postid = postService.savePost(postDto1); //SavePost한 후 postid를 반환
-        userRepository.save(author);
 
         //then
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//title에 해당하는 postList 찾기
@@ -443,9 +441,9 @@ class PostServiceTest {
 
         List<Post> postListBytitle = postService.findPostListByTitle("title1");//author1에 해당하는 postList 찾기
         assertThat(postListBytitle).contains(postRepository.findById(postid1).get(), //title1 포함
-                                             postRepository.findById(postid4).get())
-                                   .doesNotContain(postRepository.findById(postid2).get(),
-                                                   postRepository.findById(postid3).get()); //title 2, 3 포함 x
+                        postRepository.findById(postid4).get())
+                .doesNotContain(postRepository.findById(postid2).get(),
+                        postRepository.findById(postid3).get()); //title 2, 3 포함 x
 
         assertThat(2).isEqualTo(postListBytitle.size()); //title1 해당하는 postList가 2개인지 확인
     }
@@ -481,14 +479,14 @@ class PostServiceTest {
     }
 
     /*************************************************************************************
-    * 게시글 수정 (Update)
-    **************************************************************************************/
+     * 게시글 수정 (Update)
+     **************************************************************************************/
 
     @Test
     @Rollback()
     @DisplayName("3 Update-1 : UpdatePost 성공 테스트")
     public void updatePostTestToOk() throws Exception{
-    //given
+        //given
         UserDto.SaveRequest userDto1 = createUserDto1();
         User author = userDto1.toEntity();
         userRepository.save(author);

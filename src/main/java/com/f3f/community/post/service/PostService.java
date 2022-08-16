@@ -41,14 +41,18 @@ public class PostService {
     @Transactional
     public Long savePost(PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
         Post post = SaveRequest.toEntity();
-        postRepository.save(post);
-
-        User author = userRepository.findById(post.getAuthor().getId()).get();
-        //author의 postList에도 저장
-        author.getPosts().add(post);
+        try {
+            User author = userRepository.findById(post.getAuthor().getId()).get();
+            //author의 postList에도 저장
+            author.getPosts().add(post);
+        }catch (NullPointerException e)
+        {
+            throw new NotFoundPostByPostIdException("postId와 일치하는 게시글이 없습니다");
+        }
         //category의 postlist에 저장
         Category category = categoryRepository.findById(post.getCategory().getId()).get();
         category.getPostList().add(post);
+        postRepository.save(post);
 
         return post.getId();
     }
