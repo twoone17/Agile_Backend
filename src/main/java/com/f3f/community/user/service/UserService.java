@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
 
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 import java.util.List;
 import java.util.Optional;
@@ -162,7 +163,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Long findUserByEmail(String email) {
+    public Long findUserByEmail(@NotBlank String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         return user.getId();
     }
@@ -174,7 +175,7 @@ public class UserService {
     // 게시글, 댓글 조회 기능을 구현하겠다.
 
     @Transactional(readOnly = true)
-    public List<Post> findUserPostsByEmail(String email) {
+    public List<Post> findUserPostsByEmail(@NotBlank String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         if(!postRepository.existsByAuthor(user)) {
             throw new NotFoundPostListByAuthor();
@@ -185,7 +186,7 @@ public class UserService {
 
     // 내부 조회용
     @Transactional(readOnly = true)
-    public List<Scrap> findUserScrapsByEmail(String email) {
+    public List<Scrap> findUserScrapsByEmail(@NotBlank String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(user);
         return scrapsByUser;

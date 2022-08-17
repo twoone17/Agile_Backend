@@ -5,6 +5,7 @@ import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
@@ -572,6 +573,31 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("스크랩 목록 조회 테스트 - 비어있는 스크랩 목록")
+    public void findEmptyScrapsOfUserTest() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
+        List<Scrap> emptyList = new ArrayList<>();
+        //when
+        List<Scrap> userScrapsByEmail = userService.findUserScrapsByEmail(byId.get().getEmail());
+
+        //then
+        assertThat(userScrapsByEmail).isEqualTo(emptyList);
+    }
+
+    @Test
+    @DisplayName("스크랩 목록 조회 테스트 실패 - 유효하지 않은 이메일(@Valid)")
+    public void findScrapsOfUserWithInvalidEmailToFail() throws Exception {
+        //given
+        String invalidEmail = "";
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.findUserScrapsByEmail(invalidEmail));
+    }
+
+    @Test
     @DisplayName("유저가 작성한 게시글 조회 테스트")
     public void findUserPostsByEmailTest() throws Exception {
         //given
@@ -593,21 +619,34 @@ class UserServiceTest {
         postService.savePost(postDto1);
 
         //then
-        assertThat(postRepository.existsByAuthor(byId.get())).isEqualTo(true);
+//        assertThat(postRepository.existsByAuthor(byId.get())).isEqualTo(true);
+        List<Post> userPostsByEmail = userService.findUserPostsByEmail(byId.get().getEmail());
+        assertThat(userPostsByEmail.size()).isEqualTo(1);
+        assertThat(userPostsByEmail.get(0).getTitle()).isEqualTo(postDto1.getTitle());
     }
 
     @Test
-    @DisplayName("스크랩 목록 조회 테스트 - 비어있는 스크랩 목록")
-    public void findEmptyScrapsOfUserTest() {
+    @DisplayName("유저가 작성한 게시글 조회 실패 - 없는 유저")
+    public void findUserPostByNotFoundUserEmailToFail() throws Exception {
         //given
-        SaveRequest userDTO = createUser();
-        Long aLong = userService.saveUser(userDTO);
-        Optional<User> byId = userRepository.findById(aLong);
-        List<Scrap> emptyList = new ArrayList<>();
-        //when
-        List<Scrap> userScrapsByEmail = userService.findUserScrapsByEmail(byId.get().getEmail());
+        String notFoundEmail = "empty@naver.com";
 
-        //then
-        assertThat(userScrapsByEmail).isEqualTo(emptyList);
+        //when & then
+        assertThrows(NotFoundUserException.class, () -> userService.findUserPostsByEmail(notFoundEmail));
     }
+
+    @Test
+    @DisplayName("유저가 작성한 게시글 조회 실패 - 유효하지 않은 이메일 (@Valid)")
+    public void findUserPostByInvalidEmailToFail() throws Exception {
+        //given
+//        SaveRequest userDTO = createUser();
+//        Long aLong = userService.saveUser(userDTO);
+//        Optional<User> byId = userRepository.findById(aLong);
+        String invalidEmail = "";
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.findUserPostsByEmail(invalidEmail));
+    }
+
+
 }
