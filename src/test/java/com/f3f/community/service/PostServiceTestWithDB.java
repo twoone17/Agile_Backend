@@ -6,11 +6,13 @@ import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
 import com.f3f.community.post.service.PostService;
+import com.f3f.community.post.service.ScrapPostService;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
@@ -33,9 +35,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Transactional
 public class PostServiceTestWithDB {
     @Autowired
     UserService userService;
@@ -63,6 +66,10 @@ public class PostServiceTestWithDB {
 
     @Autowired
     ScrapPostRepository scrapPostRepository;
+
+    @Autowired
+    ScrapPostService scrapPostService;
+
 
     private List<Long> createUsers(int n){
         List<Long> uids = new ArrayList<>();
@@ -143,12 +150,6 @@ public class PostServiceTestWithDB {
                 .build();
     }
 
-//    private Long createRoot() throws Exception {
-//        CategoryDto.SaveRequest cat = createCategoryDto("root", null);
-//        Long rid = categoryService.createCategory(cat);
-//        return categoryRepository.findById(rid).get().getId();
-//    }
-
     private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
         return CategoryDto.SaveRequest.builder()
                 .categoryName(name)
@@ -184,7 +185,6 @@ public class PostServiceTestWithDB {
     }
 
     @Test
-    @Rollback(value = false)
     @DisplayName("객체들 자동 생성 테스트")
     public void createAutomationTest() throws Exception{
         //given
@@ -196,6 +196,53 @@ public class PostServiceTestWithDB {
         // when
 
         // then
+    }
+
+    @Test
+    @DisplayName("디비에 데이터 들어가는 테스트")
+    public void dbInsertionTest() throws Exception{
+        //given
+        UserDto.SaveRequest userSave = createUserDto("euisung");
+        Long uid = userService.saveUser(userSave);
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+        PostDto.SaveRequest postDto = createPostDto("tempPost", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "tempScrap");
+        Long sid = scrapService.createScrap(scrapDto);
+
+        // when
+        scrapService.saveCollection(sid,uid, pid);
+        List<Post> result = scrapPostService.getPostsOfScrap(sid);
+        // then
+        assertThat(result.get(0).getId()).isEqualTo(postRepository.findById(pid).get().getId());
+
+    }
+
+
+    /*************************************************************************************
+     * 게시글 작성 테스트 (Create)
+     **************************************************************************************/
+    @Test
+    @DisplayName("1 Save-1: savePost 성공 테스트")
+    public void savePostTestWithDBToOk() throws Exception{
+    //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("tempPost", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "tempScrap");
+        Long sid = scrapService.createScrap(scrapDto);
+        //when
+
+    //then
 
     }
 
