@@ -1,17 +1,35 @@
 package com.f3f.community.comment.service;
 
+import com.f3f.community.category.domain.Category;
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
+import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.categoryException.NotEmptyChildCategoryException;
+import com.f3f.community.exception.categoryException.NotFoundCategoryByIdException;
+import com.f3f.community.exception.commentException.BanUserCommentException;
+import com.f3f.community.exception.commentException.NotEmptyChildCommentException;
+import com.f3f.community.exception.commentException.NotFoundCommentByIdException;
+import com.f3f.community.exception.commentException.NotFoundParentCommentException;
+import com.f3f.community.exception.likeException.NotFoundLikesException;
+import com.f3f.community.exception.postException.NotFoundPostByIdException;
+import com.f3f.community.exception.userException.NotFoundUserEmailException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
+import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.repository.UserRepository;
+import com.sun.xml.bind.v2.TODO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static com.f3f.community.common.constants.ResponseConstants.OK;
 
 /*
 댓글과 대댓글 구분하는거
@@ -46,23 +64,85 @@ public class CommentService {
     //Create
     @Transactional
     public Long createComments(CommentDto dto){
-        User author = userRepository.findById(dto.getAuthor().getId()).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다." + user_id));//밴 당했는지
-        Post post = postRepository.findById(dto.getPost().getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판입니다." + post_id));
+        User author = userRepository.findByEmail(dto.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+        Post post = postRepository.findById(dto.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//해당 게시글이 존재하지 않을 때
 
+        //유저가 존재하면 이제 밴 당했는지의 여부를 확인.
+        if(author.getUserLevel().equals(UserLevel.BAN)){
+            throw new BanUserCommentException();
+        }
+//        //부모 댓글이 존재하지 않을 때,
+//        if(dto.getParentComment()==null){
+//            throw new NotFoundParentCommentException();
+//        } --> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가?
 
-        Comment comment = dto.toEntity();
-        commentRepository.save(comment);
+        Comment comment = dto.toEntity();//엔티티 생성
+
+        //부모 댓글이 비어있지 않고 부모 댓글이 이미 존재하면,
+        if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
+            Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();//이게 필요한가? 그냥 comment로 확인하면 안됨?
+            if(parent.getDepth()>1){
+                throw new MaxDepthException();
+            }
+            parent.getChildComment().add(comment);
+            comment.setDepth(parent.getDepth()+1);
+        }
+        commentRepository.save(comment);//댓글 저장
+        post.getCommentList().add(comment);//게시글 댓글 리스트에 생성된 댓글 추가.
 
         return comment.getId();
     }
 
-    @Transactional
-    //Delete
-    public String deleteComments(CommentDto dto){
-        User author = userRepository.findById(dto.getAuthor().getId()).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 유저입니다." + user_id));//밴 당했는지
-        Comment comment = postRepository.findById(dto.).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판입니다." + post_id));
-        commentRepository.delete(comment);
+    //Read(게시글을 클릭할 때)
+    @Transactional(readOnly = true)
+    public List<Comment> findCommentsByPost(Post post){
+        //게시글이 존재하는지를 확인
+        if(!postRepository.existsById(post.getId())){
+            throw new NotFoundPostByIdException();
+        }
+        return post.getCommentList();
+    }
 
+    //Read(유저를 클릭할 때)
+    @Transactional(readOnly = true)
+    public List<Comment> findCommentsByUser(User user){
+        if(!userRepository.existsByEmail(user.getEmail())){
+            throw new NotFoundUserEmailException();
+        }
+        return user.getComments();
+    }
+
+    //Update
+    @Transactional
+    public String updateComment(Comment comment){
+        User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserEmailException::new);
+        Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);
+        //TODO 부모 자식 확인.
+
+        return "OK";
+    }
+
+    //Delete
+    @Transactional
+    public String deleteComments(Comment comment){
+        User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+        Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
+        //댓글이 존재하는지 확인하고 존재하지 않으면 예외
+        if(!commentRepository.existsById(comment.getId())){
+            throw new NotFoundCommentByIdException();
+        }
+        if(comment.getChildComment().isEmpty()) {
+            commentRepository.delete(comment);
+        }
+        else {
+            throw new NotEmptyChildCommentException();
+        }
+//        for (Comment comments : post.getCommentList()) {
+//            comment.getPost().getId().equals(comments.getPost().getId());
+//        }
+        //TODO 부모 자식 댓글 확인. -> 부모 댓글이면 자식 댓글 지우기...?
+
+        return "OK";
     }
 
 

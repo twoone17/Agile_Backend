@@ -5,10 +5,7 @@ import com.f3f.community.post.domain.Post;
 import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 import javax.persistence.*;
@@ -18,6 +15,7 @@ import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comment extends BaseTimeEntity {
@@ -44,16 +42,23 @@ public class Comment extends BaseTimeEntity {
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
     private List<Comment> childComment;
 
+    private Long depth;
+
     @OneToMany(mappedBy = "comment" , fetch = FetchType.LAZY)
     private List<Media> mediaList;
 
+    public void setDepth(Long depth){
+        this.depth = depth;
+    }
+
     @Builder
-    public Comment(Long id,String content, Post post, User author, Comment parentComment, List<Comment> childComment, List<Media> mediaList){
+    public Comment(Long id,String content, Post post, User author, Comment parentComment, List<Comment> childComment, Long depth, List<Media> mediaList){
         this.content = content;
         this.post = post;
         this.author = author;
         this.parentComment = parentComment;
         this.childComment = childComment;
+        this.depth = depth;
         this.mediaList = mediaList;
     }
 }

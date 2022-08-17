@@ -15,4 +15,6 @@ public interface LikesRepository extends JpaRepository<Likes,Long> {
     Optional<User> findById(User user);
     Optional<Post> findById(Post post_id);
 
+    Long Count(Likes likes);
+
 }

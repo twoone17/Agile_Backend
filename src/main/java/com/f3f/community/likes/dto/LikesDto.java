@@ -8,20 +8,26 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 public class LikesDto {
-    private Long id;
+    @NotNull
     private User user;
+    @NotNull
     private Post post;
 
-    public Likes toEntity(Long id, User user, Post post) {
+    public Likes toEntity() {
         return Likes.builder()
-                .id(id)
                 .user(user)
                 .post(post)
                 .build();
     }
+
+//    public void class UpdateLikes{
+//
+//    }
 }
