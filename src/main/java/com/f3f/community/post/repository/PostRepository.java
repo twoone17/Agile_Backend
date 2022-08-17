@@ -25,6 +25,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     boolean existsByAuthor(User author);
 
+    boolean existsByAuthorId(Long userid);
+
     boolean existsByTitle(String title);
 
     List<Post> findPostsByCategory(Category category);

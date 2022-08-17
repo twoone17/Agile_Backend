@@ -16,18 +16,29 @@ public enum UserGrade {
         this.key = key;
         this.value = value;
     }
-//
-//    public int getKey() {
-//        return key;
-//    }
-//
-//    public String getValue() {
-//        return value;
-//    }
-//
-//    public UserGrade Upgrade(int key) {
-//        // key를 새로 할당해줌으로서 update.
-//        this.key = key;
-//        return valueOf(this.);
-//    }
+
+    public UserGrade getUserGradeByKey(int key) {
+        UserGrade returnObj;
+        switch (key) {
+            case 1 :
+                returnObj = valueOf("BRONZE");
+                break;
+            case 2 :
+                returnObj = valueOf("SILVER");
+                break;
+            case 3 :
+                returnObj = valueOf("GOLD");
+                break;
+            case 4 :
+                returnObj = valueOf("PLATINUM");
+                break;
+            case 5 :
+                returnObj = valueOf("EXPERT");
+                break;
+            default:
+                returnObj = valueOf("BRONZE");
+                break;
+        }
+        return returnObj;
+    }
 }

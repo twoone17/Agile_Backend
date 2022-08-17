@@ -7,7 +7,6 @@ import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.scrapException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
-import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -17,6 +16,8 @@ import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
@@ -37,7 +38,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-class ScrapServiceTest {
+class
+ScrapServiceTest {
 
     @Autowired
     ScrapService scrapService;
@@ -68,12 +70,12 @@ class ScrapServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp2.com", "1234567", "01012341234",
-                UserGrade.BRONZE, "own", "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"own", "seoul");
     }
     private ScrapDto.SaveRequest createScrapDto1(User user) {
         return ScrapDto.SaveRequest.builder()
@@ -128,66 +130,7 @@ class ScrapServiceTest {
 
 
     // createScrap 테스트 시작
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 유저가 없어서 생성안된다")
-    public void createScrapTestToFailByNullUser() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
 
-
-        // then
-        assertThrows(NotFoundScrapUserException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 null 이어서 생성안된다")
-    public void createScrapTestToFailByNullName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 이름이 empty String 이어서 생성안된다")
-    public void createScrapTestToFailByEmptyName() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .user(new User())
-                .name("")
-                .postList(new ArrayList<ScrapPost>())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapNameException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
-
-    @Test
-    @DisplayName("서비스 createScrapCollection 예외 발생 테스트 - 포스트 리스트가 없어서 생성안된다")
-    public void createScrapTestToFailByNullPostList() throws Exception{
-        //given
-        ScrapDto.SaveRequest saveRequest1 = SaveRequest.builder()
-                .name("test")
-                .user(new User())
-                .build();
-
-
-        // then
-        assertThrows(NotFoundScrapPostListException.class, ()-> scrapService.createScrap(saveRequest1));
-
-    }
     
     @Test
     @DisplayName("서비스 createScrap 성공 테스트 ")
@@ -251,7 +194,7 @@ class ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1,uid, pid));
     }
 
     @Test
@@ -272,7 +215,7 @@ class ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, uid,pid+1));
     }
 
     @Test
@@ -291,10 +234,10 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid);
+        scrapService.saveCollection(sid,uid, pid);
 
         // then
-        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid, pid));
+        assertThrows(DuplicateScrapPostException.class, () -> scrapService.saveCollection(sid,uid, pid));
     }
 
     @Test
@@ -315,8 +258,8 @@ class ScrapServiceTest {
         Long pid1 = postService.savePost(post1);
         Long pid2 = postService.savePost(post2);
         Long sid = scrapService.createScrap(scrap);
-        scrapService.saveCollection(sid, pid1);
-        scrapService.saveCollection(sid, pid2);
+        scrapService.saveCollection(sid,uid, pid1);
+        scrapService.saveCollection(sid,uid, pid2);
         // then
         assertThat(2).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
     }
@@ -338,7 +281,7 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
         assertThat(scrapRepository.findById(sid).get()).isEqualTo(scrapPostRepository.findById(spid).get().getScrap());
     }
@@ -474,7 +417,7 @@ class ScrapServiceTest {
         // when
         Long scrap = scrapService.createScrap(saveRequest);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1, uid));
 
     }
 
@@ -490,8 +433,8 @@ class ScrapServiceTest {
         Long scrap = scrapService.createScrap(saveRequest);
 
         // then
-        String ok = scrapService.deleteCollection(scrap);
-        assertThat(ok).isEqualTo("ok");
+        String ok = scrapService.deleteCollection(scrap,uid);
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapRepository.findById(scrap).orElseThrow(NotFoundScrapByIdException::new));
     }
     // deleteCollection 테스트 종료
 
@@ -514,9 +457,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid, uid, pid);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1, pid));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1,uid, pid));
     }
 
     @Test
@@ -536,9 +479,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , pid+1));
+        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , uid, pid+1));
     }
 
     @Test
@@ -560,9 +503,9 @@ class ScrapServiceTest {
         Long pid = postService.savePost(post);
         Long sid1 = scrapService.createScrap(scrap1);
         Long sid2 = scrapService.createScrap(scrap2);
-        Long spid = scrapService.saveCollection(sid1, pid);
+        Long spid = scrapService.saveCollection(sid1,uid, pid);
         // then
-        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , pid));
+        assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , uid, pid));
     }
 
     @Test
@@ -582,9 +525,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid,pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
 
 
@@ -606,9 +549,9 @@ class ScrapServiceTest {
         // when
         Long pid = postService.savePost(post);
         Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid, pid);
+        Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        scrapService.deleteCollectionItem(sid, pid);
+        scrapService.deleteCollectionItem(sid, uid, pid);
         assertThat(0).isEqualTo(postRepository.findById(pid).get().getScrapList().size());
 
 

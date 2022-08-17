@@ -46,17 +46,20 @@ public class User extends UserBase {
         this.password = password;
     }
 
-    // User 업데이트에서는 서비스 로직 절대로 넣지 말자.
+    // User 도메인에서는 서비스 로직 절대로 넣지 말자.
     // domain 클래스에는 특별한 기능이 들어가면 안됨. 그냥 데이터 처리? 만
     public void updateNickname(String nickname) {
             this.nickname = nickname;
     }
 
 
-//    public void updateUserGrade(int key) {
-//        this.userGrade = userGrade.Upgrade(key);
-//    }
+    public void updateUserGrade(int plusedKey) {
+        this.userGrade = userGrade.getUserGradeByKey(plusedKey);
+    }
 
+    public void updateUserLevel(int key) {
+        this.userLevel = userLevel.getUserLevelByKey(key);
+    }
 
 
     @Builder
