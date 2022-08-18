@@ -33,8 +33,6 @@ public class Likes {
     private User user;
 
 
-    private int totalLikes; //전체 좋아요 갯수
-
     @Builder
     public Likes(Long id, User user, Post post){
         this.id= id;
