@@ -63,9 +63,9 @@ public class CommentService {
 
     //Create
     @Transactional
-    public Long createComments(CommentDto dto){
-        User author = userRepository.findByEmail(dto.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
-        Post post = postRepository.findById(dto.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//해당 게시글이 존재하지 않을 때
+    public Long createComments(CommentDto commentDto){
+        User author = userRepository.findByEmail(commentDto.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+        Post post = postRepository.findById(commentDto.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//해당 게시글이 존재하지 않을 때
 
         //유저가 존재하면 이제 밴 당했는지의 여부를 확인.
         if(author.getUserLevel().equals(UserLevel.BAN)){
@@ -74,9 +74,9 @@ public class CommentService {
 //        //부모 댓글이 존재하지 않을 때,
 //        if(dto.getParentComment()==null){
 //            throw new NotFoundParentCommentException();
-//        } --> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가?
+//        } --> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
 
-        Comment comment = dto.toEntity();//엔티티 생성
+        Comment comment = commentDto.toEntity();//엔티티 생성
 
         //부모 댓글이 비어있지 않고 부모 댓글이 이미 존재하면,
         if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
@@ -87,8 +87,8 @@ public class CommentService {
             parent.getChildComment().add(comment);
             comment.setDepth(parent.getDepth()+1);
         }
-        commentRepository.save(comment);//댓글 저장
         post.getCommentList().add(comment);//게시글 댓글 리스트에 생성된 댓글 추가.
+        commentRepository.save(comment);//댓글 저장
 
         return comment.getId();
     }
@@ -122,25 +122,45 @@ public class CommentService {
         return "OK";
     }
 
+//    if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
+//        Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();//이게 필요한가? 그냥 comment로 확인하면 안됨?
+//        if(parent.getDepth()>1){
+//            throw new MaxDepthException();
+//        }
+
     //Delete
     @Transactional
-    public String deleteComments(Comment comment){
-        User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
-        Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
+    public String deleteComments(Long Id){
+        // User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+         Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentByIdException::new);
+         Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
+
+         Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
         //댓글이 존재하는지 확인하고 존재하지 않으면 예외
-        if(!commentRepository.existsById(comment.getId())){
-            throw new NotFoundCommentByIdException();
-        }
+//        if(!commentRepository.existsById(comment.getId())){
+//            throw new NotFoundCommentByIdException();
+//        }
+        //내가 지우려고 하는게 부모 댓글의 경우
+        //대댓글이 없고 부모 댓글만 있다면 댓글 삭제
         if(comment.getChildComment().isEmpty()) {
             commentRepository.delete(comment);
         }
-        else {
-            throw new NotEmptyChildCommentException();
+        else { //자식 댓글이 있다면, 자식 댓글 찾아서 지워야함.
+            for(Comment childComment : comment.getChildComment()){
+                commentRepository.delete(childComment);
+            }
+//            for (Comment comments : post.getCommentList()) //게시글의 댓글리스트의 댓글 객체들을 하나씩 가져옴.
+//                if (comment.getId().equals(comments.getParentComment().getId())) {//해당 댓글의 부모 댓글 아이디가 포스트의 댓글 리스트의 아이디와 같음.
+////                    for(Comment childComment : comment.getParentComment().getChildComment()){ //게시글의 댓글의 자식 댓글들을 하나씩 가져옴.
+////                        commentRepository.delete(childComment); //지우기
+////                    } //이게 필요 없을 것 같은데? 부모 댓글 아이디가 같은거 다 지우면 되는거 아닌가?
+//                }
+
+                commentRepository.delete(comment);
         }
-//        for (Comment comments : post.getCommentList()) {
-//            comment.getPost().getId().equals(comments.getPost().getId());
-//        }
-        //TODO 부모 자식 댓글 확인. -> 부모 댓글이면 자식 댓글 지우기...?
+
+        //자식 댓글의 경우
+
 
         return "OK";
     }

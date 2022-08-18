@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class CommentDto {
+    private Long id;
     @NotNull
     private String content;
     @NotNull
@@ -31,6 +32,7 @@ public class CommentDto {
     //DTO -> Entity
     public Comment toEntity(){
         return Comment.builder()
+                .id(this.id)
                 .content(this.content)
                 .post(this.post)
                 .author(this.author)
