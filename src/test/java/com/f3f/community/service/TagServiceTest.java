@@ -5,7 +5,9 @@ import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.common.DuplicateException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.exception.tagException.DuplicateTagNameException;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -25,6 +27,7 @@ import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -192,6 +197,8 @@ public class TagServiceTest {
 
     @Before
     public void deleteAll() {
+        postTagRepository.deleteAll();
+        tagRepository.deleteAll();
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
         postRepository.deleteAll();
@@ -218,11 +225,65 @@ public class TagServiceTest {
     @DisplayName("중복 태그 이름으로 생성실패")
     public void createTagTestToFailByDuplicateName() throws Exception{
         //given
-
-
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
         // when
+        TagDto.SaveRequest test2 = createTagDto("test");
 
         // then
+        Assertions.assertThrows(DuplicateTagNameException.class, () -> tagService.createTag(test2));
+    }
+
+    @Test
+    @DisplayName("포스트에 태그 추가하는 테스트")
+    public void addTagToPostTest() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        // then
+        assertThat(tpid).isEqualTo(postTagRepository.findByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()).get().getId());
+    }
+
+    @Test
+    @DisplayName("포스트에 잇는 태그 삭제하는 테스트")
+    public void deletePostTagTest() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        tagService.deleteTagFromPost(tid, posts.get(0));
+        // then
+        assertThat(false).isEqualTo(postTagRepository.existsByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()));
+    }
+
+    @Test
+    @DisplayName("태그 삭제하는 테스트")
+    public void deleteTagTest() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        tagService.deleteTag(tid);
+
+        // then
+        assertThat(false).isEqualTo(postTagRepository.existsById(tpid));
+        assertThat(0).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(posts.get(0)).get()).size());
     }
 
 }
