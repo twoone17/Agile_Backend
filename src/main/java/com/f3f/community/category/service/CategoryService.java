@@ -3,6 +3,7 @@ package com.f3f.community.category.service;
 import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.dto.CategoryDto.SaveRequest;
 import com.f3f.community.category.repository.CategoryRepository;
+import com.f3f.community.common.constants.ResponseConstants;
 import com.f3f.community.exception.categoryException.*;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.f3f.community.common.constants.ResponseConstants.OK;
+import static com.f3f.community.common.constants.ResponseConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -86,7 +87,7 @@ public class CategoryService {
             throw new DuplicateCategoryNameException();
         } else {
             category.updateName(newName);
-            return OK;
+            return UPDATE;
         }
     }
 
@@ -98,7 +99,7 @@ public class CategoryService {
         }else {
             throw new NotEmptyChildCategoryException();
         }
-        return OK;
+        return DELETE;
     }
 
 }

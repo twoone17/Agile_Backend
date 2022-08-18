@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.f3f.community.common.constants.ResponseConstants.OK;
+import static com.f3f.community.common.constants.ResponseConstants.*;
 import static com.f3f.community.scrap.dto.ScrapDto.*;
 
 @Service
@@ -97,7 +97,7 @@ public class ScrapService {
         }
         scrap.updateScrap(newName);
 
-        return OK;
+        return UPDATE;
 
     }
 
@@ -110,7 +110,7 @@ public class ScrapService {
             List<ScrapPost> remove = scrapPostRepository.findScrapPostsByScrap(scrap);
             scrapPostRepository.deleteAll(remove);
             scrapRepository.delete(scrap);
-            return OK;
+            return DELETE;
         } else {
             throw new NotFoundScrapByUserException();
         }
@@ -126,7 +126,7 @@ public class ScrapService {
             Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
             ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
             scrapPostRepository.delete(scrapPost);
-            return OK;
+            return DELETE;
         } else {
             throw new NotFoundScrapByUserException();
         }
