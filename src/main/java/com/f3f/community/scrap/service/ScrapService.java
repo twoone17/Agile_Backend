@@ -125,8 +125,6 @@ public class ScrapService {
         if (scrap.getUser().getId().equals(uid)) {
             Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
             ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
-            scrap.getPostList().remove(scrapPost);
-            post.getScrapList().remove(scrapPost);
             scrapPostRepository.delete(scrapPost);
             return OK;
         } else {

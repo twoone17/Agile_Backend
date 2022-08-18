@@ -1,7 +1,7 @@
 package com.f3f.community.tag.domain;
 
-import com.f3f.community.post.domain.PostTag;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,7 +22,12 @@ public class Tag {
 
     private String tagName;
 
-    @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY)
-    private List<PostTag> memberProducts = new ArrayList<>();
+    @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<PostTag> postTags = new ArrayList<>();
 
+    @Builder
+    public Tag(String tagName) {
+        this.tagName = tagName;
+        postTags = new ArrayList<>();
+    }
 }

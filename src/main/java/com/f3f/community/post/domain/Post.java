@@ -7,7 +7,7 @@ import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.dto.PostDto.SaveRequest;
-import com.f3f.community.scrap.domain.Scrap;
+import com.f3f.community.tag.domain.PostTag;
 import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
 import lombok.Builder;
