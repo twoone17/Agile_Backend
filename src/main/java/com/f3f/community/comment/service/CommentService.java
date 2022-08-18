@@ -155,8 +155,6 @@ public class CommentService {
 ////                        commentRepository.delete(childComment); //지우기
 ////                    } //이게 필요 없을 것 같은데? 부모 댓글 아이디가 같은거 다 지우면 되는거 아닌가?
 //                }
-
-                commentRepository.delete(comment);
         }
 
         //자식 댓글의 경우
