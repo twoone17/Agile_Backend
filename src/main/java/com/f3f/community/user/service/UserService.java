@@ -6,6 +6,7 @@ import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.repository.ScrapRepository;
+import io.lettuce.core.Limit;
 import org.springframework.transaction.annotation.Transactional;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.exception.userException.*;
@@ -205,8 +206,9 @@ public class UserService {
         List<Post> posts;
         switch (myPageRequest.getOption()) {
             case VIEW:
-                posts = postRepository.findByAuthorOrderByViewCount(user);
+                posts = postRepository.findByAuthorOrderByViewCountDesc(user);
                 break;
+
             case LIKE:
                 List<Post> temp = postRepository.findByAuthor(user);
                 Collections.sort(temp, new Comparator<Post>() {
@@ -222,12 +224,13 @@ public class UserService {
                 });
                 posts = temp;
                 break;
+
             default:
                 posts = postRepository.findByAuthor(user);
                 break;
         }
-
-        return new ArrayList<>(posts.subList(0, myPageRequest.getLimit()));
+        int slice = Math.min(myPageRequest.getLimit(), posts.size());
+        return new ArrayList<>(posts.subList(0, slice));
     }
 
 

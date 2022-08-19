@@ -8,7 +8,9 @@ import com.f3f.community.exception.userException.*;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.post.repository.ScrapPostRepository;
 import com.f3f.community.post.service.PostService;
+import com.f3f.community.post.service.ScrapPostService;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
@@ -35,13 +37,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.f3f.community.common.constants.UserConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @SpringBootTest
 // 유저 테스트는 @Transactional 애노테이션이 없어도 잘 동작하지만 Scrap, Post는 동작하지 않는다.
-@Transactional
+//@Transactional
 class UserServiceTest {
 
     @Autowired
@@ -53,6 +56,8 @@ class UserServiceTest {
     @Autowired
     PostRepository postRepository;
     @Autowired
+    ScrapPostRepository scrapPostRepository;
+    @Autowired
     UserService userService;
     @Autowired
     CategoryService categoryService;
@@ -60,15 +65,18 @@ class UserServiceTest {
     PostService postService;
     @Autowired
     ScrapService scrapService;
+    @Autowired
+    ScrapPostService scrapPostService;
 
     private final String resultString = "OK";
 
     @BeforeEach
-    public void delete() {
-        userRepository.deleteAll();
-        categoryRepository.deleteAll();
+    public void deleteAll() {
+        scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
         postRepository.deleteAll();
+        categoryRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     private SaveRequest createUser() {
@@ -130,6 +138,17 @@ class UserServiceTest {
                 .title("test title2")
                 .content("test content for test2")
                 .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
+    private PostDto.SaveRequest createPostDto(User user, Category cat, int index) {
+        return PostDto.SaveRequest.builder()
+                .title("test title" + index)
+                .content("test content for test" + index)
+                .author(user)
+                .viewCount(index)
                 .scrapList(new ArrayList<>())
                 .category(cat)
                 .build();
@@ -569,7 +588,7 @@ class UserServiceTest {
 
         //then
         assertThat(scrapsByUser.size()).isEqualTo(1);
-        assertThat(scrapsByUser.get(0).getPostList().size()).isEqualTo(2);
+        assertThat(scrapPostService.getPostsOfScrap(scrapsByUser.get(0).getId()).size()).isEqualTo(2);
     }
 
     @Test
@@ -648,5 +667,73 @@ class UserServiceTest {
         assertThrows(ConstraintViolationException.class, () -> userService.findUserPostsByEmail(invalidEmail));
     }
 
+    @Test
+    @DisplayName("조회수 순으로 게시글 가져오기 테스트")
+    public void findUserPostWithHighViewCountTest() throws Exception {
+        //given
+        int[] indexList = {1,5,30};
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, indexList[0]);
+        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, indexList[1]);
+        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, indexList[2]);
+        postService.savePost(postDto1);
+        postService.savePost(postDto2);
+        postService.savePost(postDto3);
+
+        //when
+        MyPageRequest myPageRequest = new MyPageRequest(byId.get().getEmail(), 3, VIEW);
+        List<Post> userPostsWithOptions = userService.findUserPostsWithOptions(myPageRequest);
+
+        //then
+        assertThat(userPostsWithOptions.size()).isEqualTo(3);
+        for(int k=0; k<indexList.length; k++) {
+            assertThat(userPostsWithOptions.get(k).getViewCount()).isEqualTo(indexList[indexList.length - (k+1)]);
+        }
+    }
+
+    @Test
+    @DisplayName("Limit이 리스트 길이보다 클때 조회수 순으로 조회 테스트")
+    public void findOverLimitUserPostWithHighViewCountTest() throws Exception {
+        //given
+        int[] indexList = {1,5,30};
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> byId = userRepository.findById(aLong);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, indexList[0]);
+        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, indexList[1]);
+        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, indexList[2]);
+        postService.savePost(postDto1);
+        postService.savePost(postDto2);
+        postService.savePost(postDto3);
+
+        //when
+        MyPageRequest myPageRequest = new MyPageRequest(byId.get().getEmail(), 5, VIEW);
+        List<Post> userPostsWithOptions = userService.findUserPostsWithOptions(myPageRequest);
+
+        //then
+        assertThat(userPostsWithOptions.size()).isEqualTo(3);
+        for(int k=0; k<indexList.length; k++) {
+            assertThat(userPostsWithOptions.get(k).getViewCount()).isEqualTo(indexList[indexList.length - (k+1)]);
+        }
+    }
+
+    @Test
+    @DisplayName("옵션으로 게시글 조회 실패 - 유효하지 않은 이메일")
+    public void findNotFoundUserPostToFail() {
+        //given
+        MyPageRequest myPageRequest = new MyPageRequest("", 5, VIEW);
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.findUserPostsWithOptions(myPageRequest));
+        }
 
 }
