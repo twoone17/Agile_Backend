@@ -5,6 +5,8 @@ import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.postException.NotFoundPostByIdException;
+import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
@@ -22,7 +24,7 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +33,18 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class PostServiceTestWithDB {
+@TestMethodOrder(value = MethodOrderer.DisplayName.class)
+class PostServiceTestWithDB {
     @Autowired
     UserService userService;
 
@@ -110,7 +115,7 @@ public class PostServiceTestWithDB {
         List<Long> pids = new ArrayList<>();
         Random random = new Random();
         for(int i =0 ; i < n ; i++){
-            PostDto.SaveRequest postDto = createPostDto("title" + i, userRepository.findById(users.get(random.nextInt(users.size()))).get(), categoryRepository.findById(categories.get(random.nextInt(categories.size()))).get());
+            PostDto.SaveRequest postDto = createPostDto("title" + i, "content" + i, userRepository.findById(users.get(random.nextInt(users.size()))).get(), categoryRepository.findById(categories.get(random.nextInt(categories.size()))).get());
             Long pid = postService.savePost(postDto);
             pids.add(pid);
         }
@@ -166,16 +171,16 @@ public class PostServiceTestWithDB {
                 .build();
     }
 
-    private PostDto.SaveRequest createPostDto(String title, User user, Category cat) {
+    private PostDto.SaveRequest createPostDto(String title,String content, User user, Category cat) {
         return PostDto.SaveRequest.builder()
                 .title(title)
-                .content("temp content")
+                .content(content)
                 .author(user)
                 .scrapList(new ArrayList<>())
                 .category(cat).build();
     }
 
-    @Before
+    @BeforeEach
     public void deleteAll() {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
@@ -207,7 +212,7 @@ public class PostServiceTestWithDB {
         Long rid = createRoot();
         CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
         Long cid = categoryService.createCategory(categoryDto);
-        PostDto.SaveRequest postDto = createPostDto("tempPost", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
         Long pid = postService.savePost(postDto);
         ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "tempScrap");
         Long sid = scrapService.createScrap(scrapDto);
@@ -227,7 +232,7 @@ public class PostServiceTestWithDB {
     @Test
     @DisplayName("1 Save-1: savePost 성공 테스트")
     public void savePostTestWithDBToOk() throws Exception{
-    //given
+        //given
         UserDto.SaveRequest userDto = createUserDto("euisung");
         Long uid = userService.saveUser(userDto);
 
@@ -235,15 +240,150 @@ public class PostServiceTestWithDB {
         CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
         Long cid = categoryService.createCategory(categoryDto);
 
-        PostDto.SaveRequest postDto = createPostDto("tempPost", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        //when
         Long pid = postService.savePost(postDto);
 
-        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "tempScrap");
-        Long sid = scrapService.createScrap(scrapDto);
-        //when
+        //then
 
-    //then
+        postRepository.findById(pid).orElseThrow(NotFoundPostByIdException::new);
+        assertThat(postRepository.findById(pid).get()).extracting("title","content").contains("title1","content1");
+    }
+
+
+    @Test
+    @DisplayName("1 Save-2: savePost 여러개 성공 테스트")
+    public void savePostTestWithDB_Mulitiple_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("user1");
+        UserDto.SaveRequest userDto2 = createUserDto("user2");
+        UserDto.SaveRequest userDto3 = createUserDto("user3");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+        Long uid3 = userService.saveUser(userDto3);
+
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto2 = createPostDto("title2","content2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto3 = createPostDto("title3","content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto4 = createPostDto("title4","content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+        Long pid2 = postService.savePost(postDto2);
+        Long pid3 = postService.savePost(postDto3);
+        Long pid4 = postService.savePost(postDto4);
+
+        //then
+        postRepository.findById(pid).orElseThrow(NotFoundPostByIdException::new);
+
+//      저장한 post의 값 체크
+        assertThat(postRepository.findAll())
+                .extracting("title","content")
+                .contains(tuple("title1","content1"),
+                        tuple("title2","content2"),
+                        tuple("title3","content3"),
+                        tuple("title4","content4"));
+
+        //저장한 게시글 4개인지 확인
+        assertThat(postRepository.findAll().size()).isEqualTo(4);
 
     }
+
+    @Test
+    @DisplayName("1 Save-3: savePost 실패 테스트 - title 없음 ")
+    public void savePostTestWithDBToFailByNullTitle() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        //then
+        assertThatThrownBy(()->postService.savePost(postDto))
+                .isInstanceOf(ConstraintViolationException.class)
+                .hasMessageContaining("title은 1~ 20자 이여야 합니다.");
+    }
+
+    @Test
+    @DisplayName("1 Save-4: savePost 실패 테스트 - content 없음 ")
+    public void savePostTestWithDBToFailByNullContent() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("title1","", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        //then
+        //TODO: controller에서 예외 처리
+        assertThatThrownBy(()->postService.savePost(postDto))
+                .isInstanceOf(ConstraintViolationException.class)
+                .hasMessageContaining("content는 1자 이상이어야 합니다.");
+
+    }
+
+    /*************************************************************************************
+     * 게시글 조회 (Read)
+     **************************************************************************************/
+
+    @Test
+    @DisplayName("2 Read-1 : findPostByPostId 성공 테스트")
+    public void findPostByPostIdTestOk() throws Exception{
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+
+
+        //when
+        Long pid = postService.savePost(postDto);
+
+        //then
+        Post post = postService.findPostByPostId(pid).orElseThrow(NotFoundPostByPostIdException::new);
+        assertThat(post).extracting("title","content").contains("title1","content1");
+    }
+
+    @Test
+    @DisplayName("2 Read-2 : findPostByPostId 예외 발생 테스트 - postid 존재하지 않음 ")
+    public void findPostByPostIdTestToFailByNullPostId() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        //when
+        Long pid = postService.savePost(postDto);
+        postService.deletePost(pid,uid);
+        //TODO: 저장하고 지운것을 테스트 해보기
+        assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(pid));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
+
+    }
+
+
 
 }
