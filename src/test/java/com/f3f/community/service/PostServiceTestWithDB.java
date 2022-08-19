@@ -198,7 +198,7 @@ class PostServiceTestWithDB {
         //given
         List<Long> users = createUsers(20);
         List<Long> categories = createCategories(3);
-        List<Long> posts = createPosts(users, categories, 7);
+        List<Long> posts = createPosts(users, categories, 10);
         List<Long> scraps = createScraps(users, posts, 5);
 
         // when
