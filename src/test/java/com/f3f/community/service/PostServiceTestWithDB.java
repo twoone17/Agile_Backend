@@ -7,6 +7,8 @@ import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
+import com.f3f.community.exception.postException.NotFoundPostByUserIdException;
+import com.f3f.community.exception.postException.NotFoundPostListByTitle;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
@@ -449,6 +451,147 @@ class PostServiceTestWithDB {
         assertThat(postListByUserId.size()).isEqualTo(2);
 
     }
+
+    @Test
+    @DisplayName("2 Read-4 : findPostListByUserid 예외 발생 테스트 - userid와 일치하는 게시글 없음")
+    public void findPostListByUseridTestToFailByNullPostList() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        postService.deletePost(pid,uid);
+
+        //then
+        assertThatThrownBy(()->postService.findPostListByUserId(uid))
+                .isInstanceOf(NotFoundPostByUserIdException.class)
+                .hasMessageContaining("serId와 일치하는 게시글리스트가 없습니다");
+    }
+
+    @Test
+    @DisplayName("2 Read-5 : findPostListByTitle 성공 테스트 (일치하는 title 하나) ")
+    public void findPostListByTitleTest_One_Ok() throws Exception {
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+
+        List<Post> postListBytitle = postService.findPostListByTitle("title1");//title에 해당하는 postList 찾기
+
+        assertThat(postListBytitle.get(0)).extracting("title","content").contains("title1","content1");
+    }
+
+    @Test
+    @DisplayName("2 Read-6 : findPostListByTitle 성공 테스트 (일치하는 title 여러개) ")
+    public void findPostListByTitleTest_Multiple_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("user1");
+        UserDto.SaveRequest userDto2 = createUserDto("user2");
+        UserDto.SaveRequest userDto3 = createUserDto("user3");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+        Long uid3 = userService.saveUser(userDto3);
+
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1", "content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto2 = createPostDto("title1", "content2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto3 = createPostDto("title1", "content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto4 = createPostDto("title4", "content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+        Long pid2 = postService.savePost(postDto2);
+        Long pid3 = postService.savePost(postDto3);
+        Long pid4 = postService.savePost(postDto4);
+
+        //then
+        List<Post> postListBytitle = postService.findPostListByTitle("title1");
+
+//      저장한 post의 값 체크
+        assertThat(postListBytitle)
+                .extracting("title", "content")
+                .contains(tuple("title1", "content1"),
+                        tuple("title1", "content2"),
+                        tuple("title1", "content3"))
+                .doesNotContain(tuple("title4", "content4"));
+
+        //userid에 해당하는 게시글이 두개
+        assertThat(postListBytitle.size()).isEqualTo(3);
+
+    }
+
+    @Test
+    @DisplayName("2 Read-7 : findPostListByTitle 예외 발생 테스트 - 일치하는 title 없음")
+    public void findPostListByTitleTestToFailByNullTitle() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        //when
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        postService.deletePost(pid,uid);
+
+        assertThatThrownBy(()->postService.findPostListByTitle("title1"))
+                .isInstanceOf(NotFoundPostListByTitle.class)
+                .hasMessageContaining("PostList를 찾을 수 있는 title이 존재하지 않습니다");
+
+    }
+
+    /*************************************************************************************
+     * 게시글 수정 (Update)
+     **************************************************************************************/
+
+    @Test
+    @Rollback()
+    @DisplayName("3 Update-1 : UpdatePost 성공 테스트")
+    public void updatePostTestToOk() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+        postService.updatePost(pid,uid,updateRequest);
+
+        //then
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .contains(tuple("titleChanged","contentChanged"))
+                .doesNotContain(tuple("title1","content1"));
+
+        }
+
 
 
 }
