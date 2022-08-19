@@ -71,8 +71,8 @@ public class TagService {
 
         PostTag postTag = postTagRepository.findByPostAndTag(post, tag).orElseThrow(NotFoundPostTagException::new);
 
-        tag.getPostTags().remove(postTag);
-        post.getTagList().remove(postTag);
+//        tag.getPostTags().remove(postTag);
+//        post.getTagList().remove(postTag);
         postTagRepository.delete(postTag);
         return DELETE;
 
