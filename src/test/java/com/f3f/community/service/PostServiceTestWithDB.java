@@ -379,11 +379,76 @@ class PostServiceTestWithDB {
         //when
         Long pid = postService.savePost(postDto);
         postService.deletePost(pid,uid);
-        //TODO: 저장하고 지운것을 테스트 해보기
-        assertThrows(NotFoundPostByPostIdException.class, ()-> postService.findPostByPostId(pid));  //존재하지 않는 postid로 조회했을떄 exception이 터지는지 확인
 
+        //then
+        assertThatThrownBy(()->postService.findPostByPostId(pid))
+                .isInstanceOf(NotFoundPostByPostIdException.class)
+                .hasMessageContaining("postId와 일치하는 게시글이 없습니다");
     }
 
+    @Test
+    @DisplayName("2 Read-3 : findPostListByUserid 성공 테스트")
+    public void findPostListByUseridTest_One_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        //when
+        List<Post> postListByUserId = postService.findPostListByUserId(uid);
+
+        //then
+        //userid로 찾은 게시글이 잘 찾아졌는지 확인
+        assertThat(postListByUserId.get(0)).extracting("title","content").contains("title1","content1");
+    }
+
+    @Test
+    @DisplayName("2 Read-4 : findPostListByUserid 성공 테스트 : 여러개 ")
+    public void findPostListByUseridTest_Multiple_Ok() throws Exception {
+        //given
+        UserDto.SaveRequest userDto = createUserDto("user1");
+        UserDto.SaveRequest userDto2 = createUserDto("user2");
+        UserDto.SaveRequest userDto3 = createUserDto("user3");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+        Long uid3 = userService.saveUser(userDto3);
+
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1", "content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto2 = createPostDto("title2", "content2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto3 = createPostDto("title3", "content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto4 = createPostDto("title4", "content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+        Long pid2 = postService.savePost(postDto2);
+        Long pid3 = postService.savePost(postDto3);
+        Long pid4 = postService.savePost(postDto4);
+
+        //then
+        List<Post> postListByUserId = postService.findPostListByUserId(uid);
+
+//      저장한 post의 값 체크
+        assertThat(postListByUserId)
+                .extracting("title", "content")
+                .contains(tuple("title1", "content1"),
+                        tuple("title2", "content2"))
+                .doesNotContain(tuple("title3", "content3"),
+                        tuple("title4", "content4"));
+
+        //userid에 해당하는 게시글이 두개
+        assertThat(postListByUserId.size()).isEqualTo(2);
+
+    }
 
 
 }
