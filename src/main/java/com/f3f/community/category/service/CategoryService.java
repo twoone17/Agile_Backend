@@ -36,7 +36,6 @@ public class CategoryService {
         Category category = saveRequest.toEntity();
         if (category.getParents() != null) {
             Category parent = categoryRepository.findById(saveRequest.getParents().getId()).get();
-//            Category parent = saveRequest.getParents();
             if (parent.getDepth() == 3) {
                 throw new MaxDepthException();
             }

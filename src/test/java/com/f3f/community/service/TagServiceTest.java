@@ -6,8 +6,10 @@ import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.common.DuplicateException;
+import com.f3f.community.exception.common.NotFoundByIdException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
 import com.f3f.community.exception.tagException.DuplicateTagNameException;
+import com.f3f.community.exception.tagException.NotFoundPostTagException;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -231,7 +234,7 @@ public class TagServiceTest {
         TagDto.SaveRequest test2 = createTagDto("test");
 
         // then
-        Assertions.assertThrows(DuplicateTagNameException.class, () -> tagService.createTag(test2));
+        assertThrows(DuplicateTagNameException.class, () -> tagService.createTag(test2));
     }
 
     @Test
@@ -251,7 +254,52 @@ public class TagServiceTest {
     }
 
     @Test
-    @DisplayName("포스트에 잇는 태그 삭제하는 테스트")
+    @DisplayName("포스트에 태그 추가 실패 테스트 - 중복된 태그")
+    public void addTagToPostTestToFailByDuplicateTag() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test1 = createTagDto("test");
+        Long tid1 = tagService.createTag(test1);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid1, posts.get(0));
+        // then
+        assertThrows(DuplicateException.class, () -> tagService.addTagToPost(tid1, posts.get(0)));
+    }
+
+    @Test
+    @DisplayName("포스트에 태그 추가 실패 테스트 - 잘못된 태그 아이디")
+    public void addTagToPostTestToFailByTagId() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test1 = createTagDto("test");
+        Long tid1 = tagService.createTag(test1);
+
+
+        // then
+        assertThrows(NotFoundByIdException.class, () -> tagService.addTagToPost(tid1 + 1, posts.get(0)));
+    }
+
+    @Test
+    @DisplayName("포스트에 태그 추가 실패 테스트 - 잘못된 포스트 아이디")
+    public void addTagToPostTestToFailByPostId() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test1 = createTagDto("test");
+        Long tid1 = tagService.createTag(test1);
+
+        // then
+        assertThrows(NotFoundByIdException.class, () -> tagService.addTagToPost(tid1, posts.get(4)+1));
+    }
+
+    @Test
+    @DisplayName("포스트에 있는 태그 삭제하는 테스트")
     public void deletePostTagTest() throws Exception{
         //given
         List<Long> users = createUsers(5);
@@ -265,6 +313,54 @@ public class TagServiceTest {
         tagService.deleteTagFromPost(tid, posts.get(0));
         // then
         assertThat(false).isEqualTo(postTagRepository.existsByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()));
+    }
+
+    @Test
+    @DisplayName("포스트에 있는 태그 삭제 실패 테스트 - 잘못된 태그 아이디")
+    public void deletePostTagTestToFailByTagId() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        // then
+        assertThrows(NotFoundByIdException.class, () -> tagService.deleteTagFromPost(tid + 1, posts.get(0)));
+    }
+
+    @Test
+    @DisplayName("포스트에 있는 태그 삭제 실패 테스트 - 잘못된 포스트아이디")
+    public void deletePostTagTestToFailByPostId() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        // then
+        assertThrows(NotFoundByIdException.class, () -> tagService.deleteTagFromPost(tid, posts.get(4)+1));
+    }
+
+    @Test
+    @DisplayName("포스트에 있는 태그 삭제 실패 테스트 - 포스트 안에 없는 태그 삭제 요청")
+    public void deletePostTagTestToFailByPostTag() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        // then
+        assertThrows(NotFoundPostTagException.class, () -> tagService.deleteTagFromPost(tid, posts.get(0)+1));
     }
 
     @Test
@@ -286,4 +382,19 @@ public class TagServiceTest {
         assertThat(0).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(posts.get(0)).get()).size());
     }
 
+    @Test
+    @DisplayName("태그 삭제 실패 테스트 - 잘못된 태그 아이디")
+    public void deleteTagTestToFilByTagId() throws Exception{
+        //given
+        List<Long> users = createUsers(5);
+        List<Long> categories = createCategories(5);
+        List<Long> posts = createPosts(users, categories, 5);
+        TagDto.SaveRequest test = createTagDto("test");
+        Long tid = tagService.createTag(test);
+
+        // when
+        Long tpid = tagService.addTagToPost(tid, posts.get(0));
+        // then
+        assertThrows(NotFoundByIdException.class, () -> tagService.deleteTag(tid+1));
+    }
 }

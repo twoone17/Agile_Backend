@@ -526,7 +526,7 @@ public class ScrapServiceTestWithDB {
     }
 
     @Test
-    @DisplayName("deleteCollectionItem 성공 테스트 - 아이디로 검증")
+    @DisplayName("deleteCollectionItem 성공 테스트 - 스크랩 포스트리스트 사이즈로 검증")
     public void deleteCollectionItemTestByScrap() throws Exception{
         // given
         UserDto.SaveRequest userDto = createUserDto("temp");
