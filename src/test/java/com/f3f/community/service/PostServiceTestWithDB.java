@@ -10,6 +10,7 @@ import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
 import com.f3f.community.exception.postException.NotFoundPostByUserIdException;
 import com.f3f.community.exception.postException.NotFoundPostListByTitle;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
@@ -591,6 +592,147 @@ class PostServiceTestWithDB {
                 .doesNotContain(tuple("title1","content1"));
 
         }
+    @Test
+    @DisplayName("3 Update-2 : UpdatePost 성공 테스트 두번변경")
+    public void updatePostTwiceTestToOk() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+                .build();
+
+        PostDto.UpdateRequest updateRequest2 = PostDto.UpdateRequest.builder()
+                .title("titleChanged2")
+                .content("contentChanged2")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+        postService.updatePost(pid,uid,updateRequest);
+        postService.updatePost(pid,uid,updateRequest2);
+
+        //then
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .contains(tuple("titleChanged2","contentChanged2"))
+                .doesNotContain(tuple("title1","content1"),
+                        tuple("titleChanged","contentChanged"));
+
+    }
+
+    @Test
+    @DisplayName("3 Update-3 : UpdatePost 성공 테스트 여러개 ")
+    public void updatePostTest_Multiple_Ok() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("user1");
+        UserDto.SaveRequest userDto2 = createUserDto("user2");
+        UserDto.SaveRequest userDto3 = createUserDto("user3");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+        Long uid3 = userService.saveUser(userDto3);
+
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1", "content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto2 = createPostDto("title2", "content2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto3 = createPostDto("title3", "content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto4 = createPostDto("title4", "content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+        Long pid2 = postService.savePost(postDto2);
+        Long pid3 = postService.savePost(postDto3);
+        Long pid4 = postService.savePost(postDto4);
+
+        postService.updatePost(pid,uid,updateRequest);
+        postService.updatePost(pid2,uid,updateRequest);
+        postService.updatePost(pid3,uid2,updateRequest);
+
+        //then
+
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .contains(tuple("titleChanged","contentChanged"),
+                        tuple("title4","content4"))
+                .doesNotContain(tuple("title1","content1"),
+                        tuple("title2","content2"),
+                        tuple("title3","content3"));
+
+        List<Post> postListBytitle = postService.findPostListByTitle("titleChanged");
+        assertThat(postListBytitle.size()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("3 Update-4 : UpdatePost 예외 발생 테스트 - 수정하려는 post의 postid가 없음")
+    public void updatePostTestToFailByNullPostId() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+        postService.deletePost(pid,uid);
+
+        //then
+        assertThatThrownBy(()->postService.updatePost(pid,uid,updateRequest))
+                .isInstanceOf(NotFoundPostByIdException.class)
+                .hasMessageContaining("해당 아이디를 가진 포스트가 존재하지 않습니다.");
+
+
+    }
+
+    @Test
+    @DisplayName("3 Update-5 : UpdatePost 예외 발생 테스트 - 수정하려는 post의 author가 없음")
+    public void updatePostTestToFailByNullAuthor() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        UserDto.SaveRequest userDto2 = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("contentChanged")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+
+        //then
+        assertThatThrownBy(()->postService.updatePost(pid,44L,updateRequest))
+                .isInstanceOf(NotFoundUserException.class)
+                .hasMessageContaining("해당 아이디로 존재하는 유저가 없습니다.");
+
+
+    }
 
 
 
