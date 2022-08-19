@@ -16,6 +16,7 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
 import com.f3f.community.post.service.PostService;
 import com.f3f.community.post.service.ScrapPostService;
+import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
@@ -24,6 +25,7 @@ import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.Test;
 import org.junit.Before;
@@ -270,10 +272,53 @@ public class ScrapServiceTestWithDB {
         Long pid = postService.savePost(postDto);
         // when
         Long spid = scrapService.saveCollection(sid, uid, pid);
-        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrap(scrapRepository.findById(sid).get());
+        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrapId(sid);
         // then
         assertThat(posts.get(0).getId()).isEqualTo(spid);
     }
+
+    @Test
+    @DisplayName("데이터베이스에 저장한 스크랩에 올바른 유저에 매핑되는지 확인")
+    public void saveCollectionTestByUser() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid = scrapService.createScrap(scrapDto);
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+        PostDto.SaveRequest postDto = createPostDto("title", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        // when
+        Long spid = scrapService.saveCollection(sid, uid, pid);
+        List<Scrap> scrapByUserId = scrapRepository.findScrapByUserId(uid);
+        // then
+        assertThat(sid).isEqualTo(scrapByUserId.get(0).getId());
+
+    }
+
+    @Test
+    @DisplayName("데이터베이스에 저장한 스크랩이 올바른 포스트에 매핑되는지 확")
+    public void saveCollectionTestByPost() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid = scrapService.createScrap(scrapDto);
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+        PostDto.SaveRequest postDto = createPostDto("title", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid = postService.savePost(postDto);
+        // when
+        Long spid = scrapService.saveCollection(sid, uid, pid);
+        List<ScrapPost> scrapPostsByScrapId = scrapPostRepository.findScrapPostsByPostId(pid);
+        // then
+        assertThat(spid).isEqualTo(scrapPostsByScrapId.get(0).getId());
+    }
+
+
 
     @Test
     @DisplayName("updateCollectionName 실패 테스트 - 이름 중복")
@@ -407,6 +452,32 @@ public class ScrapServiceTestWithDB {
     }
 
     @Test
+    @DisplayName("deleteCollection 성공 테스트 - 포스트로 확인")
+    public void deleteCollectionTestCheckByPost() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("temp");
+        Long uid = userService.saveUser(userDto);
+        ScrapDto.SaveRequest scrapDto1 = createScrapDto(userRepository.findById(uid).get(), "temp");
+        Long sid = scrapService.createScrap(scrapDto1);
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("cat1", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+        PostDto.SaveRequest post1 = createPostDto("post1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest post2 = createPostDto("post2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
+
+        // when
+        Long spid1 = scrapService.saveCollection(sid, uid, pid1);
+        Long spid2 = scrapService.saveCollection(sid, uid, pid2);
+
+        scrapService.deleteCollection(sid, uid);
+        // then
+        assertThat(false).isEqualTo(scrapPostRepository.existsByPostIdAndScrapId(pid1, sid));
+        assertThat(false).isEqualTo(scrapPostRepository.existsByPostIdAndScrapId(pid2, sid));
+    }
+
+    @Test
     @DisplayName("deleteCollectionItem 실패 테스트 - 스크랩 아이디 못 찾음")
     public void deleteCollectionItemTestToFailByScrapId() throws Exception{
         // given
@@ -518,7 +589,7 @@ public class ScrapServiceTestWithDB {
         Long spid1 = scrapService.saveCollection(sid, uid, pid1);
         Long spid2 = scrapService.saveCollection(sid, uid, pid2);
         scrapService.deleteCollectionItem(sid, uid, pid2);
-        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrap(scrapRepository.findById(sid).get());
+        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrapId(sid);
         // then
         assertThrows(NotFoundScrapPostByIdException.class, () -> scrapPostRepository.findById(spid2).orElseThrow(NotFoundScrapPostByIdException::new));
 
@@ -545,9 +616,9 @@ public class ScrapServiceTestWithDB {
         Long spid1 = scrapService.saveCollection(sid, uid, pid1);
         Long spid2 = scrapService.saveCollection(sid, uid, pid2);
         scrapService.deleteCollectionItem(sid, uid, pid2);
-        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrap(scrapRepository.findById(sid).get());
+        List<ScrapPost> posts = scrapPostRepository.findScrapPostsByScrapId(sid);
         // then
-        assertThat(1).isEqualTo(scrapPostRepository.findScrapPostsByScrap(scrapRepository.findById(sid).get()).size());
+        assertThat(1).isEqualTo(scrapPostRepository.findScrapPostsByScrapId(sid).size());
 
 
     }
