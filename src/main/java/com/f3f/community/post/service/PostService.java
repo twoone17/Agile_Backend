@@ -39,7 +39,7 @@ public class PostService {
      * 4.category
      */
     @Transactional
-    public Long savePost(PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
+    public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
         Post post = SaveRequest.toEntity();
         User author = userRepository.findById(post.getAuthor().getId()).get();
         author.getPosts().add(post);
