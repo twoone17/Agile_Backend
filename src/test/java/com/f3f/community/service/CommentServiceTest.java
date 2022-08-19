@@ -32,7 +32,7 @@ class CommentServiceTest {
         comment.setContent("우와");
 
         //when
-         = commentService.join()
+//         = commentService.join()
 
         //then
     }

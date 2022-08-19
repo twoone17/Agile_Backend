@@ -162,7 +162,7 @@ public class UserDto {
     public static class UpdateUserLevelRequest {
         @NotBlank
         private String email;
-        private int key;
+        private UserLevel userLevel;
         private String content;
     }
 
@@ -174,7 +174,7 @@ public class UserDto {
         @NotBlank
         private String email;
         @NotNull
-        private int key;
+        private UserGrade userGrade;
     }
 
     @Getter

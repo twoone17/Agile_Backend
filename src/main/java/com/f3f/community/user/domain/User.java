@@ -53,14 +53,21 @@ public class User extends UserBase {
     }
 
 
-    public void updateUserGrade(int plusedKey) {
-        this.userGrade = userGrade.getUserGradeByKey(plusedKey);
+//    public void updateUserGrade(int plusedKey) {
+//        this.userGrade = userGrade.getUserGradeByKey(plusedKey);
+//    }
+//
+//    public void updateUserLevel(int key) {
+//        this.userLevel = userLevel.getUserLevelByKey(key);
+//    }
+
+    public void updateUserGrade(UserGrade usergrade) {
+        super.userGrade = usergrade;
     }
 
-    public void updateUserLevel(int key) {
-        this.userLevel = userLevel.getUserLevelByKey(key);
+    public void updateUserLevel(UserLevel userLevel) {
+        this.userLevel = userLevel;
     }
-
 
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,

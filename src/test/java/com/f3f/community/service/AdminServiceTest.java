@@ -45,6 +45,14 @@ class AdminServiceTest {
         return userInfo;
     }
 
+    public UpdateUserLevelRequest getUpdateUserLevelDTO(String email, UserLevel userLevel) {
+        return new UpdateUserLevelRequest(email,userLevel, "욕설");
+    }
+
+    public UpdateGradeRequest getUpdateUserGradeDTO(String email, UserGrade userGrade) {
+        return new UpdateGradeRequest(email, userGrade);
+    }
+
     @Test
     @DisplayName("유저 차단 테스트 성공")
     public void banUserTest() {
@@ -52,7 +60,7 @@ class AdminServiceTest {
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
         Optional<User> user = userRepository.findById(aLong);
-        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = getUpdateUserLevelDTO(user.get().getEmail(), UserLevel.BAN);
 
         //when
         adminService.updateUserLevel(updateUserLevelRequest);
@@ -67,31 +75,32 @@ class AdminServiceTest {
     public void banUnknownEmailUserToFail() {
         //given
         String unknownEmail = "unKnownEmail@email.com";
-        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(unknownEmail, 1, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = getUpdateUserLevelDTO(unknownEmail, UserLevel.BAN);
 
         //when & then
         assertThrows(NotFoundUserException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
     }
 
-    @Test
-    @DisplayName("유저 차단 테스트 실패 - 존재하지 않는 UserLevel")
-    public void updateUserToInvalidUserLevelToFail() {
-        //given
-        SaveRequest userDTO = createUser();
-        Long aLong = userService.saveUser(userDTO);
-        Optional<User> user = userRepository.findById(aLong);
-        int invalidKey = 37;
-        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),invalidKey, "욕설");
-
-        //when & then
-        assertThrows(InvalidUserLevelException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
-    }
+    // key가 아닌 Enum 객체를 넘김으로서 사실상 필요 없어진 레거시 테스트 코드
+//    @Test
+//    @DisplayName("유저 차단 테스트 실패 - 존재하지 않는 UserLevel")
+//    public void updateUserToInvalidUserLevelToFail() {
+//        //given
+//        SaveRequest userDTO = createUser();
+//        Long aLong = userService.saveUser(userDTO);
+//        Optional<User> user = userRepository.findById(aLong);
+//        int invalidKey = 37;
+//        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest(user.get().getEmail(),invalidKey, "욕설");
+//
+//        //when & then
+//        assertThrows(InvalidUserLevelException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
+//    }
 
     @Test
     @DisplayName("유저 차단 테스트 실패 - 올바르지 않은 이메일 형식")
     public void banUserWithInvalidEmailToFail() {
         //given
-        UpdateUserLevelRequest updateUserLevelRequest = new UpdateUserLevelRequest("", 2, "욕설");
+        UpdateUserLevelRequest updateUserLevelRequest = getUpdateUserLevelDTO("", UserLevel.BAN);
 
         //when & then
         assertThrows(ConstraintViolationException.class, () -> adminService.updateUserLevel(updateUserLevelRequest));
@@ -104,12 +113,12 @@ class AdminServiceTest {
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
         Optional<User> user = userRepository.findById(aLong);
-        UpdateUserLevelRequest banRequest = new UpdateUserLevelRequest(user.get().getEmail(),2, "욕설");
+        UpdateUserLevelRequest banRequest = getUpdateUserLevelDTO(user.get().getEmail(), UserLevel.BAN);
 
         //when
         adminService.updateUserLevel(banRequest);
         Optional<User> bannedUser = userRepository.findByEmail(user.get().getEmail());
-        UpdateUserLevelRequest unbanRequest = new UpdateUserLevelRequest(bannedUser.get().getEmail(),1, "기간 만료");
+        UpdateUserLevelRequest unbanRequest = getUpdateUserLevelDTO(user.get().getEmail(), UserLevel.UNBAN);
         adminService.updateUserLevel(unbanRequest);
         Optional<User> unbannedUser = userRepository.findByEmail(bannedUser.get().getEmail());
 
@@ -124,8 +133,7 @@ class AdminServiceTest {
         SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
         Optional<User> user = userRepository.findById(aLong);
-        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(user.get().getEmail(), 3);
-
+        UpdateGradeRequest updateGradeRequest = getUpdateUserGradeDTO(user.get().getEmail(), UserGrade.PLATINUM);
         //when
         adminService.updateUserGrade(updateGradeRequest);
         Optional<User> user2 = userRepository.findByEmail(user.get().getEmail());
@@ -138,24 +146,26 @@ class AdminServiceTest {
     public void updateNotFoundUserToFail() {
         //given
         String notFoundEmail = "notFoundUser@user.com";
-        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(notFoundEmail, 3);
+        UpdateGradeRequest updateGradeRequest = getUpdateUserGradeDTO(notFoundEmail, UserGrade.PLATINUM);
         //when & then
         assertThrows(NotFoundUserException.class, () -> adminService.updateUserGrade(updateGradeRequest));
     }
 
-    @Test
-    @DisplayName("유저 등업 실패 - 유효하지 않은 등급")
-    public void updateNotFoundUserGradeToFail() {
-        //given
-        SaveRequest userDTO = createUser();
-        Long aLong = userService.saveUser(userDTO);
-        Optional<User> user = userRepository.findById(aLong);
-        int notFoundKey = 37;
-        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(user.get().getEmail(), notFoundKey);
 
-        //when & then
-        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(updateGradeRequest));
-    }
+    // key가 아닌 Enum 객체를 받게 되면서 사실상 필요 없어진 레거시 테스트 코드
+//    @Test
+//    @DisplayName("유저 등업 실패 - 유효하지 않은 등급")
+//    public void updateNotFoundUserGradeToFail() {
+//        //given
+//        SaveRequest userDTO = createUser();
+//        Long aLong = userService.saveUser(userDTO);
+//        Optional<User> user = userRepository.findById(aLong);
+//        int notFoundKey = 37;
+//        UpdateGradeRequest updateGradeRequest = new UpdateGradeRequest(user.get().getEmail(), notFoundKey);
+//
+//        //when & then
+//        assertThrows(InvalidGradeException.class, () -> adminService.updateUserGrade(updateGradeRequest));
+//    }
 
     @Test
     @DisplayName("전문가 유저로 등업")

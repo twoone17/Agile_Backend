@@ -4,6 +4,8 @@ import com.f3f.community.exception.adminException.InvalidGradeException;
 import com.f3f.community.exception.adminException.InvalidUserLevelException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
+import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,32 +32,26 @@ public class AdminService {
     @Transactional
     public String updateUserGrade(@Valid UpdateGradeRequest updateGradeRequest) {
         String email = updateGradeRequest.getEmail();
-        int key = updateGradeRequest.getKey();
+        UserGrade userGrade = updateGradeRequest.getUserGrade();
+        // TODO 밴 여부 확인
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        // TODO 밴 여부 확인?
-        if(key < 0 || key >= 5) {
-            throw new InvalidGradeException();
-        }
-        user.updateUserGrade(key + 1);
+        user.updateUserGrade(userGrade);
         return resultString;
     }
 
     @Transactional
     public String updateUserGradeToExpert(@Valid  UpdateGradeToExpertRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        // TODO 밴 여부 확인?
-        user.updateUserGrade(5);
+        // TODO 밴 여부 확인
+        user.updateUserGrade(UserGrade.EXPERT);
         return resultString;
     }
 
     @Transactional
     public String updateUserLevel(@Valid UpdateUserLevelRequest updateUserLevelRequest) {
         User user = userRepository.findByEmail(updateUserLevelRequest.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        int key = updateUserLevelRequest.getKey();
-        if(key < 0 || key >= 3) {
-            throw new InvalidUserLevelException();
-        }
-        user.updateUserLevel(key);
+        UserLevel userLevel = updateUserLevelRequest.getUserLevel();
+        user.updateUserLevel(userLevel);
         return resultString;
     }
 

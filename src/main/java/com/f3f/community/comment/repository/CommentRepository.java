@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     boolean existsById(Long id);
-    boolean existsByUser(User user);
+    boolean existsByAuthor(User user);
     Optional<Comment> findById(Long id);
     Optional<Post> findById(Post post);
 
