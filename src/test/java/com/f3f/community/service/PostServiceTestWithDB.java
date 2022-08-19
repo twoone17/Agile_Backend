@@ -785,7 +785,100 @@ class PostServiceTestWithDB {
                 .isInstanceOf(ConstraintViolationException.class)
                 .hasMessageContaining("수정시 Content는 한글자 이상이어야 합니다.");
 
+    }
+    /*************************************************************************************
+     * 게시글 삭제 (Delete)
+     **************************************************************************************/
 
+    @Test
+    @DisplayName("4 Delete-1 : DeletePost 성공 테스트")
+    public void DeletePostTestToOK() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+        postService.deletePost(pid,uid);
+
+        //then
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .doesNotContain(tuple("title1","content1"));
+
+        assertThat(postRepository.findAll().size()).isEqualTo(0);
+
+    }
+
+    @Test
+    @DisplayName("4 Delete-2 : DeletePost 여러개 성공 테스트")
+    public void DeletePostTestTo_Multiple_OK() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("user1");
+        UserDto.SaveRequest userDto2 = createUserDto("user2");
+        UserDto.SaveRequest userDto3 = createUserDto("user3");
+        Long uid = userService.saveUser(userDto);
+        Long uid2 = userService.saveUser(userDto2);
+        Long uid3 = userService.saveUser(userDto3);
+
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1", "content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto2 = createPostDto("title2", "content2", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto3 = createPostDto("title3", "content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
+        PostDto.SaveRequest postDto4 = createPostDto("title4", "content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+        Long pid2 = postService.savePost(postDto2);
+        Long pid3 = postService.savePost(postDto3);
+        Long pid4 = postService.savePost(postDto4);
+
+        postService.deletePost(pid,uid);
+        postService.deletePost(pid2,uid);
+        postService.deletePost(pid3,uid2);
+
+
+        //then
+
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .contains(tuple("title4","content4"))
+                .doesNotContain(tuple("title1","content1"),
+                        tuple("title2","content2"),
+                        tuple("title3","content3"));
+
+        assertThat(postRepository.findAll().size()).isEqualTo(1);
+
+    }
+
+    @Test
+    @DisplayName("4 Delete-3 : DeletePost 예외 발생 테스트 - postid 존재하지 않음 ")
+    public void DeletePostTestToFailByNullPostId() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        //when
+        Long pid = postService.savePost(postDto);
+
+        //then
+        assertThatThrownBy(()-> postService.deletePost(44L,uid))
+                .isInstanceOf(NotFoundPostByIdException.class)
+                .hasMessageContaining("해당 아이디를 가진 포스트가 존재하지 않습니다.");
 
     }
 
