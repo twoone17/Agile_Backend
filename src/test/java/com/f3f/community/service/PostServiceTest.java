@@ -66,12 +66,12 @@ class PostServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
+                UserGrade.BRONZE, UserLevel.UNBAN,"james", "changwon");
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp.com", "123456", "010123456782",
-                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"euisung", "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN,"euisung", "seoul");
     }
 
     //Dto create

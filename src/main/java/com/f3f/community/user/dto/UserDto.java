@@ -33,7 +33,6 @@ public class UserDto {
         private String phone;
         private UserGrade userGrade;
         private UserLevel userLevel;
-        private UserLogin userLogin;
 
         // User
         @NotBlank
@@ -48,7 +47,6 @@ public class UserDto {
                     .nickname(this.nickname)
                     .userGrade(this.userGrade)
                     .userLevel(this.userLevel)
-                    .userLogin(this.userLogin)
                     .phone(this.phone)
                     .address(this.address)
                     .scraps(new ArrayList<>())
@@ -138,8 +136,7 @@ public class UserDto {
 
         @NotBlank
         private String password;
-
-        private UserLogin userLogin;
+        // UserLogin이 존재했을때 여기서 로그인 여부도 값으로 전달 받았었다.
     }
 
 

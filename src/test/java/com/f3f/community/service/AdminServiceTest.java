@@ -1,8 +1,7 @@
 package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
-import com.f3f.community.exception.adminException.InvalidGradeException;
-import com.f3f.community.exception.adminException.InvalidUserLevelException;
+import com.f3f.community.exception.adminException.BannedUserException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
@@ -40,7 +39,7 @@ class AdminServiceTest {
     }
 
     private SaveRequest createUser() {
-        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH,"james", "changwon");
+        SaveRequest userInfo = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.UNBAN,"james", "changwon");
 //        User user = userInfo.toEntity();
         return userInfo;
     }
@@ -151,6 +150,23 @@ class AdminServiceTest {
         assertThrows(NotFoundUserException.class, () -> adminService.updateUserGrade(updateGradeRequest));
     }
 
+    @Test
+    @DisplayName(("유저 등업 실패 - 차단당한 유저"))
+    public void UpdateBannedUserGradeToFail() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateUserLevelRequest updateUserLevelRequest = getUpdateUserLevelDTO(user.get().getEmail(), UserLevel.BAN);
+        adminService.updateUserLevel(updateUserLevelRequest);
+
+        //when
+        UpdateGradeRequest updateUserGradeDTO = getUpdateUserGradeDTO(user.get().getEmail(), UserGrade.SILVER);
+
+        //then
+        assertThrows(BannedUserException.class, () -> adminService.updateUserGrade(updateUserGradeDTO));
+    }
+
 
     // key가 아닌 Enum 객체를 받게 되면서 사실상 필요 없어진 레거시 테스트 코드
 //    @Test
@@ -187,10 +203,27 @@ class AdminServiceTest {
     }
 
     @Test
+    @DisplayName(("전문가 유저로 등업 실패 - 차단당한 유저"))
+    public void UpdateBannedUserGradeToExpertToFail() {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        Optional<User> user = userRepository.findById(aLong);
+        UpdateUserLevelRequest updateUserLevelRequest = getUpdateUserLevelDTO(user.get().getEmail(), UserLevel.BAN);
+        adminService.updateUserLevel(updateUserLevelRequest);
+
+        //when
+        UpdateGradeToExpertRequest request = new UpdateGradeToExpertRequest(user.get().getEmail(), "주식");
+
+        //then
+        assertThrows(BannedUserException.class, () -> adminService.updateUserGradeToExpert(request));
+    }
+
+    @Test
     @DisplayName("어드민 유저 생성 테스트")
     public void createAdminTest() {
         //given
-        SaveRequest userDTO = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.ADMIN, UserLogin.AUTH,"james", "changwon");
+        SaveRequest userDTO = new SaveRequest("temp@temp.com", "123456", "01012345678", UserGrade.BRONZE, UserLevel.ADMIN,"james", "changwon");
         Long aLong = userService.saveUser(userDTO);
 
         //when
@@ -199,4 +232,5 @@ class AdminServiceTest {
         //then
         assertThat(byId.get().getUserLevel()).isEqualTo(UserLevel.ADMIN);
     }
+
 }

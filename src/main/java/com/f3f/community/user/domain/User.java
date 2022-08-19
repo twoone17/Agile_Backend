@@ -39,7 +39,6 @@ public class User extends UserBase {
 
     private UserLevel userLevel;
 
-    private UserLogin userLogin;
 
 
     public void updatePassword(String password) {
@@ -72,7 +71,7 @@ public class User extends UserBase {
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address, List<Post> posts, List<Comment> comments,
-                List<Likes> likes, List<Scrap> scraps, UserLevel userLevel, UserLogin userLogin) {
+                List<Likes> likes, List<Scrap> scraps, UserLevel userLevel) {
         super(id, email, password, phone, userGrade);
         this.nickname = nickname;
         this.address = address;
@@ -81,6 +80,5 @@ public class User extends UserBase {
         this.likes = likes;
         this.scraps = scraps;
         this.userLevel = userLevel;
-        this.userLogin = userLogin;
     }
 }

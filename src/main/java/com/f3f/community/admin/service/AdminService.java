@@ -1,7 +1,6 @@
 package com.f3f.community.admin.service;
 
-import com.f3f.community.exception.adminException.InvalidGradeException;
-import com.f3f.community.exception.adminException.InvalidUserLevelException;
+import com.f3f.community.exception.adminException.BannedUserException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
@@ -33,8 +32,10 @@ public class AdminService {
     public String updateUserGrade(@Valid UpdateGradeRequest updateGradeRequest) {
         String email = updateGradeRequest.getEmail();
         UserGrade userGrade = updateGradeRequest.getUserGrade();
-        // TODO 밴 여부 확인
         User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
+        if(user.getUserLevel() == UserLevel.BAN) {
+            throw new BannedUserException();
+        }
         user.updateUserGrade(userGrade);
         return resultString;
     }
@@ -42,7 +43,9 @@ public class AdminService {
     @Transactional
     public String updateUserGradeToExpert(@Valid  UpdateGradeToExpertRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
-        // TODO 밴 여부 확인
+        if(user.getUserLevel() == UserLevel.BAN) {
+            throw new BannedUserException();
+        }
         user.updateUserGrade(UserGrade.EXPERT);
         return resultString;
     }

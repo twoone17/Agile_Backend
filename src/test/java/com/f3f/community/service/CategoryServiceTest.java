@@ -53,7 +53,7 @@ public class CategoryServiceTest {
 
     private UserDto.SaveRequest createUserDto(String name) {
         return new UserDto.SaveRequest(name + "@" + name + ".com", "a1234567@", "01012345678",
-                UserGrade.BRONZE, UserLevel.UNBAN, UserLogin.AUTH, name, "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN, name, "seoul");
     }
 
     private PostDto.SaveRequest createPostDto(String title, User user, Category cat) {
