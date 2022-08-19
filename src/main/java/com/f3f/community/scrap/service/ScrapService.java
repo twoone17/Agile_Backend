@@ -53,7 +53,7 @@ public class ScrapService {
 
 
 
-    // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트, 수정해야함
+    // 포스트에서 스크랩 저장 눌렀을때, 스크랩에 포스트
     @Transactional
     public Long saveCollection(Long scrapId, Long uid,Long postId) throws Exception {
         Scrap scrap = scrapRepository.findById(scrapId).orElseThrow(NotFoundByIdException::new);
@@ -123,8 +123,6 @@ public class ScrapService {
         if (scrap.getUser().getId().equals(uid)) {
             Post post = postRepository.findById(postId).orElseThrow(NotFoundByIdException::new);
             ScrapPost scrapPost = scrapPostRepository.findByScrapAndPost(scrap, post).orElseThrow(NotFoundScrapPostByScrapAndPostException::new);
-//            scrap.getPostList().remove(scrapPost);
-//            post.getScrapList().remove(scrapPost);
             scrapPostRepository.delete(scrapPost);
             return DELETE;
         } else {
