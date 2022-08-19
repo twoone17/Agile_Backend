@@ -734,6 +734,60 @@ class PostServiceTestWithDB {
 
     }
 
+    @Test
+    @DisplayName("3 Update-6 : UpdatePost 예외 발생 테스트 - 수정시에 Title이 한글자 미만")
+    public void updatePostTestToFailByNullTitle() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("")
+                .content("contentChanged")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+
+        //then
+        assertThatThrownBy(()->postService.updatePost(pid,uid,updateRequest))
+                .isInstanceOf(ConstraintViolationException.class)
+                .hasMessageContaining("수정시 Title은 한글자 이상이어야 합니다.");
+    }
+
+    @Test
+    @DisplayName("3 Update-7 : UpdatePost 예외 발생 테스트 - 수정시에 content 한글자 미만")
+    public void updatePostTestToFailByNullContent() throws Exception{
+        //given
+        UserDto.SaveRequest userDto = createUserDto("euisung");
+        Long uid = userService.saveUser(userDto);
+
+        Long rid = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("kospi", categoryRepository.findById(rid).get());
+        Long cid = categoryService.createCategory(categoryDto);
+
+        PostDto.SaveRequest postDto = createPostDto("title1","content1", userRepository.findById(uid).get(), categoryRepository.findById(cid).get());
+
+        PostDto.UpdateRequest updateRequest = PostDto.UpdateRequest.builder()
+                .title("titleChanged")
+                .content("")
+                .build();
+        //when
+        Long pid = postService.savePost(postDto);
+
+        //then
+        assertThatThrownBy(()->postService.updatePost(pid,uid,updateRequest))
+                .isInstanceOf(ConstraintViolationException.class)
+                .hasMessageContaining("수정시 Content는 한글자 이상이어야 합니다.");
+
+
+
+    }
 
 
 }
