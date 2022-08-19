@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 
+import static com.f3f.community.common.constants.ResponseConstants.OK;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
@@ -22,7 +23,6 @@ import static com.f3f.community.user.dto.UserDto.*;
 public class AdminService {
 
     private final UserRepository userRepository;
-    private final String resultString = "OK";
 
 
 
@@ -37,7 +37,7 @@ public class AdminService {
             throw new BannedUserException();
         }
         user.updateUserGrade(userGrade);
-        return resultString;
+        return OK;
     }
 
     @Transactional
@@ -47,7 +47,7 @@ public class AdminService {
             throw new BannedUserException();
         }
         user.updateUserGrade(UserGrade.EXPERT);
-        return resultString;
+        return OK;
     }
 
     @Transactional
@@ -55,7 +55,7 @@ public class AdminService {
         User user = userRepository.findByEmail(updateUserLevelRequest.getEmail()).orElseThrow(() -> new NotFoundUserException("해당 이메일의 유저가 없습니다."));
         UserLevel userLevel = updateUserLevelRequest.getUserLevel();
         user.updateUserLevel(userLevel);
-        return resultString;
+        return OK;
     }
 
 }

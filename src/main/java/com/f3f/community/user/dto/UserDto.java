@@ -183,5 +183,15 @@ public class UserDto {
         private String email;
         private String section;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MyPageRequest {
+        @NotBlank
+        private String email;
+        private int limit;
+        private String option;
+    }
 }
-// PR

@@ -14,13 +14,17 @@ import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
+import static com.f3f.community.common.constants.ResponseConstants.*;
+import static com.f3f.community.common.constants.UserConstants.LIKE;
+import static com.f3f.community.common.constants.UserConstants.VIEW;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
@@ -68,7 +72,7 @@ public class UserService {
         }
 
         user.updateNickname(afterNickname);
-        return "OK";
+        return OK;
     }
 
     @Transactional
@@ -86,7 +90,7 @@ public class UserService {
 
         user.updatePassword(afterPassword);
 
-        return "OK";
+        return OK;
     }
 
     //TODO 비밀번호 분실 시, 기존 비밀번호를 다시 알려줄지 초기화로 다시 설정하게 할지 고민하다
@@ -102,7 +106,7 @@ public class UserService {
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
         user.updatePassword(AfterPassword);
-        return "OK";
+        return OK;
     }
 
     @Transactional
@@ -136,7 +140,7 @@ public class UserService {
         }
 
         userRepository.deleteByEmail(userRequest.getEmail());
-        return "OK";
+        return OK;
     }
 
 
@@ -192,7 +196,39 @@ public class UserService {
         return scrapsByUser;
     }
 
+    @Transactional(readOnly = true)
+    public List<Post> findUserPostsWithOptions(@Valid MyPageRequest myPageRequest) {
+        User user = userRepository.findByEmail(myPageRequest.getEmail()).orElseThrow(NotFoundUserException::new);
+        if(!postRepository.existsByAuthor(user)) {
+            throw new NotFoundPostListByAuthor();
+        }
+        List<Post> posts;
+        switch (myPageRequest.getOption()) {
+            case VIEW:
+                posts = postRepository.findByAuthorOrderByViewCount(user);
+                break;
+            case LIKE:
+                List<Post> temp = postRepository.findByAuthor(user);
+                Collections.sort(temp, new Comparator<Post>() {
+                    @Override
+                    public int compare(Post o1, Post o2) {
+                        if(o1.getLikesList().size() > o2.getLikesList().size()) {
+                            return -1;
+                        } else if(o1.getLikesList().size() < o2.getLikesList().size()) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                });
+                posts = temp;
+                break;
+            default:
+                posts = postRepository.findByAuthor(user);
+                break;
+        }
 
+        return new ArrayList<>(posts.subList(0, myPageRequest.getLimit()));
+    }
 
 
     private boolean CertificateEmail(String email) {
