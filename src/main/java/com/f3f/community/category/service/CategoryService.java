@@ -3,8 +3,9 @@ package com.f3f.community.category.service;
 import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.dto.CategoryDto.SaveRequest;
 import com.f3f.community.category.repository.CategoryRepository;
-import com.f3f.community.common.constants.ResponseConstants;
 import com.f3f.community.exception.categoryException.*;
+import com.f3f.community.exception.common.NotFoundByIdException;
+import com.f3f.community.exception.common.NotFoundByNameException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<Category> getChildCategories(Long catId) {
-        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundByIdException::new);
         return categoryRepository.findCategoriesByParents(category);
     }
 
@@ -74,7 +75,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<Category> getChildsOfRoot() {
-        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundCategoryByNameException::new);
+        Category root = categoryRepository.findByCategoryName("root").orElseThrow(NotFoundByNameException::new);
         return getChildCategories(root.getId());
     }
 
@@ -82,7 +83,7 @@ public class CategoryService {
 
     @Transactional
     public String updateCategoryName(Long catId, String newName) {
-        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundByIdException::new);
         if (categoryRepository.existsByCategoryName(newName)) {
             throw new DuplicateCategoryNameException();
         } else {
@@ -93,7 +94,7 @@ public class CategoryService {
 
     @Transactional
     public String deleteCategory(Long catId) {
-        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundCategoryByIdException::new);
+        Category category = categoryRepository.findById(catId).orElseThrow(NotFoundByIdException::new);
         if (category.getChildCategory().isEmpty()) {
             categoryRepository.delete(category);
         }else {
