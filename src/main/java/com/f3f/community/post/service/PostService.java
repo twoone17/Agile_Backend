@@ -31,12 +31,6 @@ public class PostService {
 
     /**
      * 게시글 작성(Create)
-     * 예외처리 )
-     * a)필수항목이 있는지
-     * 1.author
-     * 2.title
-     * 3.content
-     * 4.category
      */
     @Transactional
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
@@ -58,16 +52,10 @@ public class PostService {
      *  1.post_id로 post 찾기
      *
      * b) return 값 : PostList
-     *  1) author로 postList 찾기
+     *  1) userid로 postList 찾기
      *  2) title로 postList 찾기
      * -> 여러 게시글의 title이 똑같을 수 있다 : 우선 title과 완벽히 일치하는 postList 찾기 기능 구현
      *---------------------------------------------------------------------------------------
-     * 추후 검색 class에서 구현해야 할 것들
-     * 1) media로 postList 찾기
-     * 2) title로 postList 찾기 : title 단어가 포함된 모든 postList 반환
-     * 3) date로 postList 찾기
-     * 4) content로 postList 찾기
-     * 이외 여러가지 sort를 활용한 검색 기능
      */
 
 //    Read a-1) post_id로 post 찾기
@@ -110,13 +98,6 @@ public class PostService {
     /**
      * 게시글 수정 (Update)
      * 변경 가능 값 : title, content, media
-     * a) return 값 : String Ok
-     *
-     * 예외처리 )
-     * 필수항목이 있는지
-     * 1.postid 존재하는지
-     * 2.title
-     * 3.content
      */
     @Transactional
     public String updatePost(@Valid Long postId,@Valid Long userId,@Valid PostDto.UpdateRequest updateRequest) throws Exception{
@@ -137,13 +118,6 @@ public class PostService {
 
     /**
      * 게시글 삭제 (Delete)
-     * a) return 값 : String Ok
-     *
-     * 예외처리 )
-     * 본인 게시물인지 확인
-     * 1.postid 존재하는지
-     * 2.userid 존재하는지
-     * 3.본인의 게시물인지 확인
      */
     @Transactional
     public String deletePost(Long postId, Long userId){
