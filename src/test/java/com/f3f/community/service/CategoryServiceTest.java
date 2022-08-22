@@ -11,6 +11,8 @@ import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.service.PostService;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
@@ -51,7 +53,7 @@ public class CategoryServiceTest {
 
     private UserDto.SaveRequest createUserDto(String name) {
         return new UserDto.SaveRequest(name + "@" + name + ".com", "a1234567@", "01012345678",
-                UserGrade.BRONZE, name, "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN, name, "seoul");
     }
 
     private PostDto.SaveRequest createPostDto(String title, User user, Category cat) {

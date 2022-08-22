@@ -16,7 +16,13 @@ public interface ScrapPostRepository extends JpaRepository<ScrapPost,Long> {
 
     boolean existsByPostAndScrap(Post post, Scrap scrap);
 
+    boolean existsByPostIdAndScrapId(Long pid, Long sid);
+
     List<ScrapPost> findScrapPostsByScrap(Scrap scrap);
 
     Optional<ScrapPost> findByScrapAndPost(Scrap scrap, Post post);
+
+    List<ScrapPost> findScrapPostsByScrapId(Long id);
+
+    List<ScrapPost> findScrapPostsByPostId(Long id);
 }

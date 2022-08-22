@@ -2,14 +2,13 @@ package com.f3f.community.user.dto;
 
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import lombok.*;
 import org.aspectj.lang.annotation.Before;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.ArrayList;
 
 // 패스워드 정규식은 프론트관할, 일단은 길이 체크만
@@ -33,6 +32,7 @@ public class UserDto {
 
         private String phone;
         private UserGrade userGrade;
+        private UserLevel userLevel;
 
         // User
         @NotBlank
@@ -46,6 +46,7 @@ public class UserDto {
                     .password(this.password)
                     .nickname(this.nickname)
                     .userGrade(this.userGrade)
+                    .userLevel(this.userLevel)
                     .phone(this.phone)
                     .address(this.address)
                     .scraps(new ArrayList<>())
@@ -58,7 +59,7 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     public static class ChangePasswordRequest {
-        @Email
+        @NotBlank
         private String email;
 
         @NotBlank
@@ -86,7 +87,6 @@ public class UserDto {
     public  static class ChangePasswordWithoutSignInRequest {
 
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank
@@ -98,7 +98,6 @@ public class UserDto {
     @NoArgsConstructor
     public static class ChangeNicknameRequest {
         @NotBlank
-        @Email
         private String email;
         @NotBlank
         private String AfterNickname;
@@ -121,12 +120,26 @@ public class UserDto {
     @Builder
     public static class UserRequest {
         @NotBlank
-        @Email
         private String email;
 
         @NotBlank
         private String password;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserDeleteRequest {
+        @NotBlank
+        private String email;
+
+        @NotBlank
+        private String password;
+        // UserLogin이 존재했을때 여기서 로그인 여부도 값으로 전달 받았었다.
+    }
+
+
 
     @Getter
     @NoArgsConstructor
@@ -139,4 +152,46 @@ public class UserDto {
 
     // 자주 사용되지 않는 클래스는 static 말고 그냥 이너 클래스로 쓰면 더 좋다.
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateUserLevelRequest {
+        @NotBlank
+        private String email;
+        private UserLevel userLevel;
+        private String content;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateGradeRequest {
+        @NotBlank
+        private String email;
+        @NotNull
+        private UserGrade userGrade;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateGradeToExpertRequest {
+        @NotBlank
+        private String email;
+        private String section;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MyPageRequest {
+        @NotBlank
+        private String email;
+        private int limit;
+        private String option;
+    }
 }

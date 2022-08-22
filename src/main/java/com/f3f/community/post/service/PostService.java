@@ -31,24 +31,17 @@ public class PostService {
 
     /**
      * 게시글 작성(Create)
-     * 예외처리 )
-     * a)필수항목이 있는지
-     * 1.author
-     * 2.title
-     * 3.content
-     * 4.category
      */
     @Transactional
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
         Post post = SaveRequest.toEntity();
-        postRepository.save(post);
-
         User author = userRepository.findById(post.getAuthor().getId()).get();
-        //author의 postList에도 저장
         author.getPosts().add(post);
+
         //category의 postlist에 저장
         Category category = categoryRepository.findById(post.getCategory().getId()).get();
         category.getPostList().add(post);
+        postRepository.save(post);
 
         return post.getId();
     }
@@ -59,16 +52,10 @@ public class PostService {
      *  1.post_id로 post 찾기
      *
      * b) return 값 : PostList
-     *  1) author로 postList 찾기
+     *  1) userid로 postList 찾기
      *  2) title로 postList 찾기
      * -> 여러 게시글의 title이 똑같을 수 있다 : 우선 title과 완벽히 일치하는 postList 찾기 기능 구현
      *---------------------------------------------------------------------------------------
-     * 추후 검색 class에서 구현해야 할 것들
-     * 1) media로 postList 찾기
-     * 2) title로 postList 찾기 : title 단어가 포함된 모든 postList 반환
-     * 3) date로 postList 찾기
-     * 4) content로 postList 찾기
-     * 이외 여러가지 sort를 활용한 검색 기능
      */
 
 //    Read a-1) post_id로 post 찾기
@@ -83,21 +70,6 @@ public class PostService {
         return post;
 
     }
-
-    // Read b-1) author로 postList 찾기
-    @Transactional(readOnly = true)
-    public List<Post> findPostListByAuthor(User author) throws Exception {
-        //postRepository에 author와 일치하는 게시글이 없으면 예외처리
-        if(!postRepository.existsByAuthor(author)) {
-            throw new NotFoundPostListByAuthor();
-        }
-        //postRepository에 author가 있을때
-        List<Post> postList =  postRepository.findByAuthor(author);
-        //author가 작성한 postlist를 반환
-        return postList;
-
-    }
-
     //Read b-2) title로 postList 찾기
     @Transactional(readOnly = true)
     public List<Post> findPostListByTitle(String title) throws Exception{
@@ -111,10 +83,10 @@ public class PostService {
         return postList;
     }
 
-//    author - userId로 게시글을 찾을때 TODO: Author 자체로 찾으면 되는데, User 클래스 안에 있는 userId로 Post 서비스 단에서 굳이 찾을 필요가 있을까?
+//    author - userId로 게시글을 찾을때
     @Transactional(readOnly = true)
     public List<Post> findPostListByUserId(Long userId) throws Exception {
-        if (!postRepository.existsById(userId)) {
+        if (!postRepository.existsByAuthorId(userId)) {
             //postRepository에 userid로 저장된 게시글이 없으면 예외처리
             throw new NotFoundPostByUserIdException("UserId와 일치하는 게시글리스트가 없습니다");
         }
@@ -126,16 +98,9 @@ public class PostService {
     /**
      * 게시글 수정 (Update)
      * 변경 가능 값 : title, content, media
-     * a) return 값 : String Ok
-     *
-     * 예외처리 )
-     * 필수항목이 있는지
-     * 1.postid 존재하는지
-     * 2.title
-     * 3.content
      */
     @Transactional
-    public String updatePost(@Valid Long postId,Long userId, PostDto.UpdateRequest updateRequest) throws Exception{
+    public String updatePost(@Valid Long postId,@Valid Long userId,@Valid PostDto.UpdateRequest updateRequest) throws Exception{
 
         Post post = postRepository.findById(postId).orElseThrow(NotFoundPostByIdException::new);
         User author = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
@@ -153,13 +118,6 @@ public class PostService {
 
     /**
      * 게시글 삭제 (Delete)
-     * a) return 값 : String Ok
-     *
-     * 예외처리 )
-     * 본인 게시물인지 확인
-     * 1.postid 존재하는지
-     * 2.userid 존재하는지
-     * 3.본인의 게시물인지 확인
      */
     @Transactional
     public String deletePost(Long postId, Long userId){

@@ -1,5 +1,12 @@
 package com.f3f.community.user.service;
 
+import com.f3f.community.comment.repository.CommentRepository;
+import com.f3f.community.exception.postException.NotFoundPostListByAuthor;
+import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.repository.PostRepository;
+import com.f3f.community.scrap.domain.Scrap;
+import com.f3f.community.scrap.repository.ScrapRepository;
+import io.lettuce.core.Limit;
 import org.springframework.transaction.annotation.Transactional;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.exception.userException.*;
@@ -8,11 +15,17 @@ import com.f3f.community.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
-
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import static com.f3f.community.common.constants.ResponseConstants.*;
+import static com.f3f.community.common.constants.UserConstants.LIKE;
+import static com.f3f.community.common.constants.UserConstants.VIEW;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @Service
@@ -21,6 +34,9 @@ import static com.f3f.community.user.dto.UserDto.*;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final ScrapRepository scrapRepository;
 
     @Transactional
     public Long saveUser(@Valid SaveRequest saveRequest) {
@@ -39,14 +55,13 @@ public class UserService {
     }
 
     @Transactional
-    public String updateNickname(ChangeNicknameRequest changeNicknameRequest) {
+    public String updateNickname(@Valid ChangeNicknameRequest changeNicknameRequest) {
         String email = changeNicknameRequest.getEmail();
         String beforeNickname = changeNicknameRequest.getBeforeNickname();
         String afterNickname = changeNicknameRequest.getAfterNickname();
 
-//        IsValidNickname(afterNickname);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
 
 
         if(userRepository.existsByNickname(afterNickname)) {
@@ -58,18 +73,17 @@ public class UserService {
         }
 
         user.updateNickname(afterNickname);
-        return "OK";
+        return OK;
     }
 
     @Transactional
-    public String updatePassword(ChangePasswordRequest changePasswordRequest) {
+    public String updatePassword(@Valid ChangePasswordRequest changePasswordRequest) {
         String email = changePasswordRequest.getEmail();
         String beforePassword = changePasswordRequest.getBeforePassword();
         String afterPassword = changePasswordRequest.getAfterPassword();
 
-//        IsValidPassword(beforePassword);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(changePasswordRequest.getEmail()).orElseThrow(NotFoundUserException::new);
 
         if(beforePassword.equals(afterPassword)) {
             throw new DuplicateInChangePasswordException();
@@ -77,29 +91,28 @@ public class UserService {
 
         user.updatePassword(afterPassword);
 
-        return "OK";
+        return OK;
     }
 
     //TODO 비밀번호 분실 시, 기존 비밀번호를 다시 알려줄지 초기화로 다시 설정하게 할지 고민하다
     //  두 기능 모두 구현해둠.
 
     @Transactional
-    public String changePasswordWithoutSignIn(ChangePasswordWithoutSignInRequest request) {
+    public String updatePasswordWithoutSignIn(@Valid ChangePasswordWithoutSignInRequest request) {
         String email = request.getEmail();
         String AfterPassword = request.getAfterPassword();
-//        IsValidPassword(AfterPassword);
 
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(NotFoundUserException::new);
 
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
         user.updatePassword(AfterPassword);
-        return "OK";
+        return OK;
     }
 
     @Transactional
     public SearchedPassword findPassword(String email) {
-        User user = FindUserByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
         // TODO 이메일 인증
         CertificateEmail(user.getEmail());
 
@@ -112,12 +125,12 @@ public class UserService {
 
 
     @Transactional
-    public String delete(UserRequest userRequest) {
+    public String delete(@Valid UserDeleteRequest userRequest) {
 
         //TODO: 로그인 여부(나중에), password 암호화
         // 이메일 검증, 본인의 이메일임을 검증해야함
 
-        User user = FindUserByEmail(userRequest.getEmail());
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(NotFoundUserException::new);
 
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
@@ -128,47 +141,96 @@ public class UserService {
         }
 
         userRepository.deleteByEmail(userRequest.getEmail());
-        return "OK";
+        return OK;
     }
 
 
     @Transactional(readOnly = true)
-    public User FindUserByUserRequest(UserRequest userRequest) {
+    public User findUserByUserRequest(@Valid UserRequest userRequest) {
         if(!userRepository.existsByPassword(userRequest.getPassword())) {
             throw new NotFoundPasswordException();
         }
-        User user = FindUserByEmail(userRequest.getEmail());
+        User user = userRepository.findByEmail(userRequest.getEmail()).orElseThrow(NotFoundUserException::new);
         return user;
     }
 
     @Transactional(readOnly = true)
 
-    public User FindUsersByNickname(String nickname) {
+    public Long findUserByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElseThrow(NotFoundNicknameException::new);
-        return user;
+        return user.getId();
     }
 
     @Transactional(readOnly = true)
-    public User FindUserById(Long id) {
+    public Long findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(NotFoundUserException::new);
-        return user;
+        return user.getId();
     }
 
     @Transactional(readOnly = true)
-    public User FindUserByUserEmail(String email) {
-        return FindUserByEmail(email);
+    public Long findUserByEmail(@NotBlank String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        return user.getId();
     }
 
-    // id조회, 이메일 조회, 내부용
     // 유저 조회했을때 post를 다 보여줄거냐, 10개로 끊어서 보여줄지,
     // scrap도 마찬가지, user는 정보를 다 가지고 있어서 이걸 어떻게 뿌릴지 고민해야한다.
 
-    // 지금이랑 반대로 예외를 서비스 로직 내에서 터뜨리기
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    // 공통화
-    private User FindUserByEmail(String email) {
+    // 특정 유저가 작성한 게시글은 postService에서 제공하는 듯 하지만 유저에서도 별도로 제공해야한다고 판단하여
+    // 게시글, 댓글 조회 기능을 구현하겠다.
+
+    @Transactional(readOnly = true)
+    public List<Post> findUserPostsByEmail(@NotBlank String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
-        return user;
+        if(!postRepository.existsByAuthor(user)) {
+            throw new NotFoundPostListByAuthor();
+        }
+        List<Post> postList =  postRepository.findByAuthor(user);
+        return postList;
+    }
+
+    // 내부 조회용
+    @Transactional(readOnly = true)
+    public List<Scrap> findUserScrapsByEmail(@NotBlank String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(user);
+        return scrapsByUser;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> findUserPostsWithOptions(@Valid MyPageRequest myPageRequest) {
+        User user = userRepository.findByEmail(myPageRequest.getEmail()).orElseThrow(NotFoundUserException::new);
+        if(!postRepository.existsByAuthor(user)) {
+            throw new NotFoundPostListByAuthor();
+        }
+        List<Post> posts;
+        switch (myPageRequest.getOption()) {
+            case VIEW:
+                posts = postRepository.findByAuthorOrderByViewCountDesc(user);
+                break;
+
+            case LIKE:
+                List<Post> temp = postRepository.findByAuthor(user);
+                Collections.sort(temp, new Comparator<Post>() {
+                    @Override
+                    public int compare(Post o1, Post o2) {
+                        if(o1.getLikesList().size() > o2.getLikesList().size()) {
+                            return -1;
+                        } else if(o1.getLikesList().size() < o2.getLikesList().size()) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                });
+                posts = temp;
+                break;
+
+            default:
+                posts = postRepository.findByAuthor(user);
+                break;
+        }
+        int slice = Math.min(myPageRequest.getLimit(), posts.size());
+        return new ArrayList<>(posts.subList(0, slice));
     }
 
 

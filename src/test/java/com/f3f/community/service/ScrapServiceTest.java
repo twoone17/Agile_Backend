@@ -4,9 +4,8 @@ import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
-import com.f3f.community.exception.postException.NotFoundPostByIdException;
+import com.f3f.community.exception.common.NotFoundByIdException;
 import com.f3f.community.exception.scrapException.*;
-import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
@@ -16,6 +15,8 @@ import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
+import com.f3f.community.user.domain.UserLevel;
+import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
@@ -36,8 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-class
-ScrapServiceTest {
+class ScrapServiceTest {
 
     @Autowired
     ScrapService scrapService;
@@ -68,12 +68,12 @@ ScrapServiceTest {
 
     private UserDto.SaveRequest createUserDto1(){
         return new UserDto.SaveRequest("temp@temp.com", "123456", "01012345678",
-                UserGrade.BRONZE, "james", "changwon");
+                UserGrade.BRONZE, UserLevel.UNBAN,"james", "changwon");
     }
 
     private UserDto.SaveRequest createUserDto2(){
         return new UserDto.SaveRequest("temp2@temp2.com", "1234567", "01012341234",
-                UserGrade.BRONZE, "own", "seoul");
+                UserGrade.BRONZE, UserLevel.UNBAN,"own", "seoul");
     }
     private ScrapDto.SaveRequest createScrapDto1(User user) {
         return ScrapDto.SaveRequest.builder()
@@ -142,7 +142,7 @@ ScrapServiceTest {
         // when
         Long scrapId = scrapService.createScrap(scrapDto);
         // then
-        scrapRepository.findById(scrapId).orElseThrow(NotFoundScrapByIdException::new);
+        scrapRepository.findById(scrapId).orElseThrow(NotFoundByIdException::new);
     }
     // createScrap 테스트 종료
 
@@ -192,7 +192,7 @@ ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.saveCollection(sid + 1,uid, pid));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.saveCollection(sid + 1,uid, pid));
     }
 
     @Test
@@ -213,7 +213,7 @@ ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
 
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.saveCollection(sid, uid,pid+1));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.saveCollection(sid, uid,pid+1));
     }
 
     @Test
@@ -298,7 +298,7 @@ ScrapServiceTest {
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, uid, "test3"));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.updateCollectionName(scrap2 + 1, uid, "test3"));
 
     }
 
@@ -314,7 +314,7 @@ ScrapServiceTest {
         Long scrap1 = scrapService.createScrap(saveRequest1);
         Long scrap2 = scrapService.createScrap(saveRequest2);
         // then
-        assertThrows(NotFoundUserException.class, () -> scrapService.updateCollectionName(scrap2 , uid+1, "test3"));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.updateCollectionName(scrap2 , uid+1, "test3"));
 
     }
 
@@ -415,7 +415,7 @@ ScrapServiceTest {
         // when
         Long scrap = scrapService.createScrap(saveRequest);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollection(scrap+1, uid));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.deleteCollection(scrap+1, uid));
 
     }
 
@@ -432,7 +432,7 @@ ScrapServiceTest {
 
         // then
         String ok = scrapService.deleteCollection(scrap,uid);
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapRepository.findById(scrap).orElseThrow(NotFoundScrapByIdException::new));
+        assertThrows(NotFoundByIdException.class, () -> scrapRepository.findById(scrap).orElseThrow(NotFoundByIdException::new));
     }
     // deleteCollection 테스트 종료
 
@@ -457,7 +457,7 @@ ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid, uid, pid);
         // then
-        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1,uid, pid));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.deleteCollectionItem(sid + 1,uid, pid));
     }
 
     @Test
@@ -479,7 +479,7 @@ ScrapServiceTest {
         Long sid = scrapService.createScrap(scrap);
         Long spid = scrapService.saveCollection(sid,uid, pid);
         // then
-        assertThrows(NotFoundPostByIdException.class, () -> scrapService.deleteCollectionItem(sid , uid, pid+1));
+        assertThrows(NotFoundByIdException.class, () -> scrapService.deleteCollectionItem(sid , uid, pid+1));
     }
 
     @Test
@@ -506,53 +506,6 @@ ScrapServiceTest {
         assertThrows(NotFoundScrapPostByScrapAndPostException.class, () -> scrapService.deleteCollectionItem(sid2 , uid, pid));
     }
 
-    @Test
-    @DisplayName("deleteCollectionItem 성공 테스트 - 스크랩 포스트 리스트에 존재 x")
-    public void deleteCollectionItemTestByPostList() throws Exception{
-        //given
-        UserDto.SaveRequest user = createUserDto1();
-        Long uid = userService.saveUser(user);
-        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
-        Category root = createRoot();
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
-        Long cid = categoryService.createCategory(categoryDto);
-        Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
 
-
-        // when
-        Long pid = postService.savePost(post);
-        Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid,uid,pid);
-        // then
-        scrapService.deleteCollectionItem(sid, uid, pid);
-        assertThat(0).isEqualTo(scrapRepository.findById(sid).get().getPostList().size());
-
-
-    }
-    @Test
-    @DisplayName("deleteCollectionItem 성공 테스트 - 포스트 스크랩 리스트에 존재 x")
-    public void deleteCollectionItemTestByScrapList() throws Exception{
-        //given
-        UserDto.SaveRequest user = createUserDto1();
-        Long uid = userService.saveUser(user);
-        ScrapDto.SaveRequest scrap = createScrapDto1(userRepository.findById(uid).get());
-        Category root = createRoot();
-        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
-        Long cid = categoryService.createCategory(categoryDto);
-        Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest post = createPostDto1(userRepository.findById(uid).get(), cat);
-
-
-        // when
-        Long pid = postService.savePost(post);
-        Long sid = scrapService.createScrap(scrap);
-        Long spid = scrapService.saveCollection(sid,uid, pid);
-        // then
-        scrapService.deleteCollectionItem(sid, uid, pid);
-        assertThat(0).isEqualTo(postRepository.findById(pid).get().getScrapList().size());
-
-
-    }
     // deleteCollectionItem 테스트 종료
 }

@@ -15,7 +15,6 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 //    List<Post> findPostListByUserId(Long userid);
      List<Post> findByAuthor(User author);
 
-     //primary key인 id값으로 찾기 : 왜 Post로 반환을 하면 오류가 나는걸까?
      Optional<Post> findById(Long id);
 
     List<Post> findByAuthorId(Long userid);
@@ -25,8 +24,13 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     boolean existsByAuthor(User author);
 
+    boolean existsByAuthorId(Long userid);
+
     boolean existsByTitle(String title);
 
     List<Post> findPostsByCategory(Category category);
+
+    // 철웅 추가, 유저 ID로 찾되 조회수 순으로 나열
+    List<Post> findByAuthorOrderByViewCountDesc(User author);
 
 }
