@@ -36,7 +36,7 @@ public class LikesDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DeleteLikes{
-        private User user;
+       // private User user;
         private Post post;
         private Long id;
     }

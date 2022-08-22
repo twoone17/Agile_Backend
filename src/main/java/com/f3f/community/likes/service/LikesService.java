@@ -73,7 +73,7 @@ public class LikesService {
     //Delete
     @Transactional
     public String deleteLikes(DeleteLikes deleteLikes) {
-        User user = userRepository.findByEmail(deleteLikes.getUser().getEmail()).orElseThrow(NotFoundUserEmailException::new);
+        //User user = userRepository.findByEmail(deleteLikes.getUser().getEmail()).orElseThrow(NotFoundUserEmailException::new);
         Post post = postRepository.findById(deleteLikes.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);
 
         Likes likes = likesRepository.findById(deleteLikes.getId()).orElseThrow(NotFoundLikesException::new);
