@@ -71,10 +71,10 @@ public class CommentService {
         if(author.getUserLevel().equals(UserLevel.BAN)){
             throw new BanUserCommentException();
         }
-//        //부모 댓글이 존재하지 않을 때,
-//        if(dto.getParentComment()==null){
-//            throw new NotFoundParentCommentException();
-//        } --> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
+        //부모 댓글이 존재하지 않을 때,
+        if(commentDto.getParentComment()==null){
+
+        } //--> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
 
         Comment comment = commentDto.toEntity();//엔티티 생성
 

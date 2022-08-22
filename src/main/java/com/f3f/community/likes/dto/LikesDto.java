@@ -10,25 +10,37 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
+
 public class LikesDto {
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    public static class SaveRequest {
 
-    private Long id;
-    @NotNull
-    private User user;
-    @NotNull
-    private Post post;
+        @NotNull
+        private User user;
+        @NotNull
+        private Post post;
 
-    public Likes toEntity() {
-        return Likes.builder()
-                .id(id)
-                .user(user)
-                .post(post)
-                .build();
+        public Likes toEntity() {
+            return Likes.builder()
+                    .user(user)
+                    .post(post)
+                    .build();
+        }
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeleteLikes{
+        private User user;
+        private Post post;
+        private Long id;
+    }
+
 }
 
 
