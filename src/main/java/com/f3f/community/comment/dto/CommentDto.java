@@ -17,7 +17,7 @@ public class CommentDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
-    public static class saveRequest {
+    public static class SaveRequest {
         private Long id;
         @NotNull
         private String content;

@@ -6,6 +6,7 @@ import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
+import com.f3f.community.likes.dto.LikesDto.*;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.likes.service.LikesService;
 import com.f3f.community.post.domain.Post;
@@ -67,13 +68,14 @@ class LikesServiceTest {
     public void deleteAll() {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
+        likesRepository.deleteAll();
         postRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
     }
 
-    private LikesDto createLikesDto(User user, Post post) {
-        return new LikesDto(user, post);
+    private LikesDto.SaveRequest createLikesDto(User user, Post post) {
+        return new LikesDto.SaveRequest(user, post);
     }
 
     private UserDto.SaveRequest createUser() {
@@ -130,7 +132,7 @@ class LikesServiceTest {
 
         //when
         Optional<Post> byIdPost = postRepository.findById(aLong1);
-        LikesDto likesDto = createLikesDto(byId.get(), byIdPost.get());
+        LikesDto.SaveRequest likesDto = createLikesDto(byId.get(), byIdPost.get());
         Long likesId = likesService.createLikes(likesDto);
         Optional<Likes> byId1 = likesRepository.findById(likesId);
 
@@ -140,7 +142,7 @@ class LikesServiceTest {
 
     @Test
     @DisplayName("좋아요 유저 자동등록 테스트")
-    public void 곰마워() throws Exception {
+    public void ASD() throws Exception {
         //given
         UserDto.SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
@@ -154,7 +156,7 @@ class LikesServiceTest {
 
         //when
         Optional<Post> byIdPost = postRepository.findById(aLong1);
-        LikesDto likesDto = createLikesDto(byId.get(), byIdPost.get());
+        LikesDto.SaveRequest likesDto = createLikesDto(byId.get(), byIdPost.get());
         Long likesId = likesService.createLikes(likesDto);
         Optional<Likes> userLikesList = likesRepository.findById(byId.get().getId());
         //then
