@@ -16,7 +16,6 @@ import javax.validation.constraints.NotNull;
 @Getter
 public class LikesDto {
 
-    private Long id;
     @NotNull
     private User user;
     @NotNull
@@ -24,7 +23,6 @@ public class LikesDto {
 
     public Likes toEntity() {
         return Likes.builder()
-                .id(id)
                 .user(user)
                 .post(post)
                 .build();
