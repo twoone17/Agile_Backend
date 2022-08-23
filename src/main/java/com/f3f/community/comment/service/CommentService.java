@@ -2,7 +2,7 @@ package com.f3f.community.comment.service;
 
 import com.f3f.community.category.domain.Category;
 import com.f3f.community.comment.domain.Comment;
-import com.f3f.community.comment.dto.CommentDto;
+import static com.f3f.community.comment.dto.CommentDto.*;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.exception.categoryException.MaxDepthException;
 import com.f3f.community.exception.categoryException.NotEmptyChildCategoryException;
@@ -15,6 +15,7 @@ import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.userException.NotFoundUserEmailException;
 import com.f3f.community.exception.userException.NotFoundUserException;
+import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
@@ -63,20 +64,20 @@ public class CommentService {
 
     //Create
     @Transactional
-    public Long createComments(CommentDto commentDto){
-        User author = userRepository.findByEmail(commentDto.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
-        Post post = postRepository.findById(commentDto.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//해당 게시글이 존재하지 않을 때
+    public Long createComments(SaveRequest saveRequest){
+        User author = userRepository.findByEmail(saveRequest.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+        Post post = postRepository.findById(saveRequest.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//해당 게시글이 존재하지 않을 때
 
         //유저가 존재하면 이제 밴 당했는지의 여부를 확인.
         if(author.getUserLevel().equals(UserLevel.BAN)){
             throw new BanUserCommentException();
         }
-//        //부모 댓글이 존재하지 않을 때,
-//        if(dto.getParentComment()==null){
-//            throw new NotFoundParentCommentException();
-//        } --> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
+        //부모 댓글이 존재하지 않을 때,
+        if(saveRequest.getParentComment()==null){
 
-        Comment comment = commentDto.toEntity();//엔티티 생성
+        } //--> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
+
+        Comment comment = saveRequest.toEntity();//엔티티 생성
 
         //부모 댓글이 비어있지 않고 부모 댓글이 이미 존재하면,
         if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
@@ -131,7 +132,7 @@ public class CommentService {
     //Delete
     @Transactional
     public String deleteComments(Long Id){
-        // User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
+        //User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
          Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentByIdException::new);
          Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
 
