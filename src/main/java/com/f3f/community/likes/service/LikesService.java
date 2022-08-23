@@ -4,7 +4,10 @@ import com.f3f.community.exception.likeException.ExistLikeAlreadyException;
 import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.userException.NotFoundUserEmailException;
+import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.likes.domain.Likes;
+
+import static com.f3f.community.common.constants.ResponseConstants.DELETE;
 import static com.f3f.community.likes.dto.LikesDto.*;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.f3f.community.common.constants.ResponseMessage.*;
 /*
  1. C
      - post_id, user_id 확인하고 좋아요 생성
@@ -35,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 //TODO toEntity를 사용하는대신 DTO에 id 추가할지 다른 대안 생각.
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class LikesService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -42,7 +47,6 @@ public class LikesService {
 
 
     //create
-    @Transactional
     public Long createLikes(SaveRequest saveRequest) {
         User user = userRepository.findByEmail(saveRequest.getUser().getEmail()).orElseThrow(NotFoundUserEmailException::new);
         //존재하지 않는 게시글이면 예외 처리
@@ -70,8 +74,8 @@ public class LikesService {
         return likes.getId();
     }
 
+
     //Delete
-    @Transactional
     public String deleteLikes(DeleteLikes deleteLikes) {
         //User user = userRepository.findByEmail(deleteLikes.getUser().getEmail()).orElseThrow(NotFoundUserEmailException::new);
         Post post = postRepository.findById(deleteLikes.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);
@@ -88,6 +92,6 @@ public class LikesService {
 
         likesRepository.delete(likes);
 
-        return "OK";
+        return DELETE;
     }
 }

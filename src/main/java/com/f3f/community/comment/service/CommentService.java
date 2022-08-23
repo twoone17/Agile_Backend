@@ -15,6 +15,7 @@ import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.userException.NotFoundUserEmailException;
 import com.f3f.community.exception.userException.NotFoundUserException;
+import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
@@ -29,8 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static com.f3f.community.common.constants.ResponseConstants.OK;
+import static com.f3f.community.common.constants.ResponseConstants.*;
 
 /*
 댓글과 대댓글 구분하는거
@@ -72,16 +72,16 @@ public class CommentService {
         if(author.getUserLevel().equals(UserLevel.BAN)){
             throw new BanUserCommentException();
         }
-        //부모 댓글이 존재하지 않을 때,
-        if(saveRequest.getParentComment()==null){
-
-        } //--> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
+//        //부모 댓글이 존재하지 않을 때,
+//        if(saveRequest.getParentComment()==null){
+//
+//        } //--> 이게 필요한가..? CategoryName("root")을 대신할 것이 필요한가? 없음.
 
         Comment comment = saveRequest.toEntity();//엔티티 생성
 
         //부모 댓글이 비어있지 않고 부모 댓글이 이미 존재하면,
         if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
-            Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();//이게 필요한가? 그냥 comment로 확인하면 안됨?
+            Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
             if(parent.getDepth()>1){
                 throw new MaxDepthException();
             }
@@ -108,26 +108,36 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<Comment> findCommentsByUser(User user){
         if(!userRepository.existsByEmail(user.getEmail())){
+//            for(Likes lieke : user.getLikes()){
+//
+//            }
+//        }
+//        else{
             throw new NotFoundUserEmailException();
         }
         return user.getComments();
     }
 
+
+    public static class UpdateCommentRequest {
+        private String Email;
+        private Long postId;
+        private Long commentId;
+        private String beforeContent;
+        private String afterContent;
+    }
     //Update
     @Transactional
-    public String updateComment(Comment comment){
-        User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserEmailException::new);
-        Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);
-        //TODO 부모 자식 확인.
+    public String updateComment(UpdateCommentRequest updateCommentRequest){
+//        User author = userRepository.findByEmail(updateCommentRequest.Email).orElseThrow(NotFoundUserEmailException::new);
+//        Post post = postRepository.findById(updateCommentRequest.postId).orElseThrow(NotFoundPostByIdException::new);
+        Comment comment = commentRepository.findById(updateCommentRequest.commentId).orElseThrow(NotFoundCommentByIdException::new);
+        comment.getContent().replace(updateCommentRequest.beforeContent, updateCommentRequest.afterContent);
+        //dirty checking으로 굳이 따로 save안해도 되나? 그럴듯,,,?
 
-        return "OK";
+        //부모 자식 확인할 필요없이 댓글 아이디로 수정하면 될듯.
+        return UPDATE;
     }
-
-//    if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
-//        Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();//이게 필요한가? 그냥 comment로 확인하면 안됨?
-//        if(parent.getDepth()>1){
-//            throw new MaxDepthException();
-//        }
 
     //Delete
     @Transactional
@@ -141,8 +151,8 @@ public class CommentService {
 //        if(!commentRepository.existsById(comment.getId())){
 //            throw new NotFoundCommentByIdException();
 //        }
-        //내가 지우려고 하는게 부모 댓글의 경우
-        //대댓글이 없고 부모 댓글만 있다면 댓글 삭제
+        //-------부모 댓글을 지울 경우------------
+        //대댓글이 없고 부모 댓글만 있다면 댓글 삭제(자식 댓글도 포함 될듯)
         if(comment.getChildComment().isEmpty()) {
             commentRepository.delete(comment);
         }
@@ -158,10 +168,8 @@ public class CommentService {
 //                }
         }
 
-        //자식 댓글의 경우
 
-
-        return "OK";
+        return DELETE;
     }
 
 
