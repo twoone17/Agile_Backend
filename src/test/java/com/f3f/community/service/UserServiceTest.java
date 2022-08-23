@@ -5,6 +5,9 @@ import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.likes.dto.LikesDto;
+import com.f3f.community.likes.repository.LikesRepository;
+import com.f3f.community.likes.service.LikesService;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -43,8 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static com.f3f.community.user.dto.UserDto.*;
 
 @SpringBootTest
-// 유저 테스트는 @Transactional 애노테이션이 없어도 잘 동작하지만 Scrap, Post는 동작하지 않는다.
-//@Transactional
 class UserServiceTest {
 
     @Autowired
@@ -58,6 +59,8 @@ class UserServiceTest {
     @Autowired
     ScrapPostRepository scrapPostRepository;
     @Autowired
+    LikesRepository likesRepository;
+    @Autowired
     UserService userService;
     @Autowired
     CategoryService categoryService;
@@ -67,6 +70,8 @@ class UserServiceTest {
     ScrapService scrapService;
     @Autowired
     ScrapPostService scrapPostService;
+    @Autowired
+    LikesService likesService;
 
     private final String resultString = "OK";
 
@@ -74,6 +79,7 @@ class UserServiceTest {
     public void deleteAll() {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
+        likesRepository.deleteAll();
         postRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
@@ -107,6 +113,17 @@ class UserServiceTest {
 //        User user = userInfo.toEntity();
         return userInfo;
     }
+
+    private List<User> createUsers(int index){
+        List<User> userList = new ArrayList<>();
+        for(int i=1; i<=index; i++) {
+            SaveRequest userDTO = createUserWithUniqueCount(i);
+            Long aLong = userService.saveUser(userDTO);
+            userList.add(userRepository.findById(aLong).get());
+        }
+        return userList;
+    }
+
 
     private SaveRequest createUserWithUniqueCount(int i) {
         SaveRequest userInfo = new SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, "brandy" + i, "pazu");
@@ -143,7 +160,7 @@ class UserServiceTest {
                 .build();
     }
 
-    private PostDto.SaveRequest createPostDto(User user, Category cat, int index) {
+    private PostDto.SaveRequest createPostDtoWithViewCount(User user, Category cat, int index) {
         return PostDto.SaveRequest.builder()
                 .title("test title" + index)
                 .content("test content for test" + index)
@@ -153,6 +170,17 @@ class UserServiceTest {
                 .category(cat)
                 .build();
     }
+
+    private PostDto.SaveRequest createPostDto(User user, Category cat, int index) {
+        return PostDto.SaveRequest.builder()
+                .title("test title" + index)
+                .content("test content for test" + index)
+                .author(user)
+                .scrapList(new ArrayList<>())
+                .category(cat)
+                .build();
+    }
+
 
     private CategoryDto.SaveRequest createCategoryDto(String name, Category parent) {
         return CategoryDto.SaveRequest.builder()
@@ -166,6 +194,10 @@ class UserServiceTest {
         CategoryDto.SaveRequest cat = createCategoryDto("root", null);
         Long rid = categoryService.createCategory(cat);
         return categoryRepository.findById(rid).get();
+    }
+
+    private LikesDto.SaveRequest createLikesDto(User user, Post post) {
+        return new LikesDto.SaveRequest(user, post);
     }
 
     @Test
@@ -668,6 +700,93 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("좋아요 순으로 게시글 가져오기 테스트")
+    public void findUserPostWithHighLikesCountTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        // 좋아요를 누를 유저들
+        List<User> users = createUsers(5);
+
+        Optional<User> byId = userRepository.findById(aLong);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, 3);
+
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+
+        Post post1 = postRepository.findById(postId1).get();
+        Post post2 = postRepository.findById(postId2).get();
+        Post post3 = postRepository.findById(postId3).get();
+        //when
+        for(int i=0; i<users.size(); i++) {
+            if(i == 0 || i == 1 || i == 2) {
+                LikesDto.SaveRequest likesDto = createLikesDto(users.get(i), post1);
+                likesService.createLikes(likesDto);
+            } else {
+                LikesDto.SaveRequest likesDto = createLikesDto(users.get(i), post2);
+                likesService.createLikes(likesDto);
+            }
+        }
+        MyPageRequest myPageRequest = new MyPageRequest(byId.get().getEmail(), 3, LIKE);
+        List<Post> userPostsWithOptions = userService.findUserPostsWithOptions(myPageRequest);
+        //then
+        assertThat(userPostsWithOptions.get(0).getLikesList().size()).isEqualTo(3);
+        assertThat(userPostsWithOptions.get(1).getLikesList().size()).isEqualTo(2);
+        assertThat(userPostsWithOptions.get(2).getLikesList().size()).isEqualTo(0);
+    }
+
+
+    @Test
+    @DisplayName("Limit이 리스트 길이보다 클때 좋아요 순으로 게시글 가져오기 테스트")
+    public void findOverLimitUserPostWithHighLikesCountTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        // 좋아요를 누를 유저들
+        List<User> users = createUsers(5);
+
+        Optional<User> byId = userRepository.findById(aLong);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, 3);
+
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+
+        Post post1 = postRepository.findById(postId1).get();
+        Post post2 = postRepository.findById(postId2).get();
+        Post post3 = postRepository.findById(postId3).get();
+        //when
+        for(int i=0; i<users.size(); i++) {
+            if(i == 0 || i == 1 || i == 2) {
+                LikesDto.SaveRequest likesDto = createLikesDto(users.get(i), post1);
+                likesService.createLikes(likesDto);
+            } else {
+                LikesDto.SaveRequest likesDto = createLikesDto(users.get(i), post2);
+                likesService.createLikes(likesDto);
+            }
+        }
+        MyPageRequest myPageRequest = new MyPageRequest(byId.get().getEmail(), 5, LIKE);
+        List<Post> userPostsWithOptions = userService.findUserPostsWithOptions(myPageRequest);
+        //then
+        assertThat(userPostsWithOptions.get(0).getLikesList().size()).isEqualTo(3);
+        assertThat(userPostsWithOptions.get(1).getLikesList().size()).isEqualTo(2);
+        assertThat(userPostsWithOptions.get(2).getLikesList().size()).isEqualTo(0);
+    }
+
+    @Test
     @DisplayName("조회수 순으로 게시글 가져오기 테스트")
     public void findUserPostWithHighViewCountTest() throws Exception {
         //given
@@ -679,9 +798,9 @@ class UserServiceTest {
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, indexList[0]);
-        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, indexList[1]);
-        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, indexList[2]);
+        PostDto.SaveRequest postDto1 = createPostDtoWithViewCount(byId.get(), cat, indexList[0]);
+        PostDto.SaveRequest postDto2 = createPostDtoWithViewCount(byId.get(), cat, indexList[1]);
+        PostDto.SaveRequest postDto3 = createPostDtoWithViewCount(byId.get(), cat, indexList[2]);
         postService.savePost(postDto1);
         postService.savePost(postDto2);
         postService.savePost(postDto3);
@@ -709,9 +828,9 @@ class UserServiceTest {
         CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
         Long cid = categoryService.createCategory(categoryDto);
         Category cat = categoryRepository.findById(cid).get();
-        PostDto.SaveRequest postDto1 = createPostDto(byId.get(), cat, indexList[0]);
-        PostDto.SaveRequest postDto2 = createPostDto(byId.get(), cat, indexList[1]);
-        PostDto.SaveRequest postDto3 = createPostDto(byId.get(), cat, indexList[2]);
+        PostDto.SaveRequest postDto1 = createPostDtoWithViewCount(byId.get(), cat, indexList[0]);
+        PostDto.SaveRequest postDto2 = createPostDtoWithViewCount(byId.get(), cat, indexList[1]);
+        PostDto.SaveRequest postDto3 = createPostDtoWithViewCount(byId.get(), cat, indexList[2]);
         postService.savePost(postDto1);
         postService.savePost(postDto2);
         postService.savePost(postDto3);

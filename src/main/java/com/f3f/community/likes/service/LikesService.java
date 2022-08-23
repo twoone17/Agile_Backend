@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static com.f3f.community.common.constants.ResponseMessage.*;
 /*
  1. C
@@ -57,15 +59,16 @@ public class LikesService {
 //            throw new NotFoundUserEmailException();
 //        }
         //좋아요가 이미 존재하는지 확인
-        for (Likes like : post.getLikesList()) {
-            //유저가 이미 해당 게시물에 좋아요를 눌렀는지 확인
-            //Likes likes = likesRepository.findById(dto.getId()).orElseThrow(NotFoundLikesException::new);???
-            if (toEntity.getId().equals(like.getId())) {
-                Likes likes = likesRepository.findById(toEntity.getId()).orElseThrow(NotFoundLikesException::new);
-                //cancelLikes(dto);//리스트에 유저가 이미 존재, 두번 눌리면 취소 되어야함. -> 프론트에서 DB로 처리 될 거임.
-                throw new ExistLikeAlreadyException();
-            }
-        }
+//        List<Likes> likesList = likesRepository.findByPost(post);
+//        for (Likes like : likesList) {
+//            //유저가 이미 해당 게시물에 좋아요를 눌렀는지 확인
+//            //Likes likes = likesRepository.findById(dto.getId()).orElseThrow(NotFoundLikesException::new);???
+//            if (toEntity.getId().equals(like.getId())) {
+//                Likes likes = likesRepository.findById(toEntity.getId()).orElseThrow(NotFoundLikesException::new);
+//                //cancelLikes(dto);//리스트에 유저가 이미 존재, 두번 눌리면 취소 되어야함. -> 프론트에서 DB로 처리 될 거임.
+//                throw new ExistLikeAlreadyException();
+//            }
+//        }
         Likes likes = saveRequest.toEntity();//엔티티 생성
         user.getLikes().add(likes); //유저 좋아요 리스트에 추가
         post.getLikesList().add(likes);
