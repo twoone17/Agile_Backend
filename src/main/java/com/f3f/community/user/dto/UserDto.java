@@ -13,8 +13,7 @@ import java.util.ArrayList;
 
 // 패스워드 정규식은 프론트관할, 일단은 길이 체크만
 
-@Getter
-@Builder
+
 public class UserDto {
 
     // Inner classes

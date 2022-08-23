@@ -2,6 +2,8 @@ package com.f3f.community.user.service;
 
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.exception.postException.NotFoundPostListByAuthor;
+import com.f3f.community.likes.domain.Likes;
+import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
@@ -37,7 +39,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ScrapRepository scrapRepository;
-
+    private final LikesRepository likesRepository;
     @Transactional
     public Long saveUser(@Valid SaveRequest saveRequest) {
 
@@ -214,7 +216,9 @@ public class UserService {
                 Collections.sort(temp, new Comparator<Post>() {
                     @Override
                     public int compare(Post o1, Post o2) {
-                        if(o1.getLikesList().size() > o2.getLikesList().size()) {
+                        List<Likes> post1 = likesRepository.findByPost(o1);
+                        List<Likes> post2 = likesRepository.findByPost(o2);
+                        if(post1.size() > post2.size()) {
                             return -1;
                         } else if(o1.getLikesList().size() < o2.getLikesList().size()) {
                             return 1;

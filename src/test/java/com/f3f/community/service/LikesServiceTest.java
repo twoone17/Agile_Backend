@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.f3f.community.common.constants.UserConstants.*;
@@ -68,6 +69,7 @@ class LikesServiceTest {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
         postRepository.deleteAll();
+        likesRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -78,15 +80,9 @@ class LikesServiceTest {
 
     private UserDto.SaveRequest createUser() {
         UserDto.SaveRequest userInfo = new UserDto.SaveRequest("tempabc@tempabc.com", "ppadb123@", "01098745632", UserGrade.BRONZE, UserLevel.UNBAN, "brandy", "pazu");
-//        User user = userInfo.toEntity();
         return userInfo;
     }
 
-    private UserDto.SaveRequest createUserWithUniqueCount(int i) {
-        UserDto.SaveRequest userInfo = new UserDto.SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, "brandy" + i, "pazu");
-//        User user = userInfo.toEntity();
-        return userInfo;
-    }
 
     private PostDto.SaveRequest createPostDto(User user, Category cat, int index) {
         return PostDto.SaveRequest.builder()
@@ -140,7 +136,7 @@ class LikesServiceTest {
 
     @Test
     @DisplayName("좋아요 유저 자동등록 테스트")
-    public void 곰마워() throws Exception {
+    public void addToUserLikesListTest() throws Exception {
         //given
         UserDto.SaveRequest userDTO = createUser();
         Long aLong = userService.saveUser(userDTO);
@@ -157,7 +153,9 @@ class LikesServiceTest {
         LikesDto likesDto = createLikesDto(byId.get(), byIdPost.get());
         Long likesId = likesService.createLikes(likesDto);
         Optional<Likes> userLikesList = likesRepository.findById(byId.get().getId());
+        List<Likes> byUserId = likesRepository.findByUser(byId.get());
+
         //then
-        // 검증 로직
+        assertThat(byUserId.size()).isEqualTo(1);
     }
 }
