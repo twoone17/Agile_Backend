@@ -2,6 +2,7 @@ package com.f3f.community.likes.domain;
 
 
 import com.f3f.community.post.domain.Post;
+import com.f3f.community.user.domain.BaseTimeEntity;
 import com.f3f.community.user.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Likes {
+public class Likes extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
