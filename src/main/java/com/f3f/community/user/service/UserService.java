@@ -1,5 +1,6 @@
 package com.f3f.community.user.service;
 
+import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.exception.postException.NotFoundPostListByAuthor;
 import com.f3f.community.likes.domain.Likes;
@@ -235,6 +236,27 @@ public class UserService {
         }
         int slice = Math.min(myPageRequest.getLimit(), posts.size());
         return new ArrayList<>(posts.subList(0, slice));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comment> findUserCommentsByEmail(@NotBlank String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        List<Comment> comments = commentRepository.findByAuthor(user);
+        if(comments.isEmpty()) {
+            throw new NotFoundUserEmailException();
+        }
+        return comments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comment> findUserCommentsWithLimitByEmail(GetCommentRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(NotFoundUserException::new);
+        List<Comment> comments = commentRepository.findByAuthor(user);
+        if(comments.isEmpty()) {
+            throw new NotFoundUserEmailException();
+        }
+        int slice = Math.min(request.getLimit(), comments.size());
+        return new ArrayList<>(comments.subList(0, slice));
     }
 
 

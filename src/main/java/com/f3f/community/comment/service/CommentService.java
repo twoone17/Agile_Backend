@@ -9,7 +9,7 @@ import com.f3f.community.exception.categoryException.NotEmptyChildCategoryExcept
 import com.f3f.community.exception.categoryException.NotFoundCategoryByIdException;
 import com.f3f.community.exception.commentException.BanUserCommentException;
 import com.f3f.community.exception.commentException.NotEmptyChildCommentException;
-import com.f3f.community.exception.commentException.NotFoundCommentByIdException;
+import com.f3f.community.exception.commentException.NotFoundCommentException;
 import com.f3f.community.exception.commentException.NotFoundParentCommentException;
 import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
@@ -119,20 +119,15 @@ public class CommentService {
     }
 
 
-    public static class UpdateCommentRequest {
-        private String Email;
-        private Long postId;
-        private Long commentId;
-        private String beforeContent;
-        private String afterContent;
-    }
+
     //Update
     @Transactional
     public String updateComment(UpdateCommentRequest updateCommentRequest){
 //        User author = userRepository.findByEmail(updateCommentRequest.Email).orElseThrow(NotFoundUserEmailException::new);
 //        Post post = postRepository.findById(updateCommentRequest.postId).orElseThrow(NotFoundPostByIdException::new);
-        Comment comment = commentRepository.findById(updateCommentRequest.commentId).orElseThrow(NotFoundCommentByIdException::new);
-        comment.getContent().replace(updateCommentRequest.beforeContent, updateCommentRequest.afterContent);
+        Comment comment = commentRepository.findById(updateCommentRequest.getCommentId()).orElseThrow(NotFoundCommentException::new);
+//        comment.getContent().replace(updateCommentRequest.getBeforeContent(), updateCommentRequest.getAfterContent());
+        comment.updateContent(updateCommentRequest.getAfterContent());
         //dirty checking으로 굳이 따로 save안해도 되나? 그럴듯,,,?
 
         //부모 자식 확인할 필요없이 댓글 아이디로 수정하면 될듯.
@@ -143,7 +138,7 @@ public class CommentService {
     @Transactional
     public String deleteComments(Long Id){
         //User author = userRepository.findByEmail(comment.getAuthor().getEmail()).orElseThrow(NotFoundUserException::new);//유저가 있는지 확인하고 없으면 예외
-         Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentByIdException::new);
+         Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentException::new);
          Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
 
          Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
@@ -160,15 +155,7 @@ public class CommentService {
             for(Comment childComment : comment.getChildComment()){
                 commentRepository.delete(childComment);
             }
-//            for (Comment comments : post.getCommentList()) //게시글의 댓글리스트의 댓글 객체들을 하나씩 가져옴.
-//                if (comment.getId().equals(comments.getParentComment().getId())) {//해당 댓글의 부모 댓글 아이디가 포스트의 댓글 리스트의 아이디와 같음.
-////                    for(Comment childComment : comment.getParentComment().getChildComment()){ //게시글의 댓글의 자식 댓글들을 하나씩 가져옴.
-////                        commentRepository.delete(childComment); //지우기
-////                    } //이게 필요 없을 것 같은데? 부모 댓글 아이디가 같은거 다 지우면 되는거 아닌가?
-//                }
         }
-
-
         return DELETE;
     }
 

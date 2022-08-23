@@ -51,6 +51,10 @@ public class Comment extends BaseTimeEntity {
         this.depth = depth;
     }
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
     @Builder
     public Comment(Long id,String content, Post post, User author, Comment parentComment, List<Comment> childComment, Long depth, List<Media> mediaList){
         this.content = content;

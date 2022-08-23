@@ -4,10 +4,15 @@ import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.dto.CategoryDto;
 import com.f3f.community.category.repository.CategoryRepository;
 import com.f3f.community.category.service.CategoryService;
+import com.f3f.community.comment.domain.Comment;
+import com.f3f.community.comment.dto.CommentDto;
+import com.f3f.community.comment.repository.CommentRepository;
+import com.f3f.community.comment.service.CommentService;
 import com.f3f.community.exception.userException.*;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.likes.service.LikesService;
+import com.f3f.community.media.domain.Media;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
@@ -61,6 +66,10 @@ class UserServiceTest {
     @Autowired
     LikesRepository likesRepository;
     @Autowired
+    CommentRepository commentRepository;
+    @Autowired
+    CommentService commentService;
+    @Autowired
     UserService userService;
     @Autowired
     CategoryService categoryService;
@@ -80,6 +89,7 @@ class UserServiceTest {
         scrapPostRepository.deleteAll();
         scrapRepository.deleteAll();
         likesRepository.deleteAll();
+        commentRepository.deleteAll();
         postRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
@@ -198,6 +208,11 @@ class UserServiceTest {
 
     private LikesDto.SaveRequest createLikesDto(User user, Post post) {
         return new LikesDto.SaveRequest(user, post);
+    }
+
+    private CommentDto.SaveRequest createCommentDto(User user, Post post, String content, Comment parent, List<Comment> child, Long depth, List<Media> mediaList) {
+        CommentDto.SaveRequest saveRequest = new CommentDto.SaveRequest(content, post, user, parent, child, depth, mediaList);
+        return saveRequest;
     }
 
     @Test
@@ -845,6 +860,99 @@ class UserServiceTest {
             assertThat(userPostsWithOptions.get(k).getViewCount()).isEqualTo(indexList[indexList.length - (k+1)]);
         }
     }
+
+    @Test
+    @DisplayName("유저가 작성한 댓글 조회 테스트")
+    public void findUserCommentsTest() throws Exception {
+        //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        //when
+        CommentDto.SaveRequest commentDto = createCommentDto(user, post, "Content", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId = commentService.createComments(commentDto);
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        List<Comment> userCommentsByEmail = userService.findUserCommentsByEmail(user.getEmail());
+
+        //then
+        assertThat(userCommentsByEmail.size()).isEqualTo(2);
+        assertThat(userCommentsByEmail.get(0).getContent()).isEqualTo("Content");
+        assertThat(userCommentsByEmail.get(1).getContent()).isEqualTo("Content2");
+    }
+
+
+    @Test
+    @DisplayName("유저가 작성한 댓글 Limit 수만큼 조회 테스트")
+    public void findUserCommentsWithLimitTest() throws Exception {
+        //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        //when
+        CommentDto.SaveRequest commentDto = createCommentDto(user, post, "Content", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId = commentService.createComments(commentDto);
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        CommentDto.SaveRequest commentDto3 = createCommentDto(user, post, "Content3", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId3 = commentService.createComments(commentDto3);
+        GetCommentRequest request = new GetCommentRequest(user.getEmail(), 2);
+        List<Comment> comments = userService.findUserCommentsWithLimitByEmail(request);
+
+        //then
+        assertThat(comments.size()).isEqualTo(2);
+        assertThat(comments.get(0).getContent()).isEqualTo("Content");
+        assertThat(comments.get(1).getContent()).isEqualTo("Content2");
+    }
+
+    @Test
+    @DisplayName("유저가 작성한 댓글 Limit 초과 조회 테스트")
+    public void findUserCommentsWithOverLimitTest() throws Exception {
+        //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        //when
+        CommentDto.SaveRequest commentDto = createCommentDto(user, post, "Content", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId = commentService.createComments(commentDto);
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        CommentDto.SaveRequest commentDto3 = createCommentDto(user, post, "Content3", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId3 = commentService.createComments(commentDto3);
+        GetCommentRequest request = new GetCommentRequest(user.getEmail(), 4);
+        List<Comment> comments = userService.findUserCommentsWithLimitByEmail(request);
+
+        //then
+        assertThat(comments.size()).isEqualTo(3);
+        assertThat(comments.get(0).getContent()).isEqualTo("Content");
+        assertThat(comments.get(1).getContent()).isEqualTo("Content2");
+        assertThat(comments.get(2).getContent()).isEqualTo("Content3");
+    }
+
 
     @Test
     @DisplayName("옵션으로 게시글 조회 실패 - 유효하지 않은 이메일")
