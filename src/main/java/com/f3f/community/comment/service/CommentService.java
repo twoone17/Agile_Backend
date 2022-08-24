@@ -11,6 +11,7 @@ import com.f3f.community.exception.commentException.BanUserCommentException;
 import com.f3f.community.exception.commentException.NotEmptyChildCommentException;
 import com.f3f.community.exception.commentException.NotFoundCommentException;
 import com.f3f.community.exception.commentException.NotFoundParentCommentException;
+import com.f3f.community.exception.common.BannedUserException;
 import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.userException.NotFoundUserEmailException;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+
 import static com.f3f.community.common.constants.ResponseConstants.*;
 
 /*
@@ -108,13 +111,13 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<Comment> findCommentsByUser(User user){
         if(!userRepository.existsByEmail(user.getEmail())){
-//            for(Likes lieke : user.getLikes()){
-//
-//            }
-//        }
-//        else{
             throw new NotFoundUserEmailException();
         }
+        User foundUser = userRepository.findById(user.getId()).get();
+        if(foundUser.getUserLevel().equals(UserLevel.BAN)) {
+            throw new BannedUserException();
+        }
+
         return user.getComments();
     }
 

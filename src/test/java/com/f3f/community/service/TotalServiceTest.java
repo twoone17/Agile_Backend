@@ -123,7 +123,7 @@ public class TotalServiceTest {
         List<Long> pids = new ArrayList<>();
         Random random = new Random();
         for (int i = 0; i < n; i++) {
-            PostDto.SaveRequest postDto = createPostDto("title" + i, userRepository.findById(users.get(random.nextInt(users.size()))).get(), categoryRepository.findById(categories.get(random.nextInt(categories.size()))).get());
+            PostDto.SaveRequest postDto = createPostDto("title" + i, "content"+i ,userRepository.findById(users.get(random.nextInt(users.size()))).get(), categoryRepository.findById(categories.get(random.nextInt(categories.size()))).get());
 
             Long pid = postService.savePost(postDto);
             pids.add(pid);
@@ -219,6 +219,19 @@ public class TotalServiceTest {
                 .nickname("nick" + name)
                 .password("a12345678@")
                 .userLevel(UserLevel.UNBAN)
+                .address("gachon univ")
+                .build();
+    }
+
+    private UserDto.SaveRequest createUser(String nickname, String phone, String password, String address, String email) {
+        return UserDto.SaveRequest.builder()
+                .email(email)
+                .userGrade(UserGrade.GOLD)
+                .phone(phone)
+                .nickname(nickname)
+                .password(password)
+                .userLevel(UserLevel.UNBAN)
+                .address(address)
                 .build();
     }
 
@@ -244,10 +257,10 @@ public class TotalServiceTest {
                 .build();
     }
 
-    private PostDto.SaveRequest createPostDto(String title, User user, Category cat) {
+    private PostDto.SaveRequest createPostDto(String title,String content, User user, Category cat) {
         return PostDto.SaveRequest.builder()
                 .title(title)
-                .content("temp content")
+                .content(content)
                 .author(user)
                 .scrapList(new ArrayList<>())
                 .category(cat).build();
@@ -316,5 +329,126 @@ public class TotalServiceTest {
 
         // then
 
+    }
+
+    @Test
+    @DisplayName("공통 시나리오")
+    public void commonScenario() throws Exception{
+        //given
+        UserDto.SaveRequest dongjae = createUser("류동재", "01012345678", "1234", "대림", "ryudd@gmail.com");
+        UserDto.SaveRequest euisung = createUser("홍의성", "01012345678", "1234", "숭실대 입구", "euisungmanul@gmail.com");
+        UserDto.SaveRequest cheolwoong = createUser("최철웅", "01012345678", "1234", "창원", "ironwoong@gmail.com");
+        UserDto.SaveRequest yunjung = createUser("김윤정", "01012345678", "1234", "모란", "yjung@gmail.com");
+        UserDto.SaveRequest dongjun = createUser("김동준", "01012345678", "1234", "정자", "djkim@gmail.com");
+
+        Long ryu = userService.saveUser(dongjae);
+        Long hong = userService.saveUser(euisung);
+        Long choi = userService.saveUser(cheolwoong);
+        Long yun = userService.saveUser(yunjung);
+        Long jun = userService.saveUser(dongjun);
+
+        Long root = createRoot();
+        CategoryDto.SaveRequest stockDto = createCategoryDto("주식", categoryRepository.findById(root).get());
+        CategoryDto.SaveRequest bitcoinDto = createCategoryDto("비트코인", categoryRepository.findById(root).get());
+        Long stock = categoryService.createCategory(stockDto);
+        Long bitcoin = categoryService.createCategory(bitcoinDto);
+
+        CategoryDto.SaveRequest kospiDto = createCategoryDto("코스피", categoryRepository.findById(stock).get());
+        CategoryDto.SaveRequest nasdaqDto = createCategoryDto("나스닥", categoryRepository.findById(stock).get());
+        Long kospi = categoryService.createCategory(kospiDto);
+        Long nasdaq = categoryService.createCategory(nasdaqDto);
+
+        CategoryDto.SaveRequest samsungDto = createCategoryDto("삼전", categoryRepository.findById(kospi).get());
+        CategoryDto.SaveRequest lgDto = createCategoryDto("엘지", categoryRepository.findById(kospi).get());
+        CategoryDto.SaveRequest appleDto = createCategoryDto("애플", categoryRepository.findById(nasdaq).get());
+        CategoryDto.SaveRequest teslaDto = createCategoryDto("테슬라", categoryRepository.findById(nasdaq).get());
+        CategoryDto.SaveRequest ethereumDto = createCategoryDto("이더리움", categoryRepository.findById(bitcoin).get());
+        CategoryDto.SaveRequest dogeDto = createCategoryDto("도지", categoryRepository.findById(bitcoin).get());
+        Long samsung = categoryService.createCategory(samsungDto);
+        Long lg = categoryService.createCategory(lgDto);
+        Long apple = categoryService.createCategory(appleDto);
+        Long tesla = categoryService.createCategory(teslaDto);
+        Long ethereum = categoryService.createCategory(ethereumDto);
+        Long doge = categoryService.createCategory(dogeDto);
+
+        PostDto.SaveRequest postDto1 = createPostDto("삼전 살만한가요?", "저 삼전 사고싶어용",userRepository.findById(ryu).get(), categoryRepository.findById(samsung).get());
+        PostDto.SaveRequest postDto2 = createPostDto("애플은 안 망하네여", "하락률이 많이 낮아여",userRepository.findById(choi).get(), categoryRepository.findById(apple).get());
+        PostDto.SaveRequest postDto3 = createPostDto("도지 화성가자!!!!!", "doge god",userRepository.findById(jun).get(), categoryRepository.findById(doge).get());
+        PostDto.SaveRequest postDto4 = createPostDto("삼전 사고 싶다", "9만전자",userRepository.findById(yun).get(), categoryRepository.findById(samsung).get());
+        PostDto.SaveRequest postDto5 = createPostDto("lg는 가전이지", "life is good",userRepository.findById(hong).get(), categoryRepository.findById(lg).get());
+        PostDto.SaveRequest postDto6 = createPostDto("테슬라 와 도지?", "비트코인 전기 자동차",userRepository.findById(ryu).get(), categoryRepository.findById(tesla).get());
+        PostDto.SaveRequest postDto7 = createPostDto("이더리움 폭락", "han river....",userRepository.findById(choi).get(), categoryRepository.findById(ethereum).get());
+        PostDto.SaveRequest postDto8 = createPostDto("비트코인과 주식", "coin and stock",userRepository.findById(jun).get(), categoryRepository.findById(bitcoin).get());
+        PostDto.SaveRequest postDto9 = createPostDto("아이폰 14 ", "비싸여",userRepository.findById(yun).get(), categoryRepository.findById(apple).get());
+        PostDto.SaveRequest postDto10 = createPostDto("엘지 냉장고랑 티비", "비싸여",userRepository.findById(hong).get(), categoryRepository.findById(lg).get());
+
+        Long post1 = postService.savePost(postDto1);
+        Long post2 = postService.savePost(postDto2);
+        Long post3 = postService.savePost(postDto3);
+        Long post4 = postService.savePost(postDto4);
+        Long post5 = postService.savePost(postDto5);
+        Long post6 = postService.savePost(postDto6);
+        Long post7 = postService.savePost(postDto7);
+        Long post8 = postService.savePost(postDto8);
+        Long post9 = postService.savePost(postDto9);
+        Long post10 = postService.savePost(postDto10);
+        // when
+        TagDto.SaveRequest tagDto1 = createTagDto("주식초고수");
+        Long tag1 = tagService.createTag(tagDto1);
+        TagDto.SaveRequest tagDto2 = createTagDto("주식왕");
+        Long tag2 = tagService.createTag(tagDto2);
+        TagDto.SaveRequest tagDto3 = createTagDto("주린이");
+        Long tag3 = tagService.createTag(tagDto3);
+        TagDto.SaveRequest tagDto4 = createTagDto("재테크고수");
+        Long tag4 = tagService.createTag(tagDto4);
+        TagDto.SaveRequest tagDto5 = createTagDto("부자");
+        Long tag5 = tagService.createTag(tagDto5);
+        TagDto.SaveRequest tagDto6 = createTagDto("주식정보공유");
+        Long tag6 = tagService.createTag(tagDto6);
+        TagDto.SaveRequest tagDto7 = createTagDto("재테크초보");
+        Long tag7 = tagService.createTag(tagDto7);
+        TagDto.SaveRequest tagDto8 = createTagDto("재테크");
+        Long tag8 = tagService.createTag(tagDto8);
+        TagDto.SaveRequest tagDto9 = createTagDto("주식고수");
+        Long tag9 = tagService.createTag(tagDto9);
+        TagDto.SaveRequest tagDto10 = createTagDto("비트코인고수");
+        Long tag10 = tagService.createTag(tagDto10);
+
+
+
+        // when
+        Long tpid1_post1 = tagService.addTagToPost(tag1, post1);
+        Long tpid2_post1 = tagService.addTagToPost(tag2, post1);
+        Long tpid3_post1 = tagService.addTagToPost(tag3, post1);
+        Long tpid4_post1 = tagService.addTagToPost(tag4, post1);
+
+        Long tpid1_post2 = tagService.addTagToPost(tag4, post2);
+        Long tpid2_post2 = tagService.addTagToPost(tag2, post2);
+        Long tpid3_post2 = tagService.addTagToPost(tag7, post2);
+
+        Long tpid1_post3 = tagService.addTagToPost(tag10, post3);
+
+        Long tpid1_post4 = tagService.addTagToPost(tag4, post4);
+        Long tpid2_post4 = tagService.addTagToPost(tag3, post4);
+        Long tpid3_post4 = tagService.addTagToPost(tag7, post4);
+
+        Long tpid1_post5 = tagService.addTagToPost(tag6, post5);
+
+        Long tpid1_post6 = tagService.addTagToPost(tag1, post6);
+        Long tpid2_post6 = tagService.addTagToPost(tag10, post6);
+
+        Long tpid1_post7 = tagService.addTagToPost(tag3, post7);
+        Long tpid2_post7 = tagService.addTagToPost(tag7, post7);
+        Long tpid3_post7 = tagService.addTagToPost(tag2, post7);
+        Long tpid4_post7 = tagService.addTagToPost(tag9, post7);
+
+//      Long tpid1_post8 = tagService.addTagToPost(tag3, post8);
+
+        Long tpid1_post9 = tagService.addTagToPost(tag2, post9);
+        Long tpid2_post9 = tagService.addTagToPost(tag8, post9);
+
+        Long tpid1_post10 = tagService.addTagToPost(tag5, post10);
+
+        // then
     }
 }
