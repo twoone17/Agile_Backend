@@ -340,6 +340,30 @@ public class TotalServiceTest {
         UserDto.SaveRequest cheolwoong = createUser("최철웅", "01012345678", "1234", "창원", "ironwoong@gmail.com");
         UserDto.SaveRequest yunjung = createUser("김윤정", "01012345678", "1234", "모란", "yjung@gmail.com");
         UserDto.SaveRequest dongjun = createUser("김동준", "01012345678", "1234", "정자", "djkim@gmail.com");
+
+        Long root = createRoot();
+        CategoryDto.SaveRequest stockDto = createCategoryDto("주식", categoryRepository.findById(root).get());
+        CategoryDto.SaveRequest bitcoinDto = createCategoryDto("비트코인", categoryRepository.findById(root).get());
+        Long stock = categoryService.createCategory(stockDto);
+        Long bitcoin = categoryService.createCategory(bitcoinDto);
+
+        CategoryDto.SaveRequest kospiDto = createCategoryDto("코스피", categoryRepository.findById(stock).get());
+        CategoryDto.SaveRequest nasdaqDto = createCategoryDto("나스닥", categoryRepository.findById(stock).get());
+        Long kospi = categoryService.createCategory(kospiDto);
+        Long nasdaq = categoryService.createCategory(nasdaqDto);
+
+        CategoryDto.SaveRequest samsungDto = createCategoryDto("삼전", categoryRepository.findById(kospi).get());
+        CategoryDto.SaveRequest lgDto = createCategoryDto("엘지", categoryRepository.findById(kospi).get());
+        CategoryDto.SaveRequest appleDto = createCategoryDto("애플", categoryRepository.findById(nasdaq).get());
+        CategoryDto.SaveRequest teslaDto = createCategoryDto("테슬라", categoryRepository.findById(nasdaq).get());
+        CategoryDto.SaveRequest ethereumDto = createCategoryDto("이더리움", categoryRepository.findById(bitcoin).get());
+        CategoryDto.SaveRequest dogeDto = createCategoryDto("도지", categoryRepository.findById(bitcoin).get());
+        Long samsung = categoryService.createCategory(samsungDto);
+        Long lg = categoryService.createCategory(lgDto);
+        Long apple = categoryService.createCategory(appleDto);
+        Long tesla = categoryService.createCategory(teslaDto);
+        Long ethereum = categoryService.createCategory(ethereumDto);
+        Long doge = categoryService.createCategory(dogeDto);
         // when
 
         // then
