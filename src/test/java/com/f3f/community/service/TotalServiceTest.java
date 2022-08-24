@@ -154,12 +154,20 @@ public class TotalServiceTest {
         return sids;
     }
 
-    private List<Long> createTags(int n) throws Exception {
+    private List<Long> createTags(int n, List<Long> posts) throws Exception {
         List<Long> tids = new ArrayList<>();
+        Random random = new Random();
         for (int i = 0; i < n; i++) {
             TagDto.SaveRequest tagDto = createTagDto("tag" + i);
             Long tid = tagService.createTag(tagDto);
             tids.add(tid);
+            for (int j = 0; j < 6; j++) {
+                try {
+                    tagService.addTagToPost(tid, posts.get(random.nextInt(posts.size())));
+                } catch (Exception e) {
+                    System.out.println("e = " + e);
+                }
+            }
         }
         return tids;
     }
@@ -257,6 +265,7 @@ public class TotalServiceTest {
                     .author(userRepository.findById(uid).get())
                     .parentComment(null)
                     .childComment(new ArrayList<>())
+                    .content(content)
                     .depth(0L)
                     .build();
         }else{
@@ -265,6 +274,7 @@ public class TotalServiceTest {
                     .author(userRepository.findById(uid).get())
                     .parentComment(commentRepository.findById(cid).get())
                     .childComment(new ArrayList<>())
+                    .content(content)
                     .depth(1L)
                     .build();
         }
@@ -276,6 +286,8 @@ public class TotalServiceTest {
                 .user(userRepository.findById(uid).get())
                 .post(postRepository.findById(pid).get()).build();
     }
+
+
     @Before
     public void deleteAll() {
         postTagRepository.deleteAll();
@@ -297,7 +309,7 @@ public class TotalServiceTest {
         List<Long> categories = createCategories(50);
         List<Long> posts = createPosts(users, categories, 60);
         List<Long> scraps = createScraps(users, posts, 15);
-        List<Long> tags = createTags(14);
+        List<Long> tags = createTags(14, posts);
         List<Long> comments = createComments(50, posts, users);
         List<Long> likes = createLikes(60, posts, users);
         // when
