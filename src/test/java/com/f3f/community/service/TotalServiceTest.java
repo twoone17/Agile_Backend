@@ -32,12 +32,14 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -263,6 +265,7 @@ public class TotalServiceTest {
                 .content(content)
                 .author(user)
                 .scrapList(new ArrayList<>())
+                .likesList(new ArrayList<>())
                 .category(cat).build();
     }
 
@@ -325,6 +328,7 @@ public class TotalServiceTest {
         List<Long> tags = createTags(14, posts);
         List<Long> comments = createComments(50, posts, users);
         List<Long> likes = createLikes(60, posts, users);
+
         // when
 
         // then
@@ -451,4 +455,6 @@ public class TotalServiceTest {
 
         // then
     }
+
+
 }
