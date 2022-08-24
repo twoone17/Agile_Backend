@@ -22,6 +22,7 @@ import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,11 @@ class CommentServiceTest {
         return saveRequest;
     }
 
+    private CommentDto.SaveRequest deleteCommentDto(User user, Post post, String content, Comment parent, List<Comment> child, Long depth, List<Media> mediaList) {
+        CommentDto.SaveRequest saveRequest = new CommentDto.SaveRequest(content, post, user, parent, child, depth, mediaList);
+        return saveRequest;
+    }
+
     private UserDto.SaveRequest createUserWithUniqueCount(int i) {
         UserDto.SaveRequest userInfo = new UserDto.SaveRequest("tempabc"+ i +"@tempabc.com", "ppadb123@" + i, "0109874563" + i, UserGrade.BRONZE, UserLevel.UNBAN, "brandy" + i, "pazu");
 //        User user = userInfo.toEntity();
@@ -81,6 +87,7 @@ class CommentServiceTest {
                 .content("test content for test" + index)
                 .author(user)
                 .scrapList(new ArrayList<>())
+                .commentList(new ArrayList<>())
                 .category(cat)
                 .build();
     }
@@ -122,6 +129,7 @@ class CommentServiceTest {
 
         //then
         assertThat(comment.getContent()).isEqualTo("Content");
+        //assertThat(post.getCommentList().size()).isEqualTo(1);
     }
 
     @Test
@@ -156,11 +164,32 @@ class CommentServiceTest {
 
 
     @Test
-    public void 댓글삭제() throws Exception {
+    @DisplayName("댓글 삭제 테스트 - 부모")
+    public void deleteCommentTest() throws Exception {
         //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        CommentDto.SaveRequest commentDto1 = createCommentDto(user, post, "Content1", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId1 = commentService.createComments(commentDto1);
+        Comment comment1 = commentRepository.findById(commentsId1).get();
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        Comment comment2 = commentRepository.findById(commentsId2).get();
 
         //when
-
+        commentService.deleteComments(commentsId1);
         //then
+        assertThat(commentRepository.existsById(commentsId1)).isEqualTo(false);
     }
 }
