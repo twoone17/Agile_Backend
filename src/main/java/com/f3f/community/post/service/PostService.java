@@ -2,12 +2,14 @@ package com.f3f.community.post.service;
 
 import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.repository.CategoryRepository;
+import com.f3f.community.exception.commentException.BanUserCommentException;
 import com.f3f.community.exception.postException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.user.domain.User;
+import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,8 +38,8 @@ public class PostService {
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
         Post post = SaveRequest.toEntity();
         User author = userRepository.findById(post.getAuthor().getId()).get();
-        author.getPosts().add(post);
 
+        author.getPosts().add(post);
         //category의 postlist에 저장
         Category category = categoryRepository.findById(post.getCategory().getId()).get();
         category.getPostList().add(post);

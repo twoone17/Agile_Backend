@@ -53,10 +53,10 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", fetch = LAZY)
     private List<ScrapPost> scrapList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", fetch = LAZY)
+    @OneToMany(mappedBy = "post", fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<Comment> commentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", fetch = LAZY)
+    @OneToMany(mappedBy = "post", fetch = LAZY,cascade = CascadeType.REMOVE)
     private List<Likes> likesList = new ArrayList<>();
 
     @OneToMany(mappedBy = "post",fetch = LAZY)
