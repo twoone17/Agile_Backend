@@ -108,8 +108,8 @@ class CommentServiceTest {
 
 
     @Test
-    @DisplayName("댓글 생성 테스트")
-    public void saveCommentTest() throws Exception {
+    @DisplayName("댓글 생성 테스트 - 부모")
+    public void saveParentCommentTest() throws Exception {
         //given
         UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
         Long aLong = userService.saveUser(userDTO);
@@ -128,8 +128,40 @@ class CommentServiceTest {
         Comment comment = commentRepository.findById(commentsId).get();
 
         //then
+        List<Comment> postComment = commentRepository.findByPost(post);
+        assertThat(postComment.size()).isEqualTo(1);
         assertThat(comment.getContent()).isEqualTo("Content");
+
         //assertThat(post.getCommentList().size()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("댓글 생성 테스트 - 자식")
+    public void saveChildCommentTest() throws Exception {
+        //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        //when
+        CommentDto.SaveRequest commentDto1 = createCommentDto(user, post, "ParentContent1", null, new ArrayList<>(), 0L, new ArrayList<>());
+        Long commentsId1 = commentService.createComments(commentDto1);
+        Comment comment1 = commentRepository.findById(commentsId1).get();
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "ChildContent1", comment1, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        Comment comment2 = commentRepository.findById(commentsId2).get();
+        //then
+        List<Comment> postComment = commentRepository.findByPost(post);
+        assertThat(postComment.size()).isEqualTo(2);
+        List<Comment> childComment = commentRepository.findCommentsByParentComment(comment1);
+        assertThat(childComment.size()).isEqualTo(1);
     }
 
     @Test
@@ -165,7 +197,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 삭제 테스트 - 부모")
-    public void deleteCommentTest() throws Exception {
+    public void deleteParentCommentTest() throws Exception {
         //given
         UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
         Long aLong = userService.saveUser(userDTO);
@@ -191,5 +223,38 @@ class CommentServiceTest {
         commentService.deleteComments(commentsId1);
         //then
         assertThat(commentRepository.existsById(commentsId1)).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 테스트 - 자식")
+    public void deleteChildCommentTest() throws Exception {
+        //given
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+
+        PostDto.SaveRequest postDto = createPostDto(user, cat, 1);
+        Long aLong1 = postService.savePost(postDto);
+        Post post = postRepository.findById(aLong1).get();
+
+        CommentDto.SaveRequest commentDto1 = createCommentDto(user, post, "Content1", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId1 = commentService.createComments(commentDto1);
+        Comment comment1 = commentRepository.findById(commentsId1).get();
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId2 = commentService.createComments(commentDto2);
+        Comment comment2 = commentRepository.findById(commentsId2).get();
+        CommentDto.SaveRequest commentDto3 = createCommentDto(user, post, "Content3", commentDto1.getParentComment(), new ArrayList<>(), 1L, new ArrayList<>());
+        Long commentsId3 = commentService.createComments(commentDto3);
+        Comment childComment = commentRepository.findById(commentsId3).get();
+
+        //when
+        commentService.deleteComments(commentsId3);
+        //then
+        assertThat(commentRepository.existsById(commentsId3)).isEqualTo(false);
     }
 }
