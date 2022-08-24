@@ -1,12 +1,11 @@
 package com.f3f.community.service;
 
 import com.f3f.community.admin.service.AdminService;
-import com.f3f.community.exception.adminException.BannedUserException;
+import com.f3f.community.exception.common.BannedUserException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.domain.UserLevel;
-import com.f3f.community.user.domain.UserLogin;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.jupiter.api.AfterEach;
