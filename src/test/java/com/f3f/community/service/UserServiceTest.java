@@ -998,4 +998,36 @@ class UserServiceTest {
         //then
         assertThat(user1.getPhone()).isEqualTo(new_phone);
     }
+
+    @Test
+    @DisplayName("유저 휴대폰 번호 수정 테스트 실패 - 잘못된 형식")
+    public void UpdateInvalidUserPhoneInfoToFail() throws Exception {
+        //given
+        String new_phone = "010-5678-1234";
+        UpdateUserPhoneRequest nullUserRequest = new UpdateUserPhoneRequest(null, new_phone);
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserPhoneRequest emptyPhoneRequest = new UpdateUserPhoneRequest(user, "");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserPhoneInfo(nullUserRequest));
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserPhoneInfo(emptyPhoneRequest));
+    }
+
+    @Test
+    @DisplayName("유저 주소 수정 테스트 실패 - 잘못된 형식")
+    public void UpdateInvalidAddressInfoToFail() throws Exception {
+        //given
+        String new_address = "new Address";
+        UpdateUserAddressRequest nullUserRequest = new UpdateUserAddressRequest(null, new_address);
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserAddressRequest emptyAddressRequest = new UpdateUserAddressRequest(user, "");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(nullUserRequest));
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(emptyAddressRequest));
+    }
 }
