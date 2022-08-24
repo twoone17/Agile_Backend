@@ -190,6 +190,8 @@ class CommentServiceTest {
         //when
         commentService.deleteComments(commentsId1);
         //then
+        List<Comment> byPost = commentRepository.findByPost(post);
         assertThat(commentRepository.existsById(commentsId1)).isEqualTo(false);
+        assertThat(byPost.size()).isEqualTo(1);
     }
 }
