@@ -963,4 +963,39 @@ class UserServiceTest {
         assertThrows(ConstraintViolationException.class, () -> userService.findUserPostsWithOptions(myPageRequest));
         }
 
+    @Test
+    @DisplayName("유저 주소 수정 테스트")
+    public void updateUserAddressInfoTest() throws Exception {
+        //given
+        String new_address = "new Address";
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserAddressRequest request = new UpdateUserAddressRequest(user, new_address);
+
+        //when
+        userService.updateUserAddressInfo(request);
+        User user1 = userRepository.findById(aLong).get();
+
+        //then
+        assertThat(user1.getAddress()).isEqualTo(new_address);
+    }
+
+    @Test
+    @DisplayName("유저 휴대폰 번호 수정 테스트")
+    public void updateUserPhoneInfoTest() throws Exception {
+        //given
+        String new_phone = "010-5678-1234";
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserPhoneRequest request = new UpdateUserPhoneRequest(user, new_phone);
+
+        //when
+        userService.updateUserPhoneInfo(request);
+        User user1 = userRepository.findById(aLong).get();
+
+        //then
+        assertThat(user1.getPhone()).isEqualTo(new_phone);
+    }
 }

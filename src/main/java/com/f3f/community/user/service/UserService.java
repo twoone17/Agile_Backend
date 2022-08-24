@@ -258,9 +258,9 @@ public class UserService {
         return new ArrayList<>(comments.subList(0, slice));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public String updateUserAddressInfo(@Valid UpdateUserAddressRequest request) {
-        User user = userRepository.findById(request.getUser().getId()).orElseThrow(NotFoundUserException::new);
+        User user = userRepository.findByEmail(request.getUser().getEmail()).orElseThrow(NotFoundUserException::new);
         if (user.getAddress().equals(request.getAddress())) {
             throw new DuplicateChangeInfoException();
         }
@@ -268,13 +268,13 @@ public class UserService {
         return OK;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public String updateUserPhoneInfo(@Valid UpdateUserPhoneRequest request) {
-        User user = userRepository.findById(request.getUser().getId()).orElseThrow(NotFoundUserException::new);
-        if (user.getAddress().equals(request.getPhone())) {
+        User user = userRepository.findByEmail(request.getUser().getEmail()).orElseThrow(NotFoundUserException::new);
+        if (user.getPhone().equals(request.getPhone())) {
             throw new DuplicateChangeInfoException();
         }
-        user.updateAddress(request.getPhone());
+        user.updatePhone(request.getPhone());
         return OK;
     }
 

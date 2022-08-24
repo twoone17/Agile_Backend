@@ -204,7 +204,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateUserPhoneRequest {
-        @NotBlank
+        @NotNull
         private User user;
         @NotBlank
         private String phone;
@@ -215,7 +215,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateUserAddressRequest {
-        @NotBlank
+        @NotNull
         private User user;
         @NotBlank
         private String address;

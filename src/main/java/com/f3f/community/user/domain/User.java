@@ -70,7 +70,7 @@ public class User extends UserBase {
     }
 
     public void updatePhone(String phone) {
-        this.phone = phone;
+        super.phone = phone;
     }
     public void updateAddress(String address) {
         this.address = address;
