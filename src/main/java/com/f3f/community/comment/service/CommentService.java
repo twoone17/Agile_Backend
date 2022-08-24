@@ -128,7 +128,6 @@ public class CommentService {
         Comment comment = commentRepository.findById(updateCommentRequest.getCommentId()).orElseThrow(NotFoundCommentException::new);
 //        comment.getContent().replace(updateCommentRequest.getBeforeContent(), updateCommentRequest.getAfterContent());
         comment.updateContent(updateCommentRequest.getAfterContent());
-        //dirty checking으로 굳이 따로 save안해도 되나? 그럴듯,,,?
 
         //부모 자식 확인할 필요없이 댓글 아이디로 수정하면 될듯.
         return UPDATE;
@@ -141,7 +140,7 @@ public class CommentService {
          Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentException::new);
          Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
 
-         Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
+//        Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
         //댓글이 존재하는지 확인하고 존재하지 않으면 예외
 //        if(!commentRepository.existsById(comment.getId())){
 //            throw new NotFoundCommentByIdException();

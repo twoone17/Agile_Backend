@@ -160,6 +160,6 @@ class LikesServiceTest {
         Long likesId = likesService.createLikes(likesDto);
         Optional<Likes> userLikesList = likesRepository.findById(byId.get().getId());
         //then
-        // 검증 로직
+
     }
 }
