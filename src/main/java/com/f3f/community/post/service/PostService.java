@@ -2,7 +2,7 @@ package com.f3f.community.post.service;
 
 import com.f3f.community.category.domain.Category;
 import com.f3f.community.category.repository.CategoryRepository;
-import com.f3f.community.exception.commentException.BanUserCommentException;
+import com.f3f.community.exception.common.BannedUserException;
 import com.f3f.community.exception.postException.*;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.post.domain.Post;
@@ -36,10 +36,11 @@ public class PostService {
      */
     @Transactional
     public Long savePost(@Valid PostDto.SaveRequest SaveRequest) throws Exception{ //SaveDto 활용
+
         Post post = SaveRequest.toEntity();
         User author = userRepository.findById(post.getAuthor().getId()).get();
-
         author.getPosts().add(post);
+
         //category의 postlist에 저장
         Category category = categoryRepository.findById(post.getCategory().getId()).get();
         category.getPostList().add(post);
@@ -91,6 +92,11 @@ public class PostService {
         if (!postRepository.existsByAuthorId(userId)) {
             //postRepository에 userid로 저장된 게시글이 없으면 예외처리
             throw new NotFoundPostByUserIdException("UserId와 일치하는 게시글리스트가 없습니다");
+        }
+
+        User user = userRepository.findById(userId).orElseThrow(NotFoundUserException::new);
+        if(user.getUserLevel().equals(UserLevel.BAN)) {
+            throw new BannedUserException();
         }
 
         List<Post> postList = postRepository.findByAuthorId(userId);//postRepository에 userId가 있을때
