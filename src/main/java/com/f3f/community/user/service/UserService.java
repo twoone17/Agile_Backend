@@ -1,7 +1,10 @@
 package com.f3f.community.user.service;
 
+import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.exception.postException.NotFoundPostListByAuthor;
+import com.f3f.community.likes.domain.Likes;
+import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
@@ -37,7 +40,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ScrapRepository scrapRepository;
-
+    private final LikesRepository likesRepository;
     @Transactional
     public Long saveUser(@Valid SaveRequest saveRequest) {
 
@@ -214,7 +217,9 @@ public class UserService {
                 Collections.sort(temp, new Comparator<Post>() {
                     @Override
                     public int compare(Post o1, Post o2) {
-                        if(o1.getLikesList().size() > o2.getLikesList().size()) {
+                        List<Likes> post1 = likesRepository.findByPost(o1);
+                        List<Likes> post2 = likesRepository.findByPost(o2);
+                        if(post1.size() > post2.size()) {
                             return -1;
                         } else if(o1.getLikesList().size() < o2.getLikesList().size()) {
                             return 1;
@@ -231,6 +236,27 @@ public class UserService {
         }
         int slice = Math.min(myPageRequest.getLimit(), posts.size());
         return new ArrayList<>(posts.subList(0, slice));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comment> findUserCommentsByEmail(@NotBlank String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        List<Comment> comments = commentRepository.findByAuthor(user);
+        if(comments.isEmpty()) {
+            throw new NotFoundUserEmailException();
+        }
+        return comments;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comment> findUserCommentsWithLimitByEmail(GetCommentRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(NotFoundUserException::new);
+        List<Comment> comments = commentRepository.findByAuthor(user);
+        if(comments.isEmpty()) {
+            throw new NotFoundUserEmailException();
+        }
+        int slice = Math.min(request.getLimit(), comments.size());
+        return new ArrayList<>(comments.subList(0, slice));
     }
 
 

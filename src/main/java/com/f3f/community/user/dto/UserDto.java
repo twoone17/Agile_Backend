@@ -13,8 +13,7 @@ import java.util.ArrayList;
 
 // 패스워드 정규식은 프론트관할, 일단은 길이 체크만
 
-@Getter
-@Builder
+
 public class UserDto {
 
     // Inner classes
@@ -155,7 +154,6 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Builder
     public static class UpdateUserLevelRequest {
         @NotBlank
         private String email;
@@ -166,7 +164,6 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Builder
     public static class UpdateGradeRequest {
         @NotBlank
         private String email;
@@ -177,7 +174,6 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Builder
     public static class UpdateGradeToExpertRequest {
         @NotBlank
         private String email;
@@ -187,11 +183,19 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Builder
     public static class MyPageRequest {
         @NotBlank
         private String email;
         private int limit;
         private String option;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetCommentRequest {
+        @NotBlank
+        private String email;
+        private int limit;
     }
 }
