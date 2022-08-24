@@ -32,6 +32,7 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
@@ -301,7 +302,7 @@ public class TotalServiceTest {
     }
 
 
-    @Before
+    @BeforeEach
     public void deleteAll() {
         postTagRepository.deleteAll();
         tagRepository.deleteAll();
@@ -450,5 +451,45 @@ public class TotalServiceTest {
         Long tpid1_post10 = tagService.addTagToPost(tag5, post10);
 
         // then
+        CommentDto.SaveRequest commentDto1 = createCommentDto(post1,null , yun, "삼성 주식 지금 얼만데요?");
+        Long commentsId1 = commentService.createComments(commentDto1);
+        Comment comment1 = commentRepository.findById(commentsId1).get();
+
+        CommentDto.SaveRequest commentDto2 = createCommentDto(post1,comment1.getId(), choi, "비싸요");
+        Long commentsId2 = commentService.createComments(commentDto2);
+        Comment comment2 = commentRepository.findById(commentsId2).get();
+
+        CommentDto.SaveRequest commentDto3 = createCommentDto(post2, null, ryu, "애플이 짱이지");
+        Long commentsId3 = commentService.createComments(commentDto3);
+        Comment comment3 = commentRepository.findById(commentsId3).get();
+
+        CommentDto.SaveRequest commentDto4 = createCommentDto(post3,null , hong, "번아웃");
+        Long commentsId4 = commentService.createComments(commentDto4);
+        Comment comment4 = commentRepository.findById(commentsId4).get();
+
+        CommentDto.SaveRequest commentDto5 = createCommentDto(post3,comment4.getId(), choi, "또?");
+        Long commentsId5 = commentService.createComments(commentDto5);
+        Comment comment5 = commentRepository.findById(commentsId5).get();
+
+        CommentDto.SaveRequest commentDto6 = createCommentDto(post3,comment4.getId(), yun, "나도 번아웃,,,");
+        Long commentsId6 = commentService.createComments(commentDto6);
+        Comment comment6 = commentRepository.findById(commentsId6).get();
+
+        CommentDto.SaveRequest commentDto7 = createCommentDto(post5,null , choi, "바쁘다바빠");
+        Long commentsId7 = commentService.createComments(commentDto7);
+        Comment comment7 = commentRepository.findById(commentsId7).get();
+
+        CommentDto.SaveRequest commentDto8 = createCommentDto(post10,null, yun, "아무것도 몰라요");
+        Long commentsId8 = commentService.createComments(commentDto8);
+        Comment comment8 = commentRepository.findById(commentsId8).get();
+
+        CommentDto.SaveRequest commentDto9 = createCommentDto(post10,comment8.getId(), ryu, "아무것도 모르면 안되는데");
+        Long commentsId9 = commentService.createComments(commentDto9);
+        Comment comment9 = commentRepository.findById(commentsId9).get();
+
+        CommentDto.SaveRequest commentDto10 = createCommentDto(post10, null, jun, "하루는 24시간");
+        Long commentsId10 = commentService.createComments(commentDto10);
+        Comment comment10 = commentRepository.findById(commentsId10).get();
+
     }
 }
