@@ -219,6 +219,7 @@ public class TotalServiceTest {
                 .nickname("nick" + name)
                 .password("a12345678@")
                 .userLevel(UserLevel.UNBAN)
+                .address("gachon univ")
                 .build();
     }
 
