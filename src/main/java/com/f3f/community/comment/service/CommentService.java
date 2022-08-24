@@ -11,6 +11,7 @@ import com.f3f.community.exception.commentException.BanUserCommentException;
 import com.f3f.community.exception.commentException.NotEmptyChildCommentException;
 import com.f3f.community.exception.commentException.NotFoundCommentException;
 import com.f3f.community.exception.commentException.NotFoundParentCommentException;
+import com.f3f.community.exception.common.BannedUserException;
 import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostByIdException;
 import com.f3f.community.exception.userException.NotFoundUserEmailException;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+
 import static com.f3f.community.common.constants.ResponseConstants.*;
 
 /*
@@ -108,13 +111,13 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<Comment> findCommentsByUser(User user){
         if(!userRepository.existsByEmail(user.getEmail())){
-//            for(Likes lieke : user.getLikes()){
-//
-//            }
-//        }
-//        else{
             throw new NotFoundUserEmailException();
         }
+        User foundUser = userRepository.findById(user.getId()).get();
+        if(foundUser.getUserLevel().equals(UserLevel.BAN)) {
+            throw new BannedUserException();
+        }
+
         return user.getComments();
     }
 
@@ -128,7 +131,6 @@ public class CommentService {
         Comment comment = commentRepository.findById(updateCommentRequest.getCommentId()).orElseThrow(NotFoundCommentException::new);
 //        comment.getContent().replace(updateCommentRequest.getBeforeContent(), updateCommentRequest.getAfterContent());
         comment.updateContent(updateCommentRequest.getAfterContent());
-        //dirty checking으로 굳이 따로 save안해도 되나? 그럴듯,,,?
 
         //부모 자식 확인할 필요없이 댓글 아이디로 수정하면 될듯.
         return UPDATE;
@@ -141,7 +143,7 @@ public class CommentService {
          Comment comment = commentRepository.findById(Id).orElseThrow(NotFoundCommentException::new);
          Post post = postRepository.findById(comment.getPost().getId()).orElseThrow(NotFoundPostByIdException::new);//삭제하려는 게시글의 여부를 확인하고 없으면 예외
 
-         Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
+//        Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
         //댓글이 존재하는지 확인하고 존재하지 않으면 예외
 //        if(!commentRepository.existsById(comment.getId())){
 //            throw new NotFoundCommentByIdException();

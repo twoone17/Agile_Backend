@@ -1,11 +1,10 @@
 package com.f3f.community.admin.service;
 
-import com.f3f.community.exception.adminException.BannedUserException;
+import com.f3f.community.exception.common.BannedUserException;
 import com.f3f.community.exception.userException.NotFoundUserException;
 import com.f3f.community.user.domain.User;
 import com.f3f.community.user.domain.UserGrade;
 import com.f3f.community.user.domain.UserLevel;
-import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
