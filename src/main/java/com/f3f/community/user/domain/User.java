@@ -69,6 +69,13 @@ public class User extends UserBase {
         this.userLevel = userLevel;
     }
 
+    public void updatePhone(String phone) {
+        this.phone = phone;
+    }
+    public void updateAddress(String address) {
+        this.address = address;
+    }
+
     @Builder
     public User(Long id, String email, String password, String phone, UserGrade userGrade,
                 String nickname, String address, List<Post> posts, List<Comment> comments,

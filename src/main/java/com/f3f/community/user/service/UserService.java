@@ -9,7 +9,6 @@ import com.f3f.community.post.domain.Post;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.repository.ScrapRepository;
-import io.lettuce.core.Limit;
 import org.springframework.transaction.annotation.Transactional;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.exception.userException.*;
@@ -249,7 +248,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<Comment> findUserCommentsWithLimitByEmail(GetCommentRequest request) {
+    public List<Comment> findUserCommentsWithLimitByEmail(@Valid GetCommentRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(NotFoundUserException::new);
         List<Comment> comments = commentRepository.findByAuthor(user);
         if(comments.isEmpty()) {
@@ -257,6 +256,26 @@ public class UserService {
         }
         int slice = Math.min(request.getLimit(), comments.size());
         return new ArrayList<>(comments.subList(0, slice));
+    }
+
+    @Transactional(readOnly = true)
+    public String updateUserAddressInfo(@Valid UpdateUserAddressRequest request) {
+        User user = userRepository.findById(request.getUser().getId()).orElseThrow(NotFoundUserException::new);
+        if (user.getAddress().equals(request.getAddress())) {
+            throw new DuplicateChangeInfoException();
+        }
+        user.updateAddress(request.getAddress());
+        return OK;
+    }
+
+    @Transactional(readOnly = true)
+    public String updateUserPhoneInfo(@Valid UpdateUserPhoneRequest request) {
+        User user = userRepository.findById(request.getUser().getId()).orElseThrow(NotFoundUserException::new);
+        if (user.getAddress().equals(request.getPhone())) {
+            throw new DuplicateChangeInfoException();
+        }
+        user.updateAddress(request.getPhone());
+        return OK;
     }
 
 
