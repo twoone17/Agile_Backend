@@ -82,7 +82,7 @@ public class CommentService {
         //부모 댓글이 비어있지 않고 부모 댓글이 이미 존재하면,
         if(comment.getParentComment()!=null && commentRepository.existsById(comment.getParentComment().getId())){
             Comment parent = commentRepository.findById(comment.getParentComment().getId()).get();
-            if(parent.getDepth()>1){
+            if(parent.getDepth()>=1){
                 throw new MaxDepthException();
             }
             parent.getChildComment().add(comment);
