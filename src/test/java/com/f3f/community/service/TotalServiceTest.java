@@ -223,6 +223,18 @@ public class TotalServiceTest {
                 .build();
     }
 
+    private UserDto.SaveRequest createUser(String nickname, String phone, String password, String address, String email) {
+        return UserDto.SaveRequest.builder()
+                .email(email)
+                .userGrade(UserGrade.GOLD)
+                .phone(phone)
+                .nickname(nickname)
+                .password(password)
+                .userLevel(UserLevel.UNBAN)
+                .address(address)
+                .build();
+    }
+
     private Long createRoot() throws Exception {
         CategoryDto.SaveRequest cat = createCategoryDto("root", null);
         Long rid = categoryService.createCategory(cat);
@@ -317,5 +329,19 @@ public class TotalServiceTest {
 
         // then
 
+    }
+
+    @Test
+    @DisplayName("공통 시나리오")
+    public void commonScenario() throws Exception{
+        //given
+        UserDto.SaveRequest dongjae = createUser("류동재", "01012345678", "1234", "대림", "ryudd@gmail.com");
+        UserDto.SaveRequest euisung = createUser("홍의성", "01012345678", "1234", "숭실대 입구", "euisungmanul@gmail.com");
+        UserDto.SaveRequest cheolwoong = createUser("최철웅", "01012345678", "1234", "창원", "ironwoong@gmail.com");
+        UserDto.SaveRequest yunjung = createUser("김윤정", "01012345678", "1234", "모란", "yjung@gmail.com");
+        UserDto.SaveRequest dongjun = createUser("김동준", "01012345678", "1234", "정자", "djkim@gmail.com");
+        // when
+
+        // then
     }
 }
