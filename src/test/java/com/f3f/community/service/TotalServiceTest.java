@@ -493,6 +493,18 @@ public class TotalServiceTest {
         Long commentsId10 = commentService.createComments(commentDto10);
         Comment comment10 = commentRepository.findById(commentsId10).get();
 
+        ScrapDto.SaveRequest scrap1 = createScrapDto(userRepository.findById(ryu).get(), "경제");
+        ScrapDto.SaveRequest scrap2 = createScrapDto(userRepository.findById(jun).get(), "할래");
+        ScrapDto.SaveRequest scrap3 = createScrapDto(userRepository.findById(yun).get(), "대로");
+        ScrapDto.SaveRequest scrap4 = createScrapDto(userRepository.findById(choi).get(), "내맘");
+        ScrapDto.SaveRequest scrap5 = createScrapDto(userRepository.findById(hong).get(), "주식");
+        ScrapDto.SaveRequest scrap6 = createScrapDto(userRepository.findById(jun).get(), "경제");
+        ScrapDto.SaveRequest scrap7 = createScrapDto(userRepository.findById(choi).get(), "도지");
+        ScrapDto.SaveRequest scrap8 = createScrapDto(userRepository.findById(yun).get(), "coin");
+        ScrapDto.SaveRequest scrap9 = createScrapDto(userRepository.findById(hong).get(), "rastle");
+        ScrapDto.SaveRequest scrap10 = createScrapDto(userRepository.findById(jun).get(), "coin");
+
+
 
         /*
         유저
@@ -511,8 +523,8 @@ public class TotalServiceTest {
         태그 삭제
         제테크, 제테크 초보
 
-        스크랩
-
+        스크랩 삭제
+        scrap 10,9
 
          */
     }
