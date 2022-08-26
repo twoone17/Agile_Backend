@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.f3f.community.common.constants.ResponseConstants.DELETE;
 
 @Service
@@ -81,12 +84,21 @@ public class TagService {
 
     @Transactional
     public String deleteTag(Long tagId) {
-        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new NotFoundByIdException("해당 아이디로 존재하는 스크랩이 없습니다"));
+        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new NotFoundByIdException("해당 아이디로 존재하는 태그가 없습니다"));
         tagRepository.delete(tag);
 
         return DELETE;
     }
 
-
+    @Transactional
+    public List<Post> getPosts(Long tagId) {
+        Tag tag = tagRepository.findById(tagId).orElseThrow(() -> new NotFoundByIdException("해당 아이디로 존재하는 태그가 없습니다"));
+        List<Post> posts = new ArrayList<>();
+        List<PostTag> postTagsByTagId = postTagRepository.findPostTagsByTagId(tagId);
+        for (PostTag postTag : postTagsByTagId) {
+            posts.add(postTag.getPost());
+        }
+        return posts;
+    }
 
 }
