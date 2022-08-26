@@ -34,7 +34,6 @@ import com.f3f.community.user.domain.UserLevel;
 import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -50,7 +49,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class TotalTestScrap {
+public class TotalTestCategoryScrapTag {
 
     @Autowired
     UserService userService;
@@ -507,8 +506,22 @@ public class TotalTestScrap {
 
         for (Long tag : tags) {
             List<PostTag> postTagsByTagId = postTagRepository.findPostTagsByTagId(tag);
-
+            List<Post> posts = tagService.getPosts(tag);
+            assertThat(postTagsByTagId.size()).isEqualTo(posts.size());
         }
 
+        /*
+        카테고리 조회
+         */
+        List<Long> categories = new ArrayList<>();
+        categories.add(samsung);
+        categories.add(apple);
+        categories.add(tesla);
+        categories.add(lg);
+        categories.add(bitcoin);
+        categories.add(ethereum);
+        categories.add(kospi);
+        categories.add(doge);
+        categories.add(stock);
     }
 }
