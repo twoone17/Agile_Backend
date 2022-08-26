@@ -9,6 +9,7 @@ import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.likes.service.LikesService;
@@ -1029,5 +1030,47 @@ class UserServiceTest {
         //when & then
         assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(nullUserRequest));
         assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(emptyAddressRequest));
+    }
+
+    @Test
+    @DisplayName("유저 좋아요 받아오기 테스트")
+    public void findUserLikesListTest() throws Exception {
+        //given
+        SaveRequest userWithUniqueCount1 = createUserWithUniqueCount(1);
+        SaveRequest userWithUniqueCount2 = createUserWithUniqueCount(2);
+        SaveRequest userWithUniqueCount3 = createUserWithUniqueCount(3);
+        Long aLong1 = userService.saveUser(userWithUniqueCount1);
+        Long aLong2 = userService.saveUser(userWithUniqueCount2);
+        Long aLong3 = userService.saveUser(userWithUniqueCount3);
+        User user1 = userRepository.findById(aLong1).get();
+        User user2 = userRepository.findById(aLong2).get();
+        User user3 = userRepository.findById(aLong3).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user2, cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(user3, cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(user3, cat, 3);
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+        Post post1 = postRepository.findById(postId1).get();
+        Post post2 = postRepository.findById(postId2).get();
+        Post post3 = postRepository.findById(postId3).get();
+
+        //when
+        LikesDto.SaveRequest likeDto1 = createLikesDto(user1, post1);
+        LikesDto.SaveRequest likeDto2 = createLikesDto(user1, post3);
+        Long likes1 = likesService.createLikes(likeDto1);
+        Long likes2 = likesService.createLikes(likeDto2);
+        List<Likes> userLikesByEmail = userService.findUserLikesByEmail(user1.getEmail());
+
+        //then
+        assertThat(userLikesByEmail.size()).isEqualTo(2);
+        Likes foundLikes1 = likesRepository.findById(userLikesByEmail.get(0).getId()).get();
+        Likes foundLikes2 = likesRepository.findById(userLikesByEmail.get(1).getId()).get();
+        assertThat(likes1).isEqualTo(foundLikes1.getId());
+        assertThat(likes2).isEqualTo(foundLikes2.getId());
     }
 }

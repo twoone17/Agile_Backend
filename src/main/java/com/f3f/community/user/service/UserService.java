@@ -2,6 +2,7 @@ package com.f3f.community.user.service;
 
 import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.repository.CommentRepository;
+import com.f3f.community.exception.likeException.NotFoundLikesException;
 import com.f3f.community.exception.postException.NotFoundPostListByAuthor;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.repository.LikesRepository;
@@ -276,6 +277,16 @@ public class UserService {
         }
         user.updatePhone(request.getPhone());
         return OK;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Likes> findUserLikesByEmail(@NotBlank String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);
+        List<Likes> byUser = likesRepository.findByUser(user);
+        if(byUser.isEmpty()) {
+            throw new NotFoundLikesException();
+        }
+        return byUser;
     }
 
 
