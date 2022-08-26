@@ -8,7 +8,11 @@ import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
+import com.f3f.community.exception.commentException.NotFoundCommentException;
+import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
+import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
 import com.f3f.community.exception.userException.*;
+import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.likes.service.LikesService;
@@ -608,7 +612,7 @@ class UserServiceTest {
         assertThat(password.getPassword()).isEqualTo(user.get().getPassword());
     }
 
-    // 프록시 초기화 문제로 테스트 불가.
+
     @Test
     @DisplayName("스크랩 목록 조회 테스트")
     public void findScrapsOfUserTest() throws Exception {
@@ -963,4 +967,219 @@ class UserServiceTest {
         assertThrows(ConstraintViolationException.class, () -> userService.findUserPostsWithOptions(myPageRequest));
         }
 
+    @Test
+    @DisplayName("유저 주소 수정 테스트")
+    public void updateUserAddressInfoTest() throws Exception {
+        //given
+        String new_address = "new Address";
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserAddressRequest request = new UpdateUserAddressRequest(user, new_address);
+
+        //when
+        userService.updateUserAddressInfo(request);
+        User user1 = userRepository.findById(aLong).get();
+
+        //then
+        assertThat(user1.getAddress()).isEqualTo(new_address);
+    }
+
+    @Test
+    @DisplayName("유저 휴대폰 번호 수정 테스트")
+    public void updateUserPhoneInfoTest() throws Exception {
+        //given
+        String new_phone = "010-5678-1234";
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserPhoneRequest request = new UpdateUserPhoneRequest(user, new_phone);
+
+        //when
+        userService.updateUserPhoneInfo(request);
+        User user1 = userRepository.findById(aLong).get();
+
+        //then
+        assertThat(user1.getPhone()).isEqualTo(new_phone);
+    }
+
+    @Test
+    @DisplayName("유저 휴대폰 번호 수정 테스트 실패 - 잘못된 형식")
+    public void UpdateInvalidUserPhoneInfoToFail() throws Exception {
+        //given
+        String new_phone = "010-5678-1234";
+        UpdateUserPhoneRequest nullUserRequest = new UpdateUserPhoneRequest(null, new_phone);
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserPhoneRequest emptyPhoneRequest = new UpdateUserPhoneRequest(user, "");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserPhoneInfo(nullUserRequest));
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserPhoneInfo(emptyPhoneRequest));
+    }
+
+    @Test
+    @DisplayName("유저 주소 수정 테스트 실패 - 잘못된 형식")
+    public void UpdateInvalidAddressInfoToFail() throws Exception {
+        //given
+        String new_address = "new Address";
+        UpdateUserAddressRequest nullUserRequest = new UpdateUserAddressRequest(null, new_address);
+        UserDto.SaveRequest userDTO = createUserWithUniqueCount(1);
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+        UpdateUserAddressRequest emptyAddressRequest = new UpdateUserAddressRequest(user, "");
+
+        //when & then
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(nullUserRequest));
+        assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(emptyAddressRequest));
+    }
+
+    @Test
+    @DisplayName("유저 삭제 후 게시글 변화 테스트")
+    public void getPostsInfoAfterUserDeletionTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user, cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(user, cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(user, cat, 3);
+
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+
+        List<Post> byAuthorId = postRepository.findByAuthorId(user.getId());
+        assertThat(byAuthorId.size()).isEqualTo(3);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId1));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId2));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId3));
+    }
+
+
+    @Test
+    @DisplayName("유저 삭제 후 댓글 변화 테스트")
+    public void getCommentsInfoAfterUserDeletionTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user, cat, 1);
+
+        Long postId1 = postService.savePost(postDto1);
+        Post post = postRepository.findById(postId1).get();
+
+        CommentDto.SaveRequest commentDto1 = createCommentDto(user, post, "Content1", null, new ArrayList<>(), 1L, new ArrayList<>());
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        CommentDto.SaveRequest commentDto3 = createCommentDto(user, post, "Content3", null, new ArrayList<>(), 1L, new ArrayList<>());
+
+        Long comments1 = commentService.createComments(commentDto1);
+        Long comments2 = commentService.createComments(commentDto2);
+        Long comments3 = commentService.createComments(commentDto3);
+
+        List<Comment> byAuthor = commentRepository.findByAuthor(user);
+        assertThat(byAuthor.size()).isEqualTo(3);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundUserEmailException.class, () -> commentService.findCommentsByUser(user));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments1));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments2));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments3));
+    }
+
+    @Test
+    @DisplayName("유저 삭제 후 스크랩 변화 테스트")
+    public void getScrapInfosAfterUserDeletionTests() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+
+        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post1 = createPostDto1(user, cat);
+        PostDto.SaveRequest post2 = createPostDto2(user, cat);
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
+        Long sid = scrapService.createScrap(scrap);
+        scrapService.saveCollection(sid,aLong, pid1);
+        scrapService.saveCollection(sid,aLong, pid2);
+        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(user);
+        assertThat(scrapsByUser.size()).isEqualTo(1);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundUserException.class, () -> userService.findUserScrapsByEmail(user.getEmail()));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(sid));
+    }
+
+
+    @Test
+    @DisplayName("유저 좋아요 받아오기 테스트")
+    public void findUserLikesListTest() throws Exception {
+        //given
+        SaveRequest userWithUniqueCount1 = createUserWithUniqueCount(1);
+        SaveRequest userWithUniqueCount2 = createUserWithUniqueCount(2);
+        SaveRequest userWithUniqueCount3 = createUserWithUniqueCount(3);
+        Long aLong1 = userService.saveUser(userWithUniqueCount1);
+        Long aLong2 = userService.saveUser(userWithUniqueCount2);
+        Long aLong3 = userService.saveUser(userWithUniqueCount3);
+        User user1 = userRepository.findById(aLong1).get();
+        User user2 = userRepository.findById(aLong2).get();
+        User user3 = userRepository.findById(aLong3).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user2, cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(user3, cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(user3, cat, 3);
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+        Post post1 = postRepository.findById(postId1).get();
+        Post post2 = postRepository.findById(postId2).get();
+        Post post3 = postRepository.findById(postId3).get();
+
+        //when
+        LikesDto.SaveRequest likeDto1 = createLikesDto(user1, post1);
+        LikesDto.SaveRequest likeDto2 = createLikesDto(user1, post3);
+        Long likes1 = likesService.createLikes(likeDto1);
+        Long likes2 = likesService.createLikes(likeDto2);
+        List<Likes> userLikesByEmail = userService.findUserLikesByEmail(user1.getEmail());
+
+        //then
+        assertThat(userLikesByEmail.size()).isEqualTo(2);
+        Likes foundLikes1 = likesRepository.findById(userLikesByEmail.get(0).getId()).get();
+        Likes foundLikes2 = likesRepository.findById(userLikesByEmail.get(1).getId()).get();
+        assertThat(likes1).isEqualTo(foundLikes1.getId());
+        assertThat(likes2).isEqualTo(foundLikes2.getId());
+    }
 }

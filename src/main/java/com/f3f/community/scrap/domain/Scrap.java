@@ -40,7 +40,7 @@ public class Scrap {
     // NotNull
 
     @NotNull
-    @OneToMany(mappedBy = "scrap", fetch = LAZY)
+    @OneToMany(mappedBy = "scrap", fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<ScrapPost> postList = new ArrayList<>();
     // 생성될때는 빈 리스트
 
