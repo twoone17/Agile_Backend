@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -516,6 +517,7 @@ class PostServiceTestWithDB {
         PostDto.SaveRequest postDto3 = createPostDto("title1", "content3", userRepository.findById(uid2).get(), categoryRepository.findById(cid).get());
         PostDto.SaveRequest postDto4 = createPostDto("title4", "content4", userRepository.findById(uid3).get(), categoryRepository.findById(cid).get());
 
+
         //when
         Long pid = postService.savePost(postDto);
         Long pid2 = postService.savePost(postDto2);
@@ -655,8 +657,10 @@ class PostServiceTestWithDB {
         //when
         Long pid = postService.savePost(postDto);
         Long pid2 = postService.savePost(postDto2);
+
         Long pid3 = postService.savePost(postDto3);
         Long pid4 = postService.savePost(postDto4);
+
 
         postService.updatePost(pid,uid,updateRequest);
         postService.updatePost(pid2,uid,updateRequest);

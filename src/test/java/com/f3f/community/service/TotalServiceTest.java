@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TotalServiceTest {
@@ -453,6 +455,8 @@ public class TotalServiceTest {
 
         Long tpid1_post10 = tagService.addTagToPost(tag5, post10);
 
+
+
         // then
         CommentDto.SaveRequest commentDto1 = createCommentDto(post1,null , yun, "삼성 주식 지금 얼만데요?");
         Long commentsId1 = commentService.createComments(commentDto1);
@@ -514,6 +518,7 @@ public class TotalServiceTest {
         포스트 삭제
         post1, post4, post7
 
+
         댓글 삭제
         comment 5, comment 8
 
@@ -527,6 +532,13 @@ public class TotalServiceTest {
         scrap 10,9
 
          */
+//        포스트 삭제
+//        post1, post4, post7
+        postService.deletePost(post1,ryu);
+        postService.deletePost(post4,yun);
+        postService.deletePost(post7,choi);
+
+        assertThat(postRepository.findAll().size()).isEqualTo(7);
     }
 
 

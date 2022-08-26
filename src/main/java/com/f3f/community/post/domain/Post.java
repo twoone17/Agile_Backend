@@ -59,7 +59,7 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post", fetch = LAZY,cascade = CascadeType.REMOVE)
     private List<Likes> likesList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post",fetch = LAZY)
+    @OneToMany(mappedBy = "post",fetch = LAZY,cascade = CascadeType.REMOVE)
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder
