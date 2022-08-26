@@ -50,16 +50,16 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-    @OneToMany(mappedBy = "post", fetch = LAZY)
+    @OneToMany(mappedBy = "post", fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<ScrapPost> scrapList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", fetch = LAZY)
+    @OneToMany(mappedBy = "post", fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<Comment> commentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post", fetch = LAZY)
+    @OneToMany(mappedBy = "post", fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<Likes> likesList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post",fetch = LAZY)
+    @OneToMany(mappedBy = "post",fetch = LAZY, cascade = CascadeType.REMOVE)
     private List<PostTag> tagList = new ArrayList<>();
 
     @Builder

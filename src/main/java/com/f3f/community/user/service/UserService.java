@@ -192,7 +192,6 @@ public class UserService {
         return postList;
     }
 
-    // 내부 조회용
     @Transactional(readOnly = true)
     public List<Scrap> findUserScrapsByEmail(@NotBlank String email) {
         User user = userRepository.findByEmail(email).orElseThrow(NotFoundUserException::new);

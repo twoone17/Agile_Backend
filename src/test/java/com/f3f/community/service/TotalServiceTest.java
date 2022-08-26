@@ -9,7 +9,11 @@ import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.commentException.NotFoundCommentException;
+import com.f3f.community.exception.likeException.NotFoundLikesException;
+import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
@@ -52,6 +56,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import static com.f3f.community.common.constants.UserConstants.LIKE;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
@@ -792,10 +797,22 @@ public class TotalServiceTest {
         assertThat(userLikesByEmail_KDJ.get(0).getId()).isEqualTo(likesId4);
         assertThat(userLikesByEmail_KDJ.get(1).getId()).isEqualTo(likesId10);
 
-        // 류동재 회원 삭제 후 게시글 변화
+        // 류동재 회원 삭제
         UserDto.UserDeleteRequest deleteRequest = new UserDto.UserDeleteRequest(RDJ.getEmail(), RDJ.getPassword());
         userService.delete(deleteRequest);
+        // 삭제 후 게시글 삭제 확인
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(post1));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(post6));
+        // 삭제 후 댓글 삭제 확인
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment3.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment9.getId()));
+        // 삭제 후 스크랩 삭제 확인
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(scrap1));
+        // 삭제 후 좋아요 삭제 확인
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId2).orElseThrow(NotFoundLikesException::new));
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId9).orElseThrow(NotFoundLikesException::new));
 
+        // 김윤정 회원 차단
 
     }
 
