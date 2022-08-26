@@ -21,6 +21,7 @@ import com.f3f.community.post.service.ScrapPostService;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
+import com.f3f.community.tag.domain.PostTag;
 import com.f3f.community.tag.dto.TagDto;
 import com.f3f.community.tag.repository.PostTagRepository;
 import com.f3f.community.tag.repository.TagRepository;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -531,13 +533,37 @@ public class TotalServiceTest {
         스크랩 삭제
         scrap 10,9
 
+//포스트 잘 가져와지는지
+
+//가져온 포스트에 카테고리, 태그 잘 연결되어있는지
+
          */
+        //포스트 잘 가져와지는지
+        assertThat(postRepository.findAll().size()).isEqualTo(10);
+
+        assertThat(4).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).size());
+        List<PostTag> postTagsByPost = postTagRepository.findPostTagsByPost(postRepository.findById(post1).get());
+
+        assertThat(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).contains("주식초고수"));
+        //가져온 포스트에 카테고리, 태그 잘 연결되어있는지
+//        assertThat(tpid).isEqualTo(postTagRepository.findByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()).get().getId());
+
 //        포스트 삭제
 //        post1, post4, post7
         postService.deletePost(post1,ryu);
         postService.deletePost(post4,yun);
         postService.deletePost(post7,choi);
 
+        //id값으로 검증
+        assertThat(postRepository.existsById(post1)).isFalse();
+
+        //실제 값 검증
+        assertThat(postRepository.findAll()).extracting("title","content")
+                .doesNotContain(tuple("삼전 살만한가요?", "저 삼전 사고싶어용"),
+                        tuple("삼전 사고 싶다", "9만전자"),
+                        tuple("이더리움 폭락", "han river...."));
+
+        //사이즈 검증
         assertThat(postRepository.findAll().size()).isEqualTo(7);
     }
 
