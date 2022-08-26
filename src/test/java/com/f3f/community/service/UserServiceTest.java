@@ -8,6 +8,9 @@ import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
+import com.f3f.community.exception.commentException.NotFoundCommentException;
+import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
+import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
 import com.f3f.community.exception.userException.*;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
@@ -609,7 +612,7 @@ class UserServiceTest {
         assertThat(password.getPassword()).isEqualTo(user.get().getPassword());
     }
 
-    // 프록시 초기화 문제로 테스트 불가.
+
     @Test
     @DisplayName("스크랩 목록 조회 테스트")
     public void findScrapsOfUserTest() throws Exception {
@@ -1031,6 +1034,112 @@ class UserServiceTest {
         assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(nullUserRequest));
         assertThrows(ConstraintViolationException.class, () -> userService.updateUserAddressInfo(emptyAddressRequest));
     }
+
+    @Test
+    @DisplayName("유저 삭제 후 게시글 변화 테스트")
+    public void getPostsInfoAfterUserDeletionTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user, cat, 1);
+        PostDto.SaveRequest postDto2 = createPostDto(user, cat, 2);
+        PostDto.SaveRequest postDto3 = createPostDto(user, cat, 3);
+
+        Long postId1 = postService.savePost(postDto1);
+        Long postId2 = postService.savePost(postDto2);
+        Long postId3 = postService.savePost(postDto3);
+
+        List<Post> byAuthorId = postRepository.findByAuthorId(user.getId());
+        assertThat(byAuthorId.size()).isEqualTo(3);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId1));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId2));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(postId3));
+    }
+
+
+    @Test
+    @DisplayName("유저 삭제 후 댓글 변화 테스트")
+    public void getCommentsInfoAfterUserDeletionTest() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+
+        User user = userRepository.findById(aLong).get();
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest postDto1 = createPostDto(user, cat, 1);
+
+        Long postId1 = postService.savePost(postDto1);
+        Post post = postRepository.findById(postId1).get();
+
+        CommentDto.SaveRequest commentDto1 = createCommentDto(user, post, "Content1", null, new ArrayList<>(), 1L, new ArrayList<>());
+        CommentDto.SaveRequest commentDto2 = createCommentDto(user, post, "Content2", null, new ArrayList<>(), 1L, new ArrayList<>());
+        CommentDto.SaveRequest commentDto3 = createCommentDto(user, post, "Content3", null, new ArrayList<>(), 1L, new ArrayList<>());
+
+        Long comments1 = commentService.createComments(commentDto1);
+        Long comments2 = commentService.createComments(commentDto2);
+        Long comments3 = commentService.createComments(commentDto3);
+
+        List<Comment> byAuthor = commentRepository.findByAuthor(user);
+        assertThat(byAuthor.size()).isEqualTo(3);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundUserEmailException.class, () -> commentService.findCommentsByUser(user));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments1));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments2));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comments3));
+    }
+
+    @Test
+    @DisplayName("유저 삭제 후 스크랩 변화 테스트")
+    public void getScrapInfosAfterUserDeletionTests() throws Exception {
+        //given
+        SaveRequest userDTO = createUser();
+        Long aLong = userService.saveUser(userDTO);
+        User user = userRepository.findById(aLong).get();
+
+        ScrapDto.SaveRequest scrap = createScrapDto1(user);
+        Category root = createRoot();
+        CategoryDto.SaveRequest categoryDto = createCategoryDto("temp", root);
+        Long cid = categoryService.createCategory(categoryDto);
+        Category cat = categoryRepository.findById(cid).get();
+        PostDto.SaveRequest post1 = createPostDto1(user, cat);
+        PostDto.SaveRequest post2 = createPostDto2(user, cat);
+        Long pid1 = postService.savePost(post1);
+        Long pid2 = postService.savePost(post2);
+        Long sid = scrapService.createScrap(scrap);
+        scrapService.saveCollection(sid,aLong, pid1);
+        scrapService.saveCollection(sid,aLong, pid2);
+        List<Scrap> scrapsByUser = scrapRepository.findScrapsByUser(user);
+        assertThat(scrapsByUser.size()).isEqualTo(1);
+
+        //when
+        UserDeleteRequest deleteRequest = new UserDeleteRequest(user.getEmail(), user.getPassword());
+        userService.delete(deleteRequest);
+
+        //then
+        assertThrows(NotFoundUserException.class, () -> userService.findUserScrapsByEmail(user.getEmail()));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(sid));
+    }
+
 
     @Test
     @DisplayName("유저 좋아요 받아오기 테스트")

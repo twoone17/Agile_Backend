@@ -792,6 +792,11 @@ public class TotalServiceTest {
         assertThat(userLikesByEmail_KDJ.get(0).getId()).isEqualTo(likesId4);
         assertThat(userLikesByEmail_KDJ.get(1).getId()).isEqualTo(likesId10);
 
+        // 류동재 회원 삭제 후 게시글 변화
+        UserDto.UserDeleteRequest deleteRequest = new UserDto.UserDeleteRequest(RDJ.getEmail(), RDJ.getPassword());
+        userService.delete(deleteRequest);
+
+
     }
 
 

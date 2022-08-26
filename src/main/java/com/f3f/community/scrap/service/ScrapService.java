@@ -128,8 +128,12 @@ public class ScrapService {
         } else {
             throw new NotFoundScrapByUserException();
         }
+    }
 
-
+    @Transactional(readOnly = true)
+    public Long findScrapsById(Long id) {
+        Scrap scrap = scrapRepository.findById(id).orElseThrow(NotFoundScrapByIdException::new);
+        return scrap.getId();
     }
 
 
