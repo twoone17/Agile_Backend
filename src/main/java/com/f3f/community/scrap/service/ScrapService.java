@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.f3f.community.common.constants.ResponseConstants.*;
@@ -49,7 +50,17 @@ public class ScrapService {
         return newScrap.getId();
     }
 
+    @Transactional
+    public List<Post> getPosts(Long sid) {
+        Scrap scrap = scrapRepository.findById(sid).orElseThrow(() -> new NotFoundByIdException("해당 아이디로 존재하는 스크랩을 찾을 수 없습니다."));
+        List<Post> posts = new ArrayList<>();
+        List<ScrapPost> scrapPostsByScrapId = scrapPostRepository.findScrapPostsByScrapId(sid);
+        for (ScrapPost scrapPost : scrapPostsByScrapId) {
+            posts.add(scrapPost.getPost());
+        }
+        return posts;
 
+    }
 
 
 
@@ -128,8 +139,12 @@ public class ScrapService {
         } else {
             throw new NotFoundScrapByUserException();
         }
+    }
 
-
+    @Transactional(readOnly = true)
+    public Long findScrapsById(Long id) {
+        Scrap scrap = scrapRepository.findById(id).orElseThrow(NotFoundScrapByIdException::new);
+        return scrap.getId();
     }
 
 

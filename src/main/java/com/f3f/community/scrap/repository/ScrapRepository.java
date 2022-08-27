@@ -21,5 +21,5 @@ public interface ScrapRepository extends JpaRepository<Scrap,Long> {
     //스크랩 이름으로 스크랩이 있는지 조회
     boolean existsByUser(User user);
     //유저로 스크랩이 있는지 조회
-    List<Scrap> findScrapByUserId(Long userId);
+    List<Scrap> findScrapsByUserId(Long userId);
 }

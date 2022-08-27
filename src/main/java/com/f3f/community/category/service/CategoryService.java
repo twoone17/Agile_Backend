@@ -95,7 +95,11 @@ public class CategoryService {
     public String deleteCategory(Long catId) {
         Category category = categoryRepository.findById(catId).orElseThrow(NotFoundByIdException::new);
         if (category.getChildCategory().isEmpty()) {
-            categoryRepository.delete(category);
+            if (postRepository.findPostsByCategoryId(catId).isEmpty()) {
+                categoryRepository.delete(category);
+            } else {
+                throw new NotEmptyCategoryPostsException();
+            }
         }else {
             throw new NotEmptyChildCategoryException();
         }

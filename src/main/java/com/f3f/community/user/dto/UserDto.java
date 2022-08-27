@@ -198,4 +198,27 @@ public class UserDto {
         private String email;
         private int limit;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateUserPhoneRequest {
+        @NotNull
+        private User user;
+        @NotBlank
+        private String phone;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateUserAddressRequest {
+        @NotNull
+        private User user;
+        @NotBlank
+        private String address;
+    }
+
 }

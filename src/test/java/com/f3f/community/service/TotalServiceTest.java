@@ -9,19 +9,26 @@ import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
 import com.f3f.community.exception.categoryException.MaxDepthException;
+import com.f3f.community.exception.commentException.NotFoundCommentException;
+import com.f3f.community.exception.likeException.NotFoundLikesException;
+import com.f3f.community.exception.postException.NotFoundPostByPostIdException;
 import com.f3f.community.exception.scrapException.DuplicateScrapPostException;
+import com.f3f.community.exception.scrapException.NotFoundScrapByIdException;
+import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
 import com.f3f.community.likes.service.LikesService;
+import com.f3f.community.post.domain.Post;
+import com.f3f.community.post.domain.ScrapPost;
 import com.f3f.community.post.dto.PostDto;
 import com.f3f.community.post.repository.PostRepository;
 import com.f3f.community.post.repository.ScrapPostRepository;
 import com.f3f.community.post.service.PostService;
 import com.f3f.community.post.service.ScrapPostService;
+import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
-import com.f3f.community.tag.domain.PostTag;
 import com.f3f.community.tag.dto.TagDto;
 import com.f3f.community.tag.repository.PostTagRepository;
 import com.f3f.community.tag.repository.TagRepository;
@@ -33,7 +40,8 @@ import com.f3f.community.user.dto.UserDto;
 import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +52,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static com.f3f.community.common.constants.UserConstants.LIKE;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -241,6 +251,11 @@ public class TotalServiceTest {
                 .build();
     }
 
+    private UserDto.MyPageRequest createMyPageRequest(String userEmail, int limit, String option) {
+        UserDto.MyPageRequest request = new UserDto.MyPageRequest(userEmail, limit, option);
+        return request;
+    }
+
     private Long createRoot() throws Exception {
         CategoryDto.SaveRequest cat = createCategoryDto("root", null);
         Long rid = categoryService.createCategory(cat);
@@ -308,7 +323,7 @@ public class TotalServiceTest {
     }
 
 
-    @Before
+    @BeforeEach
     public void deleteAll() {
         postTagRepository.deleteAll();
         tagRepository.deleteAll();
@@ -457,8 +472,6 @@ public class TotalServiceTest {
 
         Long tpid1_post10 = tagService.addTagToPost(tag5, post10);
 
-
-
         // then
         CommentDto.SaveRequest commentDto1 = createCommentDto(post1,null , yun, "삼성 주식 지금 얼만데요?");
         Long commentsId1 = commentService.createComments(commentDto1);
@@ -499,17 +512,88 @@ public class TotalServiceTest {
         Long commentsId10 = commentService.createComments(commentDto10);
         Comment comment10 = commentRepository.findById(commentsId10).get();
 
-        ScrapDto.SaveRequest scrap1 = createScrapDto(userRepository.findById(ryu).get(), "경제");
-        ScrapDto.SaveRequest scrap2 = createScrapDto(userRepository.findById(jun).get(), "할래");
-        ScrapDto.SaveRequest scrap3 = createScrapDto(userRepository.findById(yun).get(), "대로");
-        ScrapDto.SaveRequest scrap4 = createScrapDto(userRepository.findById(choi).get(), "내맘");
-        ScrapDto.SaveRequest scrap5 = createScrapDto(userRepository.findById(hong).get(), "주식");
-        ScrapDto.SaveRequest scrap6 = createScrapDto(userRepository.findById(jun).get(), "경제");
-        ScrapDto.SaveRequest scrap7 = createScrapDto(userRepository.findById(choi).get(), "도지");
-        ScrapDto.SaveRequest scrap8 = createScrapDto(userRepository.findById(yun).get(), "coin");
-        ScrapDto.SaveRequest scrap9 = createScrapDto(userRepository.findById(hong).get(), "rastle");
-        ScrapDto.SaveRequest scrap10 = createScrapDto(userRepository.findById(jun).get(), "coin");
+        LikesDto.SaveRequest likesDto1 = createLikesDto(post1, yun);
+        Long likesId1 = likesService.createLikes(likesDto1);
+        Likes likes1 = likesRepository.findById(likesId1).get();
 
+        LikesDto.SaveRequest likesDto2 = createLikesDto(post1, ryu);
+        Long likesId2 = likesService.createLikes(likesDto2);
+        Likes likes2 = likesRepository.findById(likesId2).get();
+
+        LikesDto.SaveRequest likesDto3 = createLikesDto(post2, yun);
+        Long likesId3 = likesService.createLikes(likesDto3);
+        Likes likes3 = likesRepository.findById(likesId3).get();
+
+        LikesDto.SaveRequest likesDto4 = createLikesDto(post3, jun);
+        Long likesId4 = likesService.createLikes(likesDto4);
+        Likes likes4 = likesRepository.findById(likesId4).get();
+
+        LikesDto.SaveRequest likesDto5 = createLikesDto(post4, hong);
+        Long likesId5 = likesService.createLikes(likesDto5);
+        Likes likes5 = likesRepository.findById(likesId5).get();
+
+        LikesDto.SaveRequest likesDto6 = createLikesDto(post6, hong);
+        Long likesId6 = likesService.createLikes(likesDto6);
+        Likes likes6 = likesRepository.findById(likesId6).get();
+
+        LikesDto.SaveRequest likesDto7 = createLikesDto(post6, choi);
+        Long likesId7 = likesService.createLikes(likesDto7);
+        Likes likes7 = likesRepository.findById(likesId7).get();
+
+        LikesDto.SaveRequest likesDto8 = createLikesDto(post8, choi);
+        Long likesId8 = likesService.createLikes(likesDto8);
+        Likes likes8 = likesRepository.findById(likesId8).get();
+
+        LikesDto.SaveRequest likesDto9 = createLikesDto(post8, ryu);
+        Long likesId9 = likesService.createLikes(likesDto9);
+        Likes likes9 = likesRepository.findById(likesId9).get();
+
+        LikesDto.SaveRequest likesDto10 = createLikesDto(post10, jun);
+        Long likesId10 = likesService.createLikes(likesDto10);
+        Likes likes10 = likesRepository.findById(likesId10).get();
+
+
+        ScrapDto.SaveRequest scrap1Dto = createScrapDto(userRepository.findById(ryu).get(), "경제");
+        ScrapDto.SaveRequest scrap2Dto = createScrapDto(userRepository.findById(jun).get(), "할래");
+        ScrapDto.SaveRequest scrap3Dto = createScrapDto(userRepository.findById(yun).get(), "대로");
+        ScrapDto.SaveRequest scrap4Dto = createScrapDto(userRepository.findById(choi).get(), "내맘");
+        ScrapDto.SaveRequest scrap5Dto = createScrapDto(userRepository.findById(hong).get(), "주식");
+        ScrapDto.SaveRequest scrap6Dto = createScrapDto(userRepository.findById(jun).get(), "경제");
+        ScrapDto.SaveRequest scrap7Dto = createScrapDto(userRepository.findById(choi).get(), "도지");
+        ScrapDto.SaveRequest scrap8Dto = createScrapDto(userRepository.findById(yun).get(), "coin");
+        ScrapDto.SaveRequest scrap9Dto = createScrapDto(userRepository.findById(hong).get(), "rastle");
+        ScrapDto.SaveRequest scrap10Dto = createScrapDto(userRepository.findById(jun).get(), "coin");
+
+        Long scrap1 = scrapService.createScrap(scrap1Dto);
+        Long scrap2 = scrapService.createScrap(scrap2Dto);
+        Long scrap3 = scrapService.createScrap(scrap3Dto);
+        Long scrap4 = scrapService.createScrap(scrap4Dto);
+        Long scrap5 = scrapService.createScrap(scrap5Dto);
+        Long scrap6 = scrapService.createScrap(scrap6Dto);
+        Long scrap7 = scrapService.createScrap(scrap7Dto);
+        Long scrap8 = scrapService.createScrap(scrap8Dto);
+        Long scrap9 = scrapService.createScrap(scrap9Dto);
+        Long scrap10 = scrapService.createScrap(scrap10Dto);
+
+        scrapService.saveCollection(scrap1, ryu, post1);
+        scrapService.saveCollection(scrap1, ryu, post8);
+        scrapService.saveCollection(scrap1, ryu, post9);
+        scrapService.saveCollection(scrap2, jun, post2);
+        scrapService.saveCollection(scrap2, jun, post4);
+        scrapService.saveCollection(scrap6, jun, post3);
+        scrapService.saveCollection(scrap4, choi, post5);
+        scrapService.saveCollection(scrap4, choi, post7);
+        scrapService.saveCollection(scrap7, choi, post9);
+        scrapService.saveCollection(scrap5, hong, post10);
+        scrapService.saveCollection(scrap5, hong, post1);
+        scrapService.saveCollection(scrap9, hong, post5);
+        scrapService.saveCollection(scrap3, yun, post6);
+        scrapService.saveCollection(scrap3, yun, post2);
+        scrapService.saveCollection(scrap8, yun, post3);
+        scrapService.saveCollection(scrap8, yun, post4);
+        scrapService.saveCollection(scrap10, jun, post10);
+        scrapService.saveCollection(scrap7, choi, post7);
+        scrapService.saveCollection(scrap9, hong, post6);
 
 
         /*
@@ -519,7 +603,6 @@ public class TotalServiceTest {
 
         포스트 삭제
         post1, post4, post7
-
 
         댓글 삭제
         comment 5, comment 8
@@ -533,38 +616,204 @@ public class TotalServiceTest {
         스크랩 삭제
         scrap 10,9
 
-//포스트 잘 가져와지는지
-
-//가져온 포스트에 카테고리, 태그 잘 연결되어있는지
-
          */
-        //포스트 잘 가져와지는지
-        assertThat(postRepository.findAll().size()).isEqualTo(10);
 
-        assertThat(4).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).size());
-        List<PostTag> postTagsByPost = postTagRepository.findPostTagsByPost(postRepository.findById(post1).get());
+        // 류동재 회원 검증
+        User RDJ = userRepository.findById(ryu).get();
+        UserDto.MyPageRequest myPageRequest_RDJ = createMyPageRequest(RDJ.getEmail(), 2, LIKE);
+        List<Comment> userCommentsByEmail_RDJ = userService.findUserCommentsByEmail(RDJ.getEmail());
+        List<Post> userPostsByEmail_RDJ = userService.findUserPostsByEmail(RDJ.getEmail());
+        // 류동재 회원이 작성한 댓글은 2개이다.
+        assertThat(userCommentsByEmail_RDJ.size()).isEqualTo(2);
+        assertThat(userCommentsByEmail_RDJ.get(0).getContent()).isEqualTo("애플이 짱이지");
+        assertThat(userCommentsByEmail_RDJ.get(1).getContent()).isEqualTo("아무것도 모르면 안되는데");
+        // 류동재 회원이 작성한 게시글은 2개이다.
+        assertThat(userPostsByEmail_RDJ.size()).isEqualTo(2);
+        assertThat(userPostsByEmail_RDJ.get(0).getTitle()).isEqualTo("삼전 살만한가요?");
+        assertThat(userPostsByEmail_RDJ.get(1).getTitle()).isEqualTo("테슬라 와 도지?");
+        // 류동재 회원이 작성한 게시글은 좋아요를 모두 2개씩 받았다.
+        List<Post> userPostsWithOptions_RDJ = userService.findUserPostsWithOptions(myPageRequest_RDJ);
+        List<Likes> byPost1_RDJ = likesRepository.findByPost(userPostsWithOptions_RDJ.get(0));
+        List<Likes> byPost2_RDJ = likesRepository.findByPost(userPostsWithOptions_RDJ.get(1));
+        assertThat(byPost1_RDJ.size()).isEqualTo(2);
+        assertThat(byPost2_RDJ.size()).isEqualTo(2);
+        // 류동재 회원이 생성한 스크랩은 1개이며 3개의 게시글이 저장되어있다.
+        List<Scrap> userScrapsByEmail_RDJ = userService.findUserScrapsByEmail(RDJ.getEmail());
+        assertThat(userScrapsByEmail_RDJ.size()).isEqualTo(1);
+        List<ScrapPost> scrapPostsByScrapId_RDJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_RDJ.get(0).getId());
+        assertThat(scrapPostsByScrapId_RDJ.size()).isEqualTo(3);
+        assertThat(scrapPostsByScrapId_RDJ.get(0).getPost().getTitle()).isEqualTo("삼전 살만한가요?");
+        assertThat(scrapPostsByScrapId_RDJ.get(1).getPost().getTitle()).isEqualTo("비트코인과 주식");
+        assertThat(scrapPostsByScrapId_RDJ.get(2).getPost().getTitle()).isEqualTo("아이폰 14 ");
+        // 류동재 회원이 좋아요를 남긴 게시글은 2개로, post1과 post8이다.
+        List<Likes> userLikesByEmail_RDJ = userService.findUserLikesByEmail(RDJ.getEmail());
+        assertThat(userLikesByEmail_RDJ.size()).isEqualTo(2);
+        assertThat(userLikesByEmail_RDJ.get(0).getId()).isEqualTo(likesId2);
+        assertThat(userLikesByEmail_RDJ.get(1).getId()).isEqualTo(likesId9);
 
-        assertThat(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).contains("주식초고수"));
-        //가져온 포스트에 카테고리, 태그 잘 연결되어있는지
-//        assertThat(tpid).isEqualTo(postTagRepository.findByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()).get().getId());
+        // 김윤정 회원 검증
+        User KYJ = userRepository.findById(yun).get();
+        UserDto.MyPageRequest myPageRequest_KYJ = createMyPageRequest(KYJ.getEmail(), 2, LIKE);
+        List<Comment> userCommentsByEmail_KYJ = userService.findUserCommentsByEmail(KYJ.getEmail());
+        List<Post> userPostsByEmail_KYJ = userService.findUserPostsByEmail(KYJ.getEmail());
+        // 김윤정 회원이 작성한 댓글은 3개이다.
+        assertThat(userCommentsByEmail_KYJ.size()).isEqualTo(3);
+        assertThat(userCommentsByEmail_KYJ.get(0).getContent()).isEqualTo("삼성 주식 지금 얼만데요?");
+        assertThat(userCommentsByEmail_KYJ.get(1).getContent()).isEqualTo("나도 번아웃,,,");
+        assertThat(userCommentsByEmail_KYJ.get(2).getContent()).isEqualTo("아무것도 몰라요");
+        // 김윤정 회원이 작성한 게시글은 2개이다.
+        assertThat(userPostsByEmail_KYJ.size()).isEqualTo(2);
+        assertThat(userPostsByEmail_KYJ.get(0).getTitle()).isEqualTo("삼전 사고 싶다");
+        assertThat(userPostsByEmail_KYJ.get(1).getTitle()).isEqualTo("아이폰 14 ");
+        // 김윤정 회원이 작성한 게시글4는 좋아요를 1개, 게시글9는 좋아요를 0개 받았다.
+        List<Post> userPostsWithOptions_KYJ = userService.findUserPostsWithOptions(myPageRequest_KYJ);
+        List<Likes> byPost1_KYJ = likesRepository.findByPost(userPostsWithOptions_KYJ.get(0));
+        List<Likes> byPost2_KYJ = likesRepository.findByPost(userPostsWithOptions_KYJ.get(1));
+        assertThat(byPost1_KYJ.size()).isEqualTo(1);
+        assertThat(byPost2_KYJ.size()).isEqualTo(0);
+        // 김윤정 회원이 생성한 스크랩은 2개이며 각가 2개의 게시글이 저장되어있다.
+        List<Scrap> userScrapsByEmail_KYJ = userService.findUserScrapsByEmail(KYJ.getEmail());
+        assertThat(userScrapsByEmail_KYJ.size()).isEqualTo(2);
+        List<ScrapPost> scrapPostsByScrapId1_KYJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_KYJ.get(0).getId());
+        assertThat(scrapPostsByScrapId1_KYJ.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId1_KYJ.get(0).getPost().getTitle()).isEqualTo("테슬라 와 도지?");
+        assertThat(scrapPostsByScrapId1_KYJ.get(1).getPost().getTitle()).isEqualTo("애플은 안 망하네여");
+        List<ScrapPost> scrapPostsByScrapId2_KYJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_KYJ.get(1).getId());
+        assertThat(scrapPostsByScrapId2_KYJ.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId2_KYJ.get(0).getPost().getTitle()).isEqualTo("도지 화성가자!!!!!");
+        assertThat(scrapPostsByScrapId2_KYJ.get(1).getPost().getTitle()).isEqualTo("삼전 사고 싶다");
+        // 김윤정 회원이 좋아요를 남긴 게시글은 2개로, post1과 post8이다.
+        List<Likes> userLikesByEmail_KYJ = userService.findUserLikesByEmail(KYJ.getEmail());
+        assertThat(userLikesByEmail_KYJ.size()).isEqualTo(2);
+        assertThat(userLikesByEmail_KYJ.get(0).getId()).isEqualTo(likesId1);
+        assertThat(userLikesByEmail_KYJ.get(1).getId()).isEqualTo(likesId3);
 
-//        포스트 삭제
-//        post1, post4, post7
-        postService.deletePost(post1,ryu);
-        postService.deletePost(post4,yun);
-        postService.deletePost(post7,choi);
+        // 최철웅 회원 검증
+        User CCW = userRepository.findById(choi).get();
+        UserDto.MyPageRequest myPageRequest_CCW = createMyPageRequest(CCW.getEmail(), 2, LIKE);
+        List<Comment> userCommentsByEmail_CCW = userService.findUserCommentsByEmail(CCW.getEmail());
+        List<Post> userPostsByEmail_CCW = userService.findUserPostsByEmail(CCW.getEmail());
+        // 최철웅 회원이 작성한 댓글은 2개이다.
+        assertThat(userCommentsByEmail_CCW.size()).isEqualTo(3);
+        assertThat(userCommentsByEmail_CCW.get(0).getContent()).isEqualTo("비싸요");
+        assertThat(userCommentsByEmail_CCW.get(1).getContent()).isEqualTo("또?");
+        assertThat(userCommentsByEmail_CCW.get(2).getContent()).isEqualTo("바쁘다바빠");
+        // 최철웅 회원이 작성한 게시글은 2개이다.
+        assertThat(userPostsByEmail_CCW.size()).isEqualTo(2);
+        assertThat(userPostsByEmail_CCW.get(0).getTitle()).isEqualTo("애플은 안 망하네여");
+        assertThat(userPostsByEmail_CCW.get(1).getTitle()).isEqualTo("이더리움 폭락");
+        // 최철웅 회원이 작성한 게시글2는 좋아요를 1개, 게시글7은 좋아요를 0개 받았다.
+        List<Post> userPostsWithOptions_CCW = userService.findUserPostsWithOptions(myPageRequest_CCW);
+        List<Likes> byPost1_CCW = likesRepository.findByPost(userPostsWithOptions_CCW.get(0));
+        List<Likes> byPost2_CCW = likesRepository.findByPost(userPostsWithOptions_CCW.get(1));
+        assertThat(byPost1_CCW.size()).isEqualTo(1);
+        assertThat(byPost2_CCW.size()).isEqualTo(0);
+        // 최철웅 회원이 생성한 스크랩은 2개이며 각각 2개의 게시글이 저장되어있다.
+        List<Scrap> userScrapsByEmail_CCW = userService.findUserScrapsByEmail(CCW.getEmail());
+        assertThat(userScrapsByEmail_CCW.size()).isEqualTo(2);
+        List<ScrapPost> scrapPostsByScrapId1_CCW = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_CCW.get(0).getId());
+        assertThat(scrapPostsByScrapId1_CCW.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId1_CCW.get(0).getPost().getTitle()).isEqualTo("lg는 가전이지");
+        assertThat(scrapPostsByScrapId1_CCW.get(1).getPost().getTitle()).isEqualTo("이더리움 폭락");
+        List<ScrapPost> scrapPostsByScrapId2_CCW = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_CCW.get(1).getId());
+        assertThat(scrapPostsByScrapId2_CCW.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId2_CCW.get(0).getPost().getTitle()).isEqualTo("아이폰 14 ");
+        assertThat(scrapPostsByScrapId2_CCW.get(1).getPost().getTitle()).isEqualTo("이더리움 폭락");
+        // 최철웅 회원이 좋아요를 남긴 게시글은 2개로, post6과 post8이다.
+        List<Likes> userLikesByEmail_CCW = userService.findUserLikesByEmail(CCW.getEmail());
+        assertThat(userLikesByEmail_CCW.size()).isEqualTo(2);
+        assertThat(userLikesByEmail_CCW.get(0).getId()).isEqualTo(likesId7);
+        assertThat(userLikesByEmail_CCW.get(1).getId()).isEqualTo(likesId8);
 
-        //id값으로 검증
-        assertThat(postRepository.existsById(post1)).isFalse();
+        // 홍의성 회원 검증
+        User HUS = userRepository.findById(hong).get();
+        UserDto.MyPageRequest myPageRequest_HUS = createMyPageRequest(HUS.getEmail(), 2, LIKE);
+        List<Comment> userCommentsByEmail_HUS = userService.findUserCommentsByEmail(HUS.getEmail());
+        List<Post> userPostsByEmail_HUS = userService.findUserPostsByEmail(HUS.getEmail());
+        // 홍의성 회원이 작성한 댓글은 1개이다.
+        assertThat(userCommentsByEmail_HUS.size()).isEqualTo(1);
+        assertThat(userCommentsByEmail_HUS.get(0).getContent()).isEqualTo("번아웃");
+        // 홍의성 회원이 작성한 게시글은 2개이다.
+        assertThat(userPostsByEmail_HUS.size()).isEqualTo(2);
+        assertThat(userPostsByEmail_HUS.get(0).getTitle()).isEqualTo("lg는 가전이지");
+        assertThat(userPostsByEmail_HUS.get(1).getTitle()).isEqualTo("엘지 냉장고랑 티비");
+        // 홍의성 회원이 작성한 게시글5는 좋아요를 0개, 게시글10은 좋아요를 1개 받았다.
+        List<Post> userPostsWithOptions_HUS = userService.findUserPostsWithOptions(myPageRequest_HUS);
+        List<Likes> byPost1_HUS = likesRepository.findByPost(userPostsWithOptions_HUS.get(0));
+        List<Likes> byPost2_HUS = likesRepository.findByPost(userPostsWithOptions_HUS.get(1));
+        assertThat(byPost1_HUS.size()).isEqualTo(1);
+        assertThat(byPost2_HUS.size()).isEqualTo(0);
+        // 홍의성 회원이 생성한 스크랩은 2개이며 각각 2개의 게시글이 저장되어있다.
+        List<Scrap> userScrapsByEmail_HUS = userService.findUserScrapsByEmail(HUS.getEmail());
+        assertThat(userScrapsByEmail_HUS.size()).isEqualTo(2);
+        List<ScrapPost> scrapPostsByScrapId1_HUS = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_HUS.get(0).getId());
+        assertThat(scrapPostsByScrapId1_HUS.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId1_HUS.get(0).getPost().getTitle()).isEqualTo("엘지 냉장고랑 티비");
+        assertThat(scrapPostsByScrapId1_HUS.get(1).getPost().getTitle()).isEqualTo("삼전 살만한가요?");
+        List<ScrapPost> scrapPostsByScrapId2_HUS = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_HUS.get(1).getId());
+        assertThat(scrapPostsByScrapId2_HUS.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId2_HUS.get(0).getPost().getTitle()).isEqualTo("lg는 가전이지");
+        assertThat(scrapPostsByScrapId2_HUS.get(1).getPost().getTitle()).isEqualTo("테슬라 와 도지?");
+        // 홍의성 회원이 좋아요를 남긴 게시글은 2개로, post6과 post8이다.
+        List<Likes> userLikesByEmail_HUS = userService.findUserLikesByEmail(HUS.getEmail());
+        assertThat(userLikesByEmail_HUS.size()).isEqualTo(2);
+        assertThat(userLikesByEmail_HUS.get(0).getId()).isEqualTo(likesId5);
+        assertThat(userLikesByEmail_HUS.get(1).getId()).isEqualTo(likesId6);
 
-        //실제 값 검증
-        assertThat(postRepository.findAll()).extracting("title","content")
-                .doesNotContain(tuple("삼전 살만한가요?", "저 삼전 사고싶어용"),
-                        tuple("삼전 사고 싶다", "9만전자"),
-                        tuple("이더리움 폭락", "han river...."));
+        // 김동준 회원 검증
+        User KDJ = userRepository.findById(jun).get();
+        UserDto.MyPageRequest myPageRequest_KDJ = createMyPageRequest(KDJ.getEmail(), 2, LIKE);
+        List<Comment> userCommentsByEmail_KDJ = userService.findUserCommentsByEmail(KDJ.getEmail());
+        List<Post> userPostsByEmail_KDJ = userService.findUserPostsByEmail(KDJ.getEmail());
+        // 김동준 회원이 작성한 댓글은 1개이다.
+        assertThat(userCommentsByEmail_KDJ.size()).isEqualTo(1);
+        assertThat(userCommentsByEmail_KDJ.get(0).getContent()).isEqualTo("하루는 24시간");
+        // 김동준 회원이 작성한 게시글은 2개이다.
+        assertThat(userPostsByEmail_KDJ.size()).isEqualTo(2);
+        assertThat(userPostsByEmail_KDJ.get(0).getTitle()).isEqualTo("도지 화성가자!!!!!");
+        assertThat(userPostsByEmail_KDJ.get(1).getTitle()).isEqualTo("비트코인과 주식");
+        // 홍의성 회원이 작성한 게시글3은 좋아요를 1개, 게시글8은 좋아요를 2개 받았다.
+        List<Post> userPostsWithOptions_KDJ = userService.findUserPostsWithOptions(myPageRequest_KDJ);
+        List<Likes> byPost1_KDJ = likesRepository.findByPost(userPostsWithOptions_KDJ.get(0));
+        List<Likes> byPost2_KDJ = likesRepository.findByPost(userPostsWithOptions_KDJ.get(1));
+        assertThat(byPost1_KDJ.size()).isEqualTo(2);
+        assertThat(byPost2_KDJ.size()).isEqualTo(1);
+        // 김동준 회원이 생성한 스크랩은 3개이며 각각 2개, 1개, 1개의 게시글이 저장되어있다.
+        List<Scrap> userScrapsByEmail_KDJ = userService.findUserScrapsByEmail(KDJ.getEmail());
+        assertThat(userScrapsByEmail_KDJ.size()).isEqualTo(3);
+        List<ScrapPost> scrapPostsByScrapId1_KDJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_KDJ.get(0).getId());
+        assertThat(scrapPostsByScrapId1_KDJ.size()).isEqualTo(2);
+        assertThat(scrapPostsByScrapId1_KDJ.get(0).getPost().getTitle()).isEqualTo("애플은 안 망하네여");
+        assertThat(scrapPostsByScrapId1_KDJ.get(1).getPost().getTitle()).isEqualTo("삼전 사고 싶다");
+        List<ScrapPost> scrapPostsByScrapId2_KDJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_KDJ.get(1).getId());
+        assertThat(scrapPostsByScrapId2_KDJ.size()).isEqualTo(1);
+        assertThat(scrapPostsByScrapId2_KDJ.get(0).getPost().getTitle()).isEqualTo("도지 화성가자!!!!!");
+        List<ScrapPost> scrapPostsByScrapId3_KDJ = scrapPostRepository.findScrapPostsByScrapId(userScrapsByEmail_KDJ.get(2).getId());
+        assertThat(scrapPostsByScrapId3_KDJ.size()).isEqualTo(1);
+        assertThat(scrapPostsByScrapId3_KDJ.get(0).getPost().getTitle()).isEqualTo("엘지 냉장고랑 티비");
+        // 김동준 회원이 좋아요를 남긴 게시글은 2개이다.
+        List<Likes> userLikesByEmail_KDJ = userService.findUserLikesByEmail(KDJ.getEmail());
+        assertThat(userLikesByEmail_KDJ.size()).isEqualTo(2);
+        assertThat(userLikesByEmail_KDJ.get(0).getId()).isEqualTo(likesId4);
+        assertThat(userLikesByEmail_KDJ.get(1).getId()).isEqualTo(likesId10);
 
-        //사이즈 검증
-        assertThat(postRepository.findAll().size()).isEqualTo(7);
+        // 류동재 회원 삭제
+        UserDto.UserDeleteRequest deleteRequest = new UserDto.UserDeleteRequest(RDJ.getEmail(), RDJ.getPassword());
+        userService.delete(deleteRequest);
+        // 삭제 후 게시글 삭제 확인
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(post1));
+        assertThrows(NotFoundPostByPostIdException.class, () -> postService.findPostByPostId(post6));
+        // 삭제 후 댓글 삭제 확인
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment3.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment9.getId()));
+        // 삭제 후 스크랩 삭제 확인
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(scrap1));
+        // 삭제 후 좋아요 삭제 확인
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId2).orElseThrow(NotFoundLikesException::new));
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId9).orElseThrow(NotFoundLikesException::new));
+
+        // 김윤정 회원 차단
+
     }
 
 

@@ -292,7 +292,7 @@ public class ScrapServiceTestWithDB {
         Long pid = postService.savePost(postDto);
         // when
         Long spid = scrapService.saveCollection(sid, uid, pid);
-        List<Scrap> scrapByUserId = scrapRepository.findScrapByUserId(uid);
+        List<Scrap> scrapByUserId = scrapRepository.findScrapsByUserId(uid);
         // then
         assertThat(sid).isEqualTo(scrapByUserId.get(0).getId());
 

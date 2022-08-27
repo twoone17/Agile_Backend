@@ -117,10 +117,15 @@ public class CommentService {
         if(foundUser.getUserLevel().equals(UserLevel.BAN)) {
             throw new BannedUserException();
         }
-
-        return user.getComments();
+        List<Comment> comments = commentRepository.findByAuthor(user);
+        return comments;
     }
 
+    @Transactional(readOnly = true)
+    public Long findCommentById(Long id) {
+        Comment comment = commentRepository.findById(id).orElseThrow(NotFoundCommentException::new);
+        return comment.getId();
+    }
 
 
     //Update
