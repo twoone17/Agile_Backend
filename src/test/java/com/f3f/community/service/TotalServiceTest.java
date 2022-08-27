@@ -683,6 +683,24 @@ public class TotalServiceTest {
         assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap8));
         assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap18));
 
+
+        //포스트 업데이트
+        PostDto.UpdateRequest updateRequest1 = PostDto.UpdateRequest.builder()
+            .title("titleChanged")
+            .content("contentChanged")
+            .build();
+
+        postService.updatePost(post2,choi,updateRequest1);
+        assertThat(postRepository.findAll()).extracting("title","content")
+            .contains(tuple("titleChanged","contentChanged"));
+
+        assertThat(scrapPostService.getPostsOfScrap(scrap2)).extracting("title","content")
+                .contains(tuple("titleChanged","contentChanged"));
+        User CCW = userRepository.findById(choi).get();
+        List<Post> userPostsByEmail_CCW = userService.findUserPostsByEmail(CCW.getEmail());
+
+        assertThat(userPostsByEmail_CCW).extracting("title","content")
+                .contains(tuple("titleChanged","contentChanged"));
         /*
         유저
         벤 - 윤정이
