@@ -84,6 +84,8 @@ public class Post extends BaseTimeEntity {
         this.title = updateRequest.getTitle();
         this.content = updateRequest.getContent();
         this.media = updateRequest.getMedia();
+        this.tagList = updateRequest.getTagList();
+        this.category = updateRequest.getCategory();
     }
 
 

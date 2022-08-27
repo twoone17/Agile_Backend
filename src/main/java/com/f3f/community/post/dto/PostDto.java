@@ -89,11 +89,17 @@ public class PostDto {
 
         private List<Media> media;
 
+        private Category category;
+
+        private List<PostTag> tagList = new ArrayList<>();
+
         public Post toEntity() {
             return Post.builder()
                     .title(this.title)
                     .content(this.content)
                     .media(this.media)
+                    .category(this.category)
+                    .tagList(this.tagList)
                     .build();
         }
 
