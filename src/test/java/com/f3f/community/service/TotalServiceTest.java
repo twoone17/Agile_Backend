@@ -29,6 +29,7 @@ import com.f3f.community.scrap.domain.Scrap;
 import com.f3f.community.scrap.dto.ScrapDto;
 import com.f3f.community.scrap.repository.ScrapRepository;
 import com.f3f.community.scrap.service.ScrapService;
+import com.f3f.community.tag.domain.PostTag;
 import com.f3f.community.tag.dto.TagDto;
 import com.f3f.community.tag.repository.PostTagRepository;
 import com.f3f.community.tag.repository.TagRepository;
@@ -41,7 +42,9 @@ import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+//import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -354,7 +357,7 @@ public class TotalServiceTest {
 
     }
 
-    @Test
+@org.junit.Test
     @DisplayName("공통 시나리오")
     public void commonScenario() throws Exception{
         //given
@@ -595,6 +598,20 @@ public class TotalServiceTest {
         scrapService.saveCollection(scrap7, choi, post7);
         scrapService.saveCollection(scrap9, hong, post6);
 
+        //포스트 잘 가져와지는지
+        assertThat(postRepository.findAll().size()).isEqualTo(10);
+
+        //가져온 포스트에 카테고리 잘 연결 되어있는지
+
+        //가져온 포스트에 태그 잘 연결 되어있는지
+        assertThat(4).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).size());
+        List<PostTag> postTagsByPost = postTagRepository.findPostTagsByPost(postRepository.findById(post1).get());
+
+//        assertThat(postTagsByPost).extracting("tag_name").contains(tuple("주식왕"),tuple("주린이"),tuple("재테크고수"),tuple("주식초고수"));
+//        assertThat(postTagsByPost.get().getTag().getTagName()).hasSize(4).contains("주식왕","주린이","재테크고수","주식초고수");
+
+
+
 
         /*
         유저
@@ -617,6 +634,34 @@ public class TotalServiceTest {
         scrap 10,9
 
          */
+//        assertThat(postRepository.findAll().size()).isEqualTo(10);
+//
+//        assertThat(4).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).size());
+//        List<PostTag> postTagsByPost = postTagRepository.findPostTagsByPost(postRepository.findById(post1).get());
+//
+//        assertThat(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).contains("주식초고수"));
+//        //가져온 포스트에 카테고리, 태그 잘 연결되어있는지
+////        assertThat(tpid).isEqualTo(postTagRepository.findByPostAndTag(postRepository.findById(posts.get(0)).get(), tagRepository.findById(tid).get()).get().getId());
+//
+////        포스트 삭제
+////        post1, post4, post7
+//        postService.deletePost(post1,ryu);
+//        postService.deletePost(post4,yun);
+//        postService.deletePost(post7,choi);
+//
+//        //id값으로 검증
+//        assertThat(postRepository.existsById(post1)).isFalse();
+//
+//        //실제 값 검증
+//        assertThat(postRepository.findAll()).extracting("title","content")
+//                .doesNotContain(tuple("삼전 살만한가요?", "저 삼전 사고싶어용"),
+//                        tuple("삼전 사고 싶다", "9만전자"),
+//                        tuple("이더리움 폭락", "han river...."));
+//
+//        //사이즈 검증
+//        assertThat(postRepository.findAll().size()).isEqualTo(7);
+
+
 
         // 류동재 회원 검증
         User RDJ = userRepository.findById(ryu).get();
