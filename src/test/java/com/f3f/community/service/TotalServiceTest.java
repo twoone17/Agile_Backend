@@ -579,25 +579,25 @@ public class TotalServiceTest {
         Long scrap9 = scrapService.createScrap(scrap9Dto);
         Long scrap10 = scrapService.createScrap(scrap10Dto);
 
-        scrapService.saveCollection(scrap1, ryu, post1);
-        scrapService.saveCollection(scrap1, ryu, post8);
-        scrapService.saveCollection(scrap1, ryu, post9);
-        scrapService.saveCollection(scrap2, jun, post2);
-        scrapService.saveCollection(scrap2, jun, post4);
-        scrapService.saveCollection(scrap6, jun, post3);
-        scrapService.saveCollection(scrap4, choi, post5);
-        scrapService.saveCollection(scrap4, choi, post7);
-        scrapService.saveCollection(scrap7, choi, post9);
-        scrapService.saveCollection(scrap5, hong, post10);
-        scrapService.saveCollection(scrap5, hong, post1);
-        scrapService.saveCollection(scrap9, hong, post5);
-        scrapService.saveCollection(scrap3, yun, post6);
-        scrapService.saveCollection(scrap3, yun, post2);
-        scrapService.saveCollection(scrap8, yun, post3);
-        scrapService.saveCollection(scrap8, yun, post4);
-        scrapService.saveCollection(scrap10, jun, post10);
-        scrapService.saveCollection(scrap7, choi, post7);
-        scrapService.saveCollection(scrap9, hong, post6);
+    Long savedScrap1 = scrapService.saveCollection(scrap1, ryu, post1);
+    Long savedScrap2 = scrapService.saveCollection(scrap1, ryu, post8);
+    Long savedScrap3 = scrapService.saveCollection(scrap1, ryu, post9);
+    Long savedScrap4 = scrapService.saveCollection(scrap2, jun, post2);
+    Long savedScrap5 = scrapService.saveCollection(scrap2, jun, post4);
+    Long savedScrap6 = scrapService.saveCollection(scrap6, jun, post3);
+    Long savedScrap7 = scrapService.saveCollection(scrap4, choi, post5);
+    Long savedScrap8 = scrapService.saveCollection(scrap4, choi, post7);
+    Long savedScrap9 = scrapService.saveCollection(scrap7, choi, post9);
+    Long savedScrap10 = scrapService.saveCollection(scrap5, hong, post10);
+    Long savedScrap11 = scrapService.saveCollection(scrap5, hong, post1);
+    Long savedScrap12 = scrapService.saveCollection(scrap9, hong, post5);
+    Long savedScrap13 = scrapService.saveCollection(scrap3, yun, post6);
+    Long savedScrap14 = scrapService.saveCollection(scrap3, yun, post2);
+    Long savedScrap15 = scrapService.saveCollection(scrap8, yun, post3);
+    Long savedScrap16 = scrapService.saveCollection(scrap8, yun, post4);
+    Long savedScrap17 = scrapService.saveCollection(scrap10, jun, post10);
+    Long savedScrap18 = scrapService.saveCollection(scrap7, choi, post7);
+    Long savedScrap19 = scrapService.saveCollection(scrap9, hong, post6);
 
         //전체 포스트는 10개이다
         assertThat(postRepository.findAll().size()).isEqualTo(10);
@@ -616,6 +616,7 @@ public class TotalServiceTest {
                     tuple("아이폰 14 ", "비싸여"),
                     tuple("엘지 냉장고랑 티비", "비싸여"));
 //            .doesNotContain();
+
         //포스트 삭제
 //        post1, post3 , post4, post7
         postService.deletePost(post1,ryu);
@@ -660,8 +661,27 @@ public class TotalServiceTest {
         assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment5.getId()));
         assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment6.getId()));
 
-        //포스트 삭제시 스크랩 삭제 여부 확인
+            //포스트 삭제시 스크랩 삭제 여부 확인
+        //post1 : scrap1,scrap11
+        //post3 : scrap6, scrap15
+        //post4 : scrap4,scrap14
+        //post7 : scrap8,scrap18
 
+        //post1 delete
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap1));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap11));
+
+        //post3 delete
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap6));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap15));
+
+        //post4 delete
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap4));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap14));
+
+        //post7 delete
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap8));
+        assertThrows(NotFoundScrapByIdException.class, () -> scrapService.findScrapsById(savedScrap18));
 
         /*
         유저
