@@ -598,10 +598,40 @@ public class TotalServiceTest {
         scrapService.saveCollection(scrap7, choi, post7);
         scrapService.saveCollection(scrap9, hong, post6);
 
-        //포스트 잘 가져와지는지
+        //전체 포스트는 10개이다
         assertThat(postRepository.findAll().size()).isEqualTo(10);
 
+        //전체 포스트의 title과 content 검증
+        assertThat(postRepository.findAll())
+            .extracting("title", "content")
+            .contains(tuple("삼전 살만한가요?", "저 삼전 사고싶어용"),
+                    tuple("애플은 안 망하네여", "하락률이 많이 낮아여"),
+                    tuple("도지 화성가자!!!!!", "doge god"),
+                    tuple("삼전 사고 싶다", "9만전자"),
+                    tuple("lg는 가전이지", "life is good"),
+                    tuple("테슬라 와 도지?", "비트코인 전기 자동차"),
+                    tuple("이더리움 폭락", "han river...."),
+                    tuple("비트코인과 주식", "coin and stock"),
+                    tuple("아이폰 14 ", "비싸여"),
+                    tuple("엘지 냉장고랑 티비", "비싸여");
+//            .doesNotContain();
+
+
+//
+//    assertThat(postRepository.findAll())
+//            .extracting("title", "content","category")
+//            .contains(tuple("삼전 살만한가요?", "저 삼전 사고싶어용","삼전"),
+//                    tuple("애플은 안 망하네여", "하락률이 많이 낮아여","애플"),
+//                    tuple("도지 화성가자!!!!!", "doge god","도지"),
+//                    tuple("삼전 사고 싶다", "9만전자","삼전"),
+//                    tuple("lg는 가전이지", "life is good","엘지"),
+//                    tuple("테슬라 와 도지?", "비트코인 전기 자동차","테슬라"),
+//                    tuple("이더리움 폭락", "han river....","이더리움"),
+//                    tuple("비트코인과 주식", "coin and stock","비트코인"),
+//                    tuple("아이폰 14 ", "비싸여","애플"),
+//                    tuple("엘지 냉장고랑 티비", "비싸여","엘지"));
         //가져온 포스트에 카테고리 잘 연결 되어있는지
+
 
         //가져온 포스트에 태그 잘 연결 되어있는지
         assertThat(4).isEqualTo(postTagRepository.findPostTagsByPost(postRepository.findById(post1).get()).size());
