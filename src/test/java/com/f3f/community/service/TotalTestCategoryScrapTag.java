@@ -523,5 +523,27 @@ public class TotalTestCategoryScrapTag {
         categories.add(kospi);
         categories.add(doge);
         categories.add(stock);
+
+        for (Long category : categories) {
+            List<Post> postsByCategoryId = postRepository.findPostsByCategoryId(category);
+            for (Post post : postsByCategoryId) {
+                assertThat(post.getCategory().getId()).isEqualTo(category);
+            }
+        }
+
+        /*
+        스크랩 업데이트
+         */
+        assertThat(jun).isEqualTo(scrapRepository.findById(scrap2).get().getUser().getId());
+        scrapService.updateCollectionName(scrap2, jun, "이름변경");
+        assertThat(jun).isEqualTo(scrapRepository.findByName("이름변경").getUser().getId());
+        /*
+        카테고리 업데이트
+         */
+        categoryService.updateCategoryName(stock, "주식이름");
+        assertThat(stock).isEqualTo(categoryRepository.findByCategoryName("주식이름").get().getId());
+
+
+
     }
 }
