@@ -613,7 +613,7 @@ public class TotalServiceTest {
                     tuple("이더리움 폭락", "han river...."),
                     tuple("비트코인과 주식", "coin and stock"),
                     tuple("아이폰 14 ", "비싸여"),
-                    tuple("엘지 냉장고랑 티비", "비싸여");
+                    tuple("엘지 냉장고랑 티비", "비싸여"));
 //            .doesNotContain();
         //포스트 삭제
 //        post1, post3 , post4, post7
