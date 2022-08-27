@@ -53,6 +53,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -633,10 +634,8 @@ public class TotalServiceTest {
             .extracting("title", "content")
             .contains(
                     tuple("애플은 안 망하네여", "하락률이 많이 낮아여"),
-                    tuple("삼전 사고 싶다", "9만전자"),
                     tuple("lg는 가전이지", "life is good"),
                     tuple("테슬라 와 도지?", "비트코인 전기 자동차"),
-                    tuple("이더리움 폭락", "han river...."),
                     tuple("비트코인과 주식", "coin and stock"),
                     tuple("아이폰 14 ", "비싸여"),
                     tuple("엘지 냉장고랑 티비", "비싸여"))
@@ -647,6 +646,21 @@ public class TotalServiceTest {
 
         //사이즈 검증
         assertThat(postRepository.findAll().size()).isEqualTo(6);
+
+        //포스트 삭제시 좋아요 삭제 여부 확인
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId1).orElseThrow(NotFoundLikesException::new));
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId2).orElseThrow(NotFoundLikesException::new));
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId4).orElseThrow(NotFoundLikesException::new));
+        assertThrows(NotFoundLikesException.class, () -> likesRepository.findById(likesId5).orElseThrow(NotFoundLikesException::new));
+
+        //포스트 삭제시 댓글 삭제 여부 확인 1,2,4,5,6
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment1.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment2.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment4.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment5.getId()));
+        assertThrows(NotFoundCommentException.class, () -> commentService.findCommentById(comment6.getId()));
+
+        //포스트 삭제시 스크랩 삭제 여부 확인
 
 
         /*
