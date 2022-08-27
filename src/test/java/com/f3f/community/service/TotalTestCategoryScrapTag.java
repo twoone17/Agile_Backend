@@ -8,6 +8,8 @@ import com.f3f.community.comment.domain.Comment;
 import com.f3f.community.comment.dto.CommentDto;
 import com.f3f.community.comment.repository.CommentRepository;
 import com.f3f.community.comment.service.CommentService;
+import com.f3f.community.exception.categoryException.NotEmptyCategoryPostsException;
+import com.f3f.community.exception.common.NotFoundByIdException;
 import com.f3f.community.likes.domain.Likes;
 import com.f3f.community.likes.dto.LikesDto;
 import com.f3f.community.likes.repository.LikesRepository;
@@ -36,6 +38,7 @@ import com.f3f.community.user.repository.UserRepository;
 import com.f3f.community.user.service.UserService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -475,7 +479,7 @@ public class TotalTestCategoryScrapTag {
         users.add(choi);
         users.add(hong);
         for (Long user : users) {
-            List<Scrap> scrapByUser = scrapRepository.findScrapByUserId(user);
+            List<Scrap> scrapByUser = scrapRepository.findScrapsByUserId(user);
             for (Scrap scrap : scrapByUser) {
                 assertThat(user).isEqualTo(scrap.getUser().getId());
                 List<Post> posts = scrapService.getPosts(scrap.getId());
@@ -508,6 +512,18 @@ public class TotalTestCategoryScrapTag {
             List<PostTag> postTagsByTagId = postTagRepository.findPostTagsByTagId(tag);
             List<Post> posts = tagService.getPosts(tag);
             assertThat(postTagsByTagId.size()).isEqualTo(posts.size());
+            for (Post post : posts) {
+                boolean checked = false;
+                for (PostTag postTag : postTagsByTagId) {
+                    if (post.getId().equals(postTag.getPost().getId())) {
+                        checked = true;
+                        break;
+                    }
+                }
+                if (!checked) {
+                    throw new IllegalArgumentException("해당 태그에 잘못된 포스트를 가져왔습니다");
+                }
+            }
         }
 
         /*
@@ -528,6 +544,7 @@ public class TotalTestCategoryScrapTag {
             List<Post> postsByCategoryId = postRepository.findPostsByCategoryId(category);
             for (Post post : postsByCategoryId) {
                 assertThat(post.getCategory().getId()).isEqualTo(category);
+
             }
         }
 
@@ -535,6 +552,7 @@ public class TotalTestCategoryScrapTag {
         스크랩 업데이트
          */
         assertThat(jun).isEqualTo(scrapRepository.findById(scrap2).get().getUser().getId());
+
         scrapService.updateCollectionName(scrap2, jun, "이름변경");
         assertThat(jun).isEqualTo(scrapRepository.findByName("이름변경").getUser().getId());
         /*
@@ -543,7 +561,37 @@ public class TotalTestCategoryScrapTag {
         categoryService.updateCategoryName(stock, "주식이름");
         assertThat(stock).isEqualTo(categoryRepository.findByCategoryName("주식이름").get().getId());
 
+        /*
+        스크랩 삭제
+         */
+        assertThat(scrapRepository.findScrapsByUserId(jun).size()).isEqualTo(3);
+        assertThat(scrapRepository.findScrapsByUserId(hong).size()).isEqualTo(2);
+        scrapService.deleteCollection(scrap9, hong);
+        scrapService.deleteCollection(scrap10, jun);
+        assertThrows(NotFoundByIdException.class, () -> scrapRepository.findById(scrap9).orElseThrow(NotFoundByIdException::new));
+        assertThrows(NotFoundByIdException.class, () -> scrapRepository.findById(scrap10).orElseThrow(NotFoundByIdException::new));
+
+        assertThat(scrapRepository.findScrapsByUserId(jun).size()).isEqualTo(2);
+        assertThat(scrapRepository.findScrapsByUserId(hong).size()).isEqualTo(1);
+
+        /*
+        카테고리 삭제
+         */
+        List<Post> postsByCategoryId = postRepository.findPostsByCategoryId(doge);
+        assertThrows(NotEmptyCategoryPostsException.class, () -> categoryService.deleteCategory(doge));
+        postService.deletePost(post3, jun);
+        categoryService.deleteCategory(doge);
+        assertThat(0).isEqualTo(postRepository.findPostsByCategoryId(doge).size());
 
 
+
+        /*
+        태그 삭제
+         */
+        List<Post> posts = tagService.getPosts(tag2);
+        tagService.deleteTag(tag2);
+        for (Post post : posts) {
+            assertThat(postTagRepository.existsByPostIdAndTagId(post.getId(), tag2)).isEqualTo(false);
+        }
     }
 }

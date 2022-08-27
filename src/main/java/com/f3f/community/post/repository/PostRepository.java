@@ -36,4 +36,6 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     // 철웅 추가, 유저 ID로 찾되 조회수 순으로 나열
     List<Post> findByAuthorOrderByViewCountDesc(User author);
 
+
+
 }
