@@ -29,7 +29,7 @@ public class Category {
     @OneToMany(mappedBy = "parents", fetch = FetchType.LAZY)
     private List<Category> childCategory = new ArrayList<>();
 
-    private Long depth;
+    private Long depth; //
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Post> postList = new ArrayList<>();
